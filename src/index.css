@@ -1,0 +1,3822 @@
+:root {
+  color-scheme: dark;
+  /* フォント設計（映像・編集ツールっぽい精密さ）。
+     display=見せる英字 / body=読ませる和欧 / mono=数値・タイムコード・キッカー。 */
+  --font-display: "Space Grotesk", "Noto Sans JP", "Inter", sans-serif;
+  --font-body: "Inter", "Noto Sans JP", sans-serif;
+  --font-mono: "IBM Plex Mono", "Roboto Mono", monospace;
+  font-family: var(--font-body);
+  /* パネル内ボタンの共通高さ。すべての操作ボタンはこの高さに揃える（幅は中身次第）。 */
+  --btn-h: 36px;
+
+  /* 画面共通のデザイントークン（入口/探す/作業でルールを揃える土台）。
+     値は既存の見た目に合わせており、今後はこのトークンを参照して統一していく。 */
+  --bg: #0a0d12;
+  --surface: rgba(20, 27, 38, 0.82); /* カード地（黒に近い青黒） */
+  --surface-solid: #10151b;
+  --surface-soft: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.1); /* 標準枠線（薄い白） */
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-main: rgba(255, 255, 255, 0.92);
+  --text-sub: rgba(255, 255, 255, 0.62);
+  --text-muted: rgba(255, 255, 255, 0.42);
+  --accent: #d6b46a; /* くすんだ金。選択中／メインボタン／重要 のみに使う */
+  --accent-soft: rgba(214, 180, 106, 0.18);
+  --radius-card: 14px;
+  --radius-panel: 18px;
+  --radius-control: 10px;
+  /* 画面タイプ別の上余白。入口=広い / 探す=中 / 作業=最小（コンテンツを上から見せる）。 */
+  --top-entry: clamp(40px, 8vh, 88px);
+  --top-browse: clamp(28px, 5vh, 40px);
+  --top-work: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0d12;
+}
+
+.mapview {
+  position: fixed;
+  inset: 0;
+  overflow: hidden; /* ④⑤で写真を拡大した時、画面外へはみ出す分をクリップ */
+}
+
+.mapview-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.mapview-canvas canvas {
+  display: block;
+  touch-action: none; /* ピンチ/ドラッグをカメラ操作に使う */
+}
+
+.attribution {
+  position: absolute;
+  left: 8px;
+  bottom: max(8px, env(safe-area-inset-bottom, 8px));
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #93a0b0;
+  background: rgba(10, 13, 18, 0.6);
+  border-radius: 6px;
+}
+.attribution a {
+  color: #c9b079;
+}
+
+/* --- 地名検索（上中央） --- */
+/* --- 中心レティクル（画面中央＝注視点） --- */
+.center-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.9;
+  /* どんな地形色の上でも視認できるよう薄い暗縁を付ける。 */
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.85));
+  z-index: 5;
+}
+
+/* --- 山頂マーカーの選択ラベル（選択した山の名前） --- */
+.peak-label-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* ラベルは表示専用。地図操作・山頂タップを邪魔しない */
+  overflow: hidden;
+  z-index: 6;
+}
+.peak-label {
+  position: absolute;
+  /* (left,top) は点の画面位置。点の真上に少しずらして表示する。 */
+  transform: translate(-50%, calc(-100% - 9px));
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  /* 全山名を出すので未選択は軽量に：背景なし＋濃い縁取りでどの地形でも読める。 */
+  color: #f3f6fb;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 0 3px rgba(0, 0, 0, 0.8);
+}
+/* 選択中の山名は金チップで強調（点の白ハイライトと対応）。 */
+.peak-label.is-selected {
+  padding: 2px 7px;
+  color: #1a1206;
+  background: rgba(214, 180, 106, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 7px;
+  text-shadow: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* --- 山頂選択の一括解除チップ（上中央） --- */
+.peak-clear {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 8px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: #ece6d8;
+  background: rgba(16, 16, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 20;
+}
+.peak-clear:hover {
+  border-color: rgba(214, 180, 106, 0.6);
+  background: rgba(28, 26, 22, 0.9);
+}
+.peak-clear b {
+  color: #d6b46a;
+  font-weight: 600;
+}
+
+/* --- 地図⇄カメラ視点トグル（右上） --- */
+/* 上部アイコンバー（左上の横並び）。メニュー・現在地・カメラ・2D3D・自由視点。 */
+.topbar {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 8px));
+  left: max(8px, env(safe-area-inset-left, 8px));
+  display: flex;
+  gap: 8px;
+  z-index: 23; /* 出力(仕上げ)の全画面オーバーレイ(z22)でも常に押せるように */
+}
+/* 検索＋ベースマップを画面上に常駐（topbarアイコンの下・左寄せ）。サイドバーは表示トグルのみ。 */
+/* terrain/celestial/offline 共通の下部ドック（AR系と同じ見た目・移動可）。1モード1パネル。 */
+.mode-dock {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(8px, env(safe-area-inset-bottom, 8px)) + 24px);
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100dvh - 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  color: var(--fg);
+  /* 3D地形が主役。パネルは薄いガラスのHUDに（透過＋強めのブラー）。 */
+  background: rgba(14, 14, 16, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  z-index: 20;
+}
+.mode-dock-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-x: hidden; /* 横スクロールは出さない（縦のみ） */
+  overflow-y: auto;
+}
+.dock-search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  font-size: 20px; /* ☰ 用 */
+  color: #e6edf5;
+  background: rgba(18, 24, 33, 0.78);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.topbar-btn:hover {
+  background: rgba(34, 46, 62, 0.85);
+}
+.topbar-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.topbar-btn.is-active {
+  color: #fff;
+  background: rgba(48, 100, 160, 0.92);
+  border-color: rgba(214, 180, 106, 0.65);
+}
+
+/* 地図↔風景の切替を隠す暗転フェード。最前面で全画面を覆い、切替中だけ黒くして切替先カードを出す。 */
+.view-fade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(720px 520px at 50% 40%, rgba(150, 130, 95, 0.2), transparent 70%),
+    linear-gradient(180deg, #0c1118 0%, #0a0d12 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 100;
+}
+.view-fade.is-on {
+  pointer-events: auto; /* 切替中は誤操作を防ぐ */
+}
+/* ホーム⇄モードの暗転フェード（最前面で全画面）。地図⇄風景と同じ見た目。 */
+.screen-fade {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(720px 520px at 50% 40%, rgba(150, 130, 95, 0.2), transparent 70%),
+    linear-gradient(180deg, #0c1118 0%, #0a0d12 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease;
+  z-index: 200;
+}
+.screen-fade.is-on {
+  pointer-events: auto;
+}
+/* 暗転中の中身が「ふわっと現れる」共通モーション（下からせり上がり＋微拡大）。 */
+@keyframes fade-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* 暗転中に出す「切替先」カード（各モード）。ホームのカード調で揃える。 */
+.view-fade-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #f3f0e9;
+  animation: fade-content-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.view-fade-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  color: #d6b46a;
+  background: linear-gradient(160deg, rgba(150, 130, 95, 0.32), rgba(214, 180, 106, 0.16));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 12px 36px rgba(120, 95, 45, 0.4);
+}
+.view-fade-name {
+  max-width: 80vw;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+.view-fade-sub {
+  font-size: 12px;
+  color: #9c9a94;
+}
+
+/* ビュー切替（地図⇄風景）の小チップ。セグメント調＝「同じモード内で見え方を変える」を示す。
+   モード開始の大カードや AR のステップバーと一目で区別できる。 */
+.fade-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e6edf5;
+  background: rgba(40, 52, 68, 0.6);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  animation:
+    fade-content-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    fade-pill-pulse 1.6s ease-in-out 0.5s infinite;
+}
+.fade-pill-ico {
+  display: inline-flex;
+  color: #ece3cf;
+}
+@keyframes fade-pill-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* AR フェーズ移動（③⇄④）のステップバー。①〜⑤で現在を強調＝ウィザード進行と分かる。 */
+.fade-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: fade-content-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.fade-steps-row {
+  display: flex;
+  gap: 10px;
+}
+.fade-step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8294aa;
+  background: rgba(130, 150, 175, 0.18);
+  border-radius: 50%;
+}
+/* ステップ間をつなぐ細い線（ステッパー感）。 */
+.fade-step:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  width: 10px;
+  height: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(130, 150, 175, 0.28);
+}
+.fade-step.is-current {
+  color: #fff;
+  background: #d6b46a;
+  transform: scale(1.15);
+  animation: fade-step-pulse 1.2s ease-in-out infinite;
+}
+@keyframes fade-step-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(214, 180, 106, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(214, 180, 106, 0);
+  }
+}
+.fade-steps-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #e6edf5;
+}
+
+/* 暗転中の「読み込み中…」（右下）。ホーム⇄モードの遷移（App側）で使用。
+   末尾のドットは数が 0→1→2→3 と循環（点滅ではなくドット数アニメ）。 */
+.fade-loading {
+  position: absolute;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #9c9a94;
+}
+.fade-loading::after {
+  content: "";
+  display: inline-block;
+  width: 1.2em; /* ドット分の幅を固定し、本体の文字がガタつかないように */
+  text-align: left;
+  animation: fade-loading-dots 1.2s steps(1, end) infinite;
+}
+@keyframes fade-loading-dots {
+  0% {
+    content: "";
+  }
+  25% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  75% {
+    content: "...";
+  }
+}
+
+/* --- カメラ視点HUD（下中央） --- */
+.cam-hud {
+  position: absolute;
+  left: 50%;
+  /* 出典(左下)に被らないよう少し上げる */
+  bottom: calc(max(8px, env(safe-area-inset-bottom, 8px)) + 24px);
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  color: var(--fg);
+  background: rgba(14, 14, 16, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  z-index: 20; /* 写真オーバーレイ(z4)より前面に */
+}
+/* ドック内の操作行（地図/カメラ・2D/3D は選択ボタン、現在地等はアイコン）。 */
+/* 操作セクションの中身（地図/カメラ・3D/2D・現在地 等）。字下げはセクション本体が担う。 */
+.dock-viewbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+/* セグメント選択（航空写真スイッチと同系統。現在値を明示）。 */
+.seg {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 2px;
+}
+.seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b9c6d8;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.seg button.is-active {
+  color: #1a1206;
+  background: #d6b46a;
+}
+/* 全幅セグメント（検索モード・ベースマップ）。等幅で並ぶ。 */
+.seg--fill {
+  display: flex;
+}
+.seg--fill button {
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+/* ラベル付きの動作ボタン（現在地/自由視点/撮影地点へ）。 */
+.dock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: var(--btn-h);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ece6d8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dock-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.dock-btn.is-active {
+  color: #1a1206;
+  background: #d6b46a;
+  border-color: transparent;
+}
+/* ドック本体のセクション（見出し＋区切り線）。ボリュームのある中身を整理。 */
+/* アナウンス（タイトル直下の本文のみ。見出しなし）。 */
+.dock-announce {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.45); /* 手引きではなく静かなキャプションに */
+}
+/* セクションをタブ化。タブで選んだ1項目だけ本体を表示（縦長対策）。 */
+.dock-tabwrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(130, 150, 175, 0.16);
+}
+/* タブ列。下線インジケータ式（ボタンではなくタブらしく）。共有のベースライン上に並ぶ。 */
+.dock-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid rgba(130, 150, 175, 0.22);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dock-tabs::-webkit-scrollbar {
+  display: none;
+}
+.dock-tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #8294ac;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent; /* 非アクティブは透明の下線 */
+  margin-bottom: -1px; /* ベースライン(1px)に重ねる */
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+.dock-tab > svg {
+  color: currentColor;
+  flex: none;
+}
+.dock-tab:hover {
+  color: #cdd6e2;
+}
+.dock-tab.is-active {
+  color: #f3ead2;
+  border-bottom-color: #d6b46a; /* アクセントの下線でアクティブを表示 */
+}
+.dock-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* モードドックのグリップ内タイトル（太陽/保存/地図 のラベル）。 */
+.mode-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+/* カメラHUDの読み取り（方位/仰角/横画角）をスタットカード風に。 */
+.cam-readout {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(130, 150, 175, 0.16);
+  border-bottom: 1px solid rgba(130, 150, 175, 0.16);
+}
+.cam-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.cam-stat > span {
+  font-size: 10px;
+  color: #8fa2bb;
+}
+.cam-stat > b {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e6edf5;
+  font-variant-numeric: tabular-nums;
+}
+/* スライダー行: ラベル左＋値右、向き補足は小さく。 */
+.cam-eye-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.cam-eye-head > b {
+  font-weight: 700;
+  color: #e6edf5;
+  font-variant-numeric: tabular-nums;
+}
+.cam-eye-sub {
+  font-style: normal;
+  font-size: 10px;
+  color: #8fa2bb;
+}
+/* ④⑤: 操作モード切替＋ズーム の行 */
+.stage-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.edit-mode-toggle {
+  display: inline-flex;
+  min-height: var(--btn-h);
+  background: rgba(40, 52, 68, 0.5);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 9px;
+  padding: 2px;
+  gap: 2px;
+}
+.emt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b9c6d8;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.emt-btn.is-on {
+  color: #1a1206;
+  background: #d6b46a;
+}
+.stage-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stage-zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: var(--btn-h);
+  color: #cdd6e2;
+  background: rgba(40, 52, 68, 0.55);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.stage-zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.stage-zoom-val {
+  min-width: 42px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: #aebccf;
+}
+.cam-eye {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #cdd6e2;
+}
+.cam-eye input[type="range"] {
+  width: 100%;
+  margin: 0; /* UA既定の左右2pxマージンを消して枠内に収める */
+  accent-color: #d6b46a;
+}
+.cam-hint {
+  font-size: 11px;
+  color: #8fa2bb;
+  text-align: center;
+}
+
+/* --- 写真オーバーレイ（位置・サイズは描画ループが写真枠に合わせて設定） --- */
+.photo-overlay {
+  position: absolute;
+  inset: 0; /* ループが left/top/width/height で写真枠に上書きする */
+  object-fit: fill; /* 枠は写真アスペクトなので fill で一致 */
+  pointer-events: none; /* 下のキャンバスでドラッグ・ピンチ操作を続けられる */
+  z-index: 4; /* キャンバス(0)より上、山名ラベル(6)・HUD(20)より下 */
+}
+.cam-photo {
+  display: flex;
+  justify-content: center;
+}
+.cam-photo-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--btn-h);
+  padding: 0 12px;
+  font-size: 12px;
+  color: #e6edf5;
+  background: rgba(214, 180, 106, 0.22);
+  border: 1px solid rgba(130, 150, 175, 0.35);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cam-photo-pick:hover {
+  background: rgba(214, 180, 106, 0.34);
+}
+
+/* ホームへ戻る（左上・メニューの右） */
+/* GPS失敗時の注意（上部バーの下に出す） */
+.locate-warn {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top, 8px)) + 50px);
+  left: max(8px, env(safe-area-inset-left, 8px));
+  max-width: min(320px, calc(100vw - 24px));
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #ffd9d2;
+  background: rgba(60, 24, 20, 0.92);
+  border: 1px solid rgba(200, 90, 70, 0.5);
+  border-radius: 9px;
+  z-index: 23;
+}
+/* ホーム（右上の右端。押し間違い防止で左の操作群と離す）。 */
+.home-btn {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 8px));
+  right: max(8px, env(safe-area-inset-right, 8px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  color: #ece6d8;
+  background: rgba(16, 16, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 23; /* 出力(仕上げ)の全画面オーバーレイ(z22)でも常に押せるように */
+}
+.home-btn:hover {
+  border-color: rgba(214, 180, 106, 0.6);
+  background: rgba(28, 26, 22, 0.82);
+}
+/* [仮] 設定出力ボタン。ホーム(42px)＋8px の左隣に置く。 */
+.dump-btn {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 8px));
+  right: calc(max(8px, env(safe-area-inset-right, 8px)) + 50px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  padding: 0 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: #ece6d8;
+  background: rgba(16, 16, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 23;
+}
+.dump-btn:hover {
+  border-color: rgba(214, 180, 106, 0.6);
+  background: rgba(28, 26, 22, 0.82);
+}
+
+
+/* --- サイドバー --- */
+.sidebar-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 25;
+}
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(340px, 86vw);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  padding-top: max(10px, env(safe-area-inset-top, 10px));
+  overflow-y: auto;
+  color: #e6edf5;
+  background: rgba(12, 16, 23, 0.97);
+  border-right: 1px solid rgba(130, 150, 175, 0.22);
+  box-shadow: 6px 0 30px rgba(0, 0, 0, 0.5);
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  z-index: 30;
+}
+.sidebar.is-open {
+  transform: translateX(0);
+}
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 15px;
+  padding-bottom: 6px;
+}
+.sidebar-close {
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  color: #aeb8c6;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.side-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(130, 150, 175, 0.16);
+}
+/* 折りたたみ時はヘッダ以外を隠す（中身はアンマウントしないので状態は保持）。 */
+.side-sec.is-collapsed > *:not(.side-sec-head) {
+  display: none;
+}
+.side-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #9fb0c4;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.side-sec-head:hover {
+  color: #cdd9e8;
+}
+/* 開閉シェブロン（閉=右向き / 開=下向き）。 */
+.side-chev {
+  width: 7px;
+  height: 7px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+  margin-right: 3px;
+}
+.side-chev.is-open {
+  transform: rotate(45deg);
+}
+.side-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #dbe3ee;
+  cursor: pointer;
+}
+.side-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: #d6b46a;
+}
+
+/* --- トグルスイッチ行（表示・太陽月） --- */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+  color: #dbe3ee;
+  cursor: pointer;
+}
+.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 11px;
+  background: #36425a;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e8eef6;
+  transition: left 0.15s;
+}
+.switch:checked {
+  background: #d6b46a;
+}
+.switch:checked::after {
+  left: 18px;
+}
+
+/* --- スライダー行（標高の誇張など） --- */
+.slider-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+.slider-label {
+  font-size: 12.5px;
+  color: #cdd6e2;
+}
+.slider-label b {
+  color: #fff;
+  margin: 0 2px;
+  font-variant-numeric: tabular-nums;
+}
+.slider-row input[type="range"] {
+  width: 100%;
+  margin: 0; /* UA既定の左右2pxマージンを消して枠内にぴったり収める */
+  accent-color: #d6b46a;
+}
+
+/* --- 日時行（太陽・月） --- */
+.datetime-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dt-date {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--btn-h);
+  padding: 0 8px;
+  font-size: 13px;
+  color: #e6edf5;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(130, 150, 175, 0.25);
+  border-radius: 8px;
+  color-scheme: dark;
+}
+.dt-time {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: #e6edf5;
+  min-width: 44px;
+  text-align: center;
+}
+.dt-now {
+  min-height: var(--btn-h);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cdd6e2;
+  background: rgba(40, 52, 68, 0.5);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.dt-now:hover {
+  background: rgba(56, 72, 94, 0.6);
+}
+.dt-slider {
+  width: 100%;
+  margin: 0; /* UA既定の左右2pxマージンを消して枠内にぴったり収める */
+  accent-color: #d6b46a;
+}
+
+/* --- 太陽・月の情報カード --- */
+.sky-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+.sky-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sky-ico {
+  flex: none;
+}
+.sky-ico--sun {
+  color: #ffce6a;
+}
+.sky-info {
+  min-width: 0;
+}
+.sky-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #f5f2ea;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.sky-pct {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: rgba(242, 240, 234, 0.55);
+}
+.sky-sub {
+  font-size: 11.5px;
+  color: rgba(242, 240, 234, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+/* 月相サイクル帯（新月→満月→新月で今どこかを示す） */
+.moon-cycle {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 4px;
+  /* 月アイコンの真下は空けて、月の情報テキスト（アイコン幅24＋gap10）と頭を揃える。 */
+  padding-left: 34px;
+}
+.moon-cyc {
+  display: flex;
+  padding: 2px;
+  border-radius: 6px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+}
+.moon-cyc.is-now {
+  opacity: 1;
+  background: rgba(214, 180, 106, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(214, 180, 106, 0.6);
+}
+
+.sky-times {
+  font-size: 12px;
+  color: rgba(242, 240, 234, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 13, 15, 0.9);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 10px;
+  padding: 4px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+/* 検索バー内の検索対象セレクト（山名／土地名／両方）。左端に置いて1行に収める。 */
+.search-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  padding: 0 6px 0 4px;
+  color: #b9c6d8;
+  border-right: 1px solid rgba(130, 150, 175, 0.22);
+}
+.search-mode select {
+  padding: 4px 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cdd6e2;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+.search-mode select option {
+  color: #1a2230;
+}
+.search-bar input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 14px;
+  color: #e6edf5;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.search-bar input::placeholder {
+  color: #7c8aa0;
+}
+/* 検索実行ボタン。「全て」セレクトと同系統の見た目（枠なし・区切り線つきで一体化）。 */
+.search-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 4px 6px 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cdd6e2;
+  background: transparent;
+  border: none;
+  border-left: 1px solid rgba(130, 150, 175, 0.22);
+  border-radius: 0;
+  cursor: pointer;
+}
+.search-bar button:hover:not(:disabled) {
+  color: #fff;
+}
+.search-bar button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(236, 227, 207, 0.25);
+  border-top-color: #ece3cf;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.search-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px;
+  max-height: 50vh;
+  overflow-y: auto;
+  background: rgba(13, 13, 15, 0.96);
+  border: 1px solid rgba(130, 150, 175, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.search-results li {
+  margin: 0;
+}
+.search-results button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #dbe3ee;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.search-results button:hover {
+  background: rgba(80, 130, 198, 0.25);
+}
+.res-ico {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  color: #9fb6d4;
+}
+.res-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.res-sub {
+  flex: none;
+  font-size: 11px;
+  color: #8fa2bb;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- ベースマップ切替（サイドバー内・折返しグリッド） --- */
+
+/* --- オフライン保存（事前ロード、サイドバー内） --- */
+.save-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: #cdd6e2;
+}
+.save-field input[type="range"] {
+  width: 100%;
+  margin: 0; /* UA既定の左右2pxマージンを消して枠内に収める */
+  accent-color: #d6b46a;
+}
+
+.save-center {
+  font-size: 12px;
+  color: #9fb4cf;
+  font-variant-numeric: tabular-nums;
+}
+
+.save-plan {
+  font-size: 12.5px;
+  line-height: 1.7;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+.save-warn {
+  color: #f5b942;
+}
+
+.save-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.save-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.save-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b0863a, #e3c483);
+  transition: width 0.15s;
+}
+.save-prog-text {
+  font-size: 12px;
+  color: #aeb8c6;
+  font-variant-numeric: tabular-nums;
+}
+
+.save-actions {
+  display: flex;
+  padding-top: 10px;
+  border-top: 1px solid rgba(130, 150, 175, 0.16);
+}
+.save-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--btn-h);
+  padding: 0 12px;
+  font-size: 13px;
+  color: #e6edf5;
+  background: rgba(40, 52, 68, 0.9);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.save-btn:hover:not(:disabled) {
+  background: rgba(56, 72, 94, 0.95);
+}
+.save-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.save-btn--primary {
+  background: rgba(48, 100, 160, 0.92);
+  border-color: rgba(214, 180, 106, 0.6);
+}
+.save-btn--primary:hover:not(:disabled) {
+  background: rgba(60, 120, 185, 0.95);
+}
+.save-btn--danger {
+  background: rgba(150, 60, 60, 0.9);
+  border-color: rgba(220, 140, 140, 0.5);
+}
+
+.save-storage {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #aeb8c6;
+}
+.save-link {
+  font-size: 12px;
+  color: #d6b46a;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.save-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.save-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --- ホーム画面（入場時のランディング） --- */
+.home {
+  /* 共通パレット（ホーム/設定/図鑑）。黒地＋くすんだ金1色アクセント。 */
+  --fg: #f5f2ea;
+  --sub: #9c9a94;
+  --line: rgba(255, 255, 255, 0.1);
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-2: rgba(255, 255, 255, 0.07);
+  --accent: #d6b46a;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  padding: 24px;
+  background:
+    radial-gradient(1100px 620px at 50% -6%, rgba(214, 180, 106, 0.07), transparent 70%),
+    #0b0c0e;
+  color: var(--fg);
+  overflow: auto;
+}
+/* margin:auto で中央寄せ。内容が画面より高いときは余白が 0 になり、上端から
+   スクロールできる（align/justify-center だと上が見切れて届かなくなるため）。 */
+.home-inner {
+  width: min(720px, 100%);
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.home-head {
+  text-align: center;
+}
+.home-head h1 {
+  margin: 0;
+  font-size: clamp(34px, 7vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.home-head p {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--sub);
+}
+.home-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 560px) {
+  .home-cards {
+    grid-template-columns: 1fr;
+  }
+}
+/* アイコン左・テキスト右（タイトル上／説明下）の横並び。縦スペースを抑える。 */
+.home-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  text-align: left;
+  color: #e6edf5;
+  background: rgba(20, 27, 38, 0.8);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+.home-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(214, 180, 106, 0.6);
+  background: rgba(28, 38, 54, 0.9);
+}
+.home-card-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-control);
+  color: #ece3cf;
+  background: var(--accent-soft);
+}
+.home-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.home-card-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+.home-card-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9fb0c4;
+}
+
+/* --- 表示設定画面のパネル（旧・各モードの☰メニュー） --- */
+.home-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+/* 設定画面のトグル・セグメントは金アクセントに（3DモードのHUDには波及させない＝.home配下のみ）。 */
+.home .switch-row {
+  color: var(--fg);
+  padding: 8px 0;
+}
+.home .switch:checked {
+  background: var(--accent);
+}
+.home .seg {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line);
+}
+.home .seg button.is-active {
+  color: #1a1206;
+  background: var(--accent);
+}
+.home input[type="range"] {
+  accent-color: var(--accent);
+}
+.home .slider-label,
+.home .slider-label b {
+  color: var(--fg);
+}
+
+/* --- ARの入口（写真未選択時の案内） --- */
+.ar-intro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 24px;
+  text-align: center;
+  color: #e6edf5;
+  background: rgba(13, 13, 15, 0.92);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 18;
+}
+.ar-intro-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  color: #ece3cf;
+  background: rgba(214, 180, 106, 0.2);
+}
+.ar-intro h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.ar-intro p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #aebccf;
+}
+.ar-intro-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(214, 180, 106, 0.9);
+  border: 1px solid rgba(214, 180, 106, 0.6);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ar-intro-pick:hover {
+  background: rgba(228, 197, 132, 0.98); /* ホバーで青に化けていたのを金の明色に */
+}
+
+/* --- ARウィザード（地点 → 情報 → 合わせる） --- */
+/* AR下部ドック: 進行表示＋アナウンス＋操作を1つにまとめた下部パネル */
+.ar-dock {
+  position: absolute;
+  left: 50%;
+  /* 出典(左下)に被らないよう少し上げる */
+  bottom: calc(max(8px, env(safe-area-inset-bottom, 8px)) + 24px);
+  transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px 12px;
+  color: var(--fg);
+  background: rgba(14, 14, 16, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  z-index: 22;
+}
+/* 進行表示（各下部パネルの上段に静的に並べる） */
+.ar-steps {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+/* パネルのつかみ手（進行表示＋畳むボタン）。ここをドラッグで移動。 */
+.ar-panel-grip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none; /* 本体がスクロールしてもグリップは縮めず上端に残す */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ar-panel-grip:active {
+  cursor: grabbing;
+}
+.cam-hud-grip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 畳む/開く ボタン */
+.ar-panel-toggle {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  color: #cdd6e2;
+  background: rgba(40, 52, 68, 0.55);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ar-panel-toggle:hover {
+  background: rgba(54, 68, 86, 0.7);
+}
+/* 折りたたみ対象の本体（ドック）。背が高いときは内部スクロール（グリップは上端に残す）。 */
+.ar-dock-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* cam-hud（AR微調整・カメラ）の本体。ar-dock-body と同じく内部スクロール。 */
+.cam-hud-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* 進む/戻る等のボタン行 */
+/* フッターの操作行。主ボタン（進む/確定）は幅いっぱいに伸ばし、戻る等は中身幅。
+   オフラインの「ダウンロード」(.save-actions) と同じルールで画面ごとに揃える。 */
+.ar-dock-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none; /* 本体がスクロールしても操作行（戻る/ダウンロード等）は縮めず最下部に残す */
+  padding-top: 10px;
+  border-top: 1px solid rgba(130, 150, 175, 0.16);
+}
+.ar-dock-actions .ar-btn-main {
+  flex: 1;
+}
+/* アイコンのみのナビボタン（戻る等）を正方形寄りに。高さは共通トークンに従う。 */
+.ar-btn--icon {
+  flex: none;
+  padding: 0 12px;
+  justify-content: center;
+}
+/* 未完了ステップは弱める＝「今どこにいるか」を相対的に強調。 */
+.ar-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: #8294aa;
+  opacity: 0.45;
+}
+.ar-step b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  border-radius: 50%;
+  background: rgba(130, 150, 175, 0.25);
+  color: #cdd6e2;
+}
+/* 現在ステップは名前を太く・明るく、丸は金で前に出す。 */
+.ar-step.is-active {
+  color: var(--text-main);
+  opacity: 1;
+  font-weight: 700;
+}
+.ar-step.is-active b {
+  background: var(--accent);
+  color: #1a1206;
+}
+/* 完了ステップは未完了より少し強め（完了 > これから が分かるように）。 */
+.ar-step.is-done {
+  color: #9fb0c4;
+  opacity: 0.75;
+}
+.ar-step.is-done b {
+  background: rgba(255, 255, 255, 0.18);
+  color: #f3ead2;
+}
+/* スマホ等の狭い画面: 進行表示は番号の丸だけにし、現在ステップのみラベルを出す（1行に収める） */
+@media (max-width: 560px) {
+  .ar-steps {
+    gap: 6px;
+    padding: 5px 8px;
+  }
+  .ar-step .ar-step-label {
+    display: none;
+  }
+  .ar-step.is-active .ar-step-label {
+    display: inline;
+  }
+}
+
+/* 撮影地点ピン（地表に追従。下端が地点を指す） */
+/* 撮影地点ピン。先端（アイコン高さの約87.5%の位置）を撮影地点に合わせて接地。
+   sampleSurfaceY が表示面に一致するよう修正済みなので、先端基準でも浮かない。 */
+.ar-pin {
+  position: absolute;
+  transform: translate(-50%, -87.5%);
+  color: #ff5a3c;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  z-index: 6;
+}
+.ar-pin svg {
+  display: block; /* インラインSVGの下余白を消し、要素高さ＝アイコン高さにする */
+}
+
+.ar-btn-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: var(--btn-h);
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #1a1206;
+  background: #d6b46a;
+  border: 1px solid rgba(214, 180, 106, 0.9);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ar-btn-main:hover {
+  background: #e3c483;
+}
+.ar-btn-main:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.ar-btn-sub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--btn-h);
+  padding: 0 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: #e6edf5;
+  background: rgba(28, 36, 48, 0.85);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ar-btn-sub:hover {
+  background: rgba(40, 50, 66, 0.9);
+}
+.ar-btn-sub > svg {
+  opacity: 0.7;
+}
+
+/* 撮影情報フェーズ（中央パネル） */
+.ar-params {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 22px 18px;
+  color: #e6edf5;
+  background: rgba(13, 13, 15, 0.93);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 21;
+}
+.ar-params h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.ar-params p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #aebccf;
+}
+
+/* ARフェーズのフッター（カメラHUD内：向き合わせ／山選択） */
+.ar-phase-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+.ar-phase-foot .cam-hint {
+  text-align: center;
+}
+.ar-phase-foot-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.ar-btn-wide {
+  width: 100%;
+}
+
+/* ⑤ 出力(仕上げ): 写真の上で名札・点をドラッグ編集。背景でキャンバス/山名ラベルを隠す。 */
+.ar-edit {
+  position: absolute;
+  inset: 0;
+  background: #06080c;
+  overflow: hidden; /* 拡大した編集ステージのはみ出しをクリップ */
+  z-index: 22;
+  touch-action: none; /* 余白ドラッグでパン（スクロールさせない） */
+}
+/* [仮] 現在の設定を JSON 出力するオーバーレイ。 */
+.ar-dump {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 6, 10, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ar-dump-card {
+  width: min(640px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  background: #0e141d;
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 14px;
+}
+.ar-dump-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f3eedf;
+}
+.ar-dump-note {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(214, 224, 236, 0.62);
+}
+.ar-dump-text {
+  flex: 1;
+  min-height: 280px;
+  resize: vertical;
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e6edf5;
+  background: #06080c;
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 10px;
+  white-space: pre;
+}
+.ar-dump-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+/* 書き出しプレビュー（焼き込んだ合成画像を確認 → 保存するか選ぶ）。 */
+.ar-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(4, 6, 10, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ar-preview-card {
+  width: min(720px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: #0e141d;
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 14px;
+}
+.ar-preview-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5f2ea;
+}
+.ar-preview-note {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(242, 240, 234, 0.6);
+}
+/* 画像は枠内に収める（縦横どちらの作品でも全体が見えるよう contain）。 */
+.ar-preview-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #06080c;
+  border: 1px solid rgba(130, 150, 175, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ar-preview-body img {
+  max-width: 100%;
+  max-height: 64vh;
+  object-fit: contain;
+  display: block;
+}
+.ar-preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+/* 仕上げのテンプレート選択（export に入った直後の入口画面）。 */
+/* テンプレ選択。図鑑の一覧ビューと同じ作法（中央1カラム＋home-headの大見出し）に揃える。 */
+.ar-tpl {
+  /* 図鑑/ホームと同じパレット（home-head・カードの var 参照を解決させる）。 */
+  --fg: #f5f2ea;
+  --sub: #9c9a94;
+  --accent: #d6b46a;
+  position: absolute;
+  inset: 0;
+  z-index: 23;
+  /* ホームと同じ、上からほのかに金が差す近黒の背景（緑や山の質感は足さない）。 */
+  background:
+    radial-gradient(1100px 620px at 50% -6%, rgba(214, 180, 106, 0.07), transparent 70%),
+    #0b0c0e;
+  color: var(--fg);
+  padding: 0 24px;
+  overflow-y: auto;
+}
+/* 図鑑の .zukan-inner と同じ中央寄せの縦カラム。 */
+.ar-tpl-inner {
+  width: min(820px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: var(--top-browse) 0 56px; /* 探す画面の上余白を図鑑と共通化 */
+}
+/* 見出しは home-head を再利用。長いタイトルなので図鑑より一段控えめなサイズに。 */
+.ar-tpl-head.home-head h1 {
+  font-size: clamp(27px, 5vw, 40px);
+  letter-spacing: -0.005em;
+}
+.ar-tpl-head.home-head p {
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ar-tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+.ar-tpl-card {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0;
+  overflow: hidden;
+  background: rgba(20, 27, 38, 0.8);
+  border: 1px solid rgba(130, 150, 175, 0.28);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, transform 0.12s ease;
+}
+.ar-tpl-card:hover {
+  transform: translateY(-3px);
+  background: rgba(28, 38, 54, 0.9);
+  border-color: rgba(214, 180, 106, 0.45);
+}
+.ar-tpl-card:active {
+  transform: translateY(0);
+}
+/* 選択中だけ控えめな金枠（チェックは右上に小さく）。強い影や太枠は使わない。 */
+.ar-tpl-card.is-active {
+  border-color: rgba(214, 180, 106, 0.75);
+  box-shadow: 0 0 0 1px rgba(214, 180, 106, 0.22);
+}
+.ar-tpl-card--custom {
+  background: rgba(255, 255, 255, 0.03);
+  border-style: dashed;
+}
+/* プレビュー画像（テンプレごとの完成見本）。実際の出力比率のまま contain で見せる。 */
+.ar-tpl-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background: #0c0d10;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.ar-tpl-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+/* 選択中バッジ。右上に小さく、金地に黒チェック（図鑑の順位バッジと同じ作法）。 */
+.ar-tpl-check {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0b0f12;
+  background: rgba(214, 180, 106, 0.95);
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.ar-tpl-thumb--custom {
+  font-size: 13px;
+  color: rgba(245, 242, 234, 0.5);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(130, 150, 175, 0.06),
+    rgba(130, 150, 175, 0.06) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+.ar-tpl-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+}
+/* 漢字1文字の名前＋補助名（機能がひと目で分かる短いラベル）をベースライン揃えで横並び。 */
+.ar-tpl-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ar-tpl-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.ar-tpl-card-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sub);
+}
+.ar-tpl-card-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(242, 240, 234, 0.55);
+}
+.ar-tpl-foot {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+@media (max-width: 560px) {
+  .ar-tpl-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* 編集ステージは微調整(④)と同じ枠(arStageRect)に合わせるため、left/top/width/height は
+   render loop が px で設定する（CSSでのサイズ指定はしない）。 */
+.ar-edit-stage {
+  position: absolute;
+  background: #000;
+  overflow: hidden;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 出力枠（フレーム）。切り抜き・余白・ふちを反映。px サイズは JS で contain 設定。
+   文字サイズの cqmax（=長辺の1%）基準＝この出力枠。 */
+.ar-frame {
+  position: relative;
+  overflow: hidden;
+  container-type: size;
+}
+.ar-frame-photo {
+  position: absolute; /* 位置・サイズは inline（余白）。中の写真は inline（切り抜き）。 */
+}
+.ar-edit-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.ar-edit-lines,
+.ar-edit-guides {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+/* 青の編集UI（ガイド線＋点）を1枚にまとめる層。各要素は不透明にし、ここで一度だけ
+   不透明度を掛ける＝層内で重なっても合成は1回きりで色が濃くならない。出力には焼かない。 */
+.ar-edit-chrome {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 2; /* 名札本体より上＝引き出し線の起点ハンドルを掴めるように（点だけ pointer-events 有効） */
+}
+/* 引き出し線の起点ハンドル（白リングで山頂点と区別）。 */
+.ar-edit-anchor::before {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+}
+.ar-edit-dot {
+  position: absolute;
+  width: 30px; /* つかみやすいよう当たり判定は広め（見た目は中の青丸のみ） */
+  height: 30px;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto; /* 親（chrome）は none なので点だけ操作可に */
+}
+.ar-edit-dot::before {
+  content: "";
+  position: absolute;
+  inset: 11.5px; /* 解説ハンドルと同じ青ドット・小さめ。色は不透明、透過は親layerでまとめて掛ける */
+  border-radius: 50%;
+  background: rgb(214, 180, 106);
+}
+.ar-edit-dot:active {
+  cursor: grabbing;
+}
+/* 山名ラベル（背景なし・影付き。山名(大)＋ Mt.ローマ字｜標高(小)。下端中央が点へのリード線の起点）。 */
+.ar-edit-label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 山名・サブとも中央揃え */
+  text-align: center;
+  line-height: 1.12;
+  white-space: nowrap;
+  color: #fff;
+  /* 影は文字色の反対色（--label-sh）でアウトライン化。白文字→黒影 / 黒文字→白影。 */
+  text-shadow:
+    0 0 0.16cqmax var(--label-sh, rgba(0, 0, 0, 0.82)),
+    0 0.07cqmax 0.32cqmax var(--label-sh, rgba(0, 0, 0, 0.82));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.ar-edit-label:active {
+  cursor: grabbing;
+}
+/* ラベルの選択枠（解説と同じ青枠）。編集UIのみ・出力には焼き込まれない。 */
+.ar-edit-label::before {
+  content: "";
+  position: absolute;
+  /* 上下 0.8cqmax・左右 1.2cqmax で四辺を均等に余白。点は枠の辺上に置く。 */
+  inset: -0.8cqmax -1.2cqmax;
+  border: 0.2cqmax solid rgba(214, 180, 106, 0.6);
+  border-radius: 0.8cqmax;
+  pointer-events: none;
+}
+/* 背景パネル（なし/半透明/不透明）。選択枠と同じ範囲に文字の下へ敷く。出力にも焼き込む。 */
+.ar-edit-label.has-panel::after {
+  content: "";
+  position: absolute;
+  inset: -0.8cqmax -1.2cqmax;
+  background: var(--label-panel-bg);
+  border: 0.1cqmax solid var(--label-panel-bd, transparent);
+  border-radius: 1.1cqmax;
+  box-shadow: 0 0.5cqmax 1.4cqmax rgba(0, 0, 0, 0.28);
+  z-index: -1; /* 文字の下 */
+}
+.ar-label-name {
+  font-family: var(--label-name-ff, inherit);
+  font-size: calc(2.7cqmax * var(--label-name-fs, 1));
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.ar-label-sub {
+  margin-top: 0.15em;
+  font-family: var(--label-sub-ff, inherit);
+  font-size: calc(1.55cqmax * var(--label-sub-fs, 1));
+  font-weight: 500;
+  opacity: 0.92;
+}
+/* 解説ブロック（可動カード）。写真内をドラッグで配置でき、焼き込み結果のプレビューを兼ねる。 */
+.ar-caption {
+  position: absolute;
+  /* width は captionW（スライダー）で inline 指定 */
+  color: #fff;
+  /* 背景なし。影は文字色の反対色（--cap-sh）でアウトライン化＝白文字も黒文字も読める。 */
+  text-shadow:
+    0 0 0.18cqmax var(--cap-sh, rgba(0, 0, 0, 0.85)),
+    0 0.08cqmax 0.4cqmax var(--cap-sh, rgba(0, 0, 0, 0.85));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.ar-caption:active {
+  cursor: grabbing;
+}
+/* センタータイトル（ポスター風）。写真中央に大きな山名を据える独立要素。
+   中心アンカー（translate -50%,-50%）で配置し、3段を中央寄せで縦に積む。
+   文字サイズは写真長辺（cqmax）基準で、焼き込み（bakeComposite）と見た目を合わせる。 */
+.ar-title {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(0.3cqmax * var(--title-fs, 1));
+  font-family: var(--title-ff, inherit);
+  color: #fff;
+  text-shadow:
+    0 0 0.2cqmax var(--title-sh, rgba(0, 0, 0, 0.85)),
+    0 0.1cqmax 0.5cqmax var(--title-sh, rgba(0, 0, 0, 0.85));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.ar-title:active {
+  cursor: grabbing;
+}
+.ar-title-over {
+  font-size: calc(1.95cqmax * var(--title-fs, 1)); /* 大タイトルの約0.26倍 */
+  font-weight: 500;
+  letter-spacing: 0.35em;
+  margin-right: -0.35em; /* letter-spacing ぶんの右寄りを打ち消して中央に保つ */
+  margin-bottom: calc(0.9cqmax * var(--title-fs, 1));
+}
+.ar-title-main {
+  font-size: calc(7.5cqmax * var(--title-fs, 1)); /* 写真長辺の 7.5% × タイトル倍率 */
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-right: -0.04em;
+  line-height: 1.02;
+}
+.ar-title-num {
+  font-size: calc(2.25cqmax * var(--title-fs, 1)); /* 大タイトルの約0.30倍 */
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  margin-right: -0.3em;
+  margin-top: calc(0.7cqmax * var(--title-fs, 1));
+}
+/* 選択枠（編集UIのみ・出力には焼き込まれない）。 */
+.ar-title::before {
+  content: "";
+  position: absolute;
+  inset: -1.2cqmax -1.6cqmax;
+  border: 0.2cqmax solid rgba(214, 180, 106, 0.6);
+  border-radius: 1cqmax;
+  pointer-events: none;
+}
+/* 切り抜き調整モード: フル写真＋ドラッグ枠を被せる層。 */
+.ar-crop-edit {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+.ar-crop-edit .ar-edit-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* 切り抜き枠（残す範囲。外側を暗く・破線アウトライン）。 */
+.ar-crop-rect {
+  position: absolute;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  outline: 1px dashed rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+  z-index: 4;
+}
+/* 切り抜きハンドル（当たり判定は広め・見た目は中の四角）。 */
+.ar-crop-h {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 7;
+}
+.ar-crop-h::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  background: rgba(214, 180, 106, 0.95);
+  border: 2px solid #fff;
+  border-radius: 3px;
+}
+.ar-crop-h--tl { left: 0; top: 0; transform: translate(-50%, -50%); cursor: nwse-resize; }
+.ar-crop-h--tr { right: 0; top: 0; transform: translate(50%, -50%); cursor: nesw-resize; }
+.ar-crop-h--bl { left: 0; bottom: 0; transform: translate(-50%, 50%); cursor: nesw-resize; }
+.ar-crop-h--br { right: 0; bottom: 0; transform: translate(50%, 50%); cursor: nwse-resize; }
+.ar-crop-h--t { left: 50%; top: 0; transform: translate(-50%, -50%); cursor: ns-resize; }
+.ar-crop-h--b { left: 50%; bottom: 0; transform: translate(-50%, 50%); cursor: ns-resize; }
+.ar-crop-h--l { left: 0; top: 50%; transform: translate(-50%, -50%); cursor: ew-resize; }
+.ar-crop-h--r { right: 0; top: 50%; transform: translate(50%, -50%); cursor: ew-resize; }
+/* 背景パネル（なし/半透明/不透明）。本文の下に敷く。 */
+.ar-caption.has-panel {
+  isolation: isolate; /* ::before z-index:-1 を内部に閉じる */
+}
+.ar-caption.has-panel::before {
+  content: "";
+  position: absolute;
+  inset: -1.5cqmax -1.8cqmax;
+  background: var(--cap-panel-bg);
+  border: 0.1cqmax solid var(--cap-panel-bd, transparent);
+  border-radius: 1.6cqmax;
+  box-shadow: 0 0.6cqmax 1.8cqmax rgba(0, 0, 0, 0.3);
+  z-index: -1;
+}
+/* 「画像」モード中は注釈（名札・点・解説）を透過させ、写真のパン/ズームを優先。編集UIも隠す。 */
+.ar-edit-stage.is-image-mode .ar-edit-label,
+.ar-edit-stage.is-image-mode .ar-edit-dot,
+.ar-edit-stage.is-image-mode .ar-caption,
+.ar-edit-stage.is-image-mode .ar-title,
+.ar-edit-stage.is-image-mode .ar-stamp {
+  pointer-events: none;
+}
+.ar-edit-stage.is-image-mode .ar-cap-handle,
+.ar-edit-stage.is-image-mode .ar-caption::before,
+.ar-edit-stage.is-image-mode .ar-title::before,
+.ar-edit-stage.is-image-mode .ar-edit-label::before,
+.ar-edit-stage.is-image-mode .ar-stamp::before,
+.ar-edit-stage.is-image-mode .ar-edit-chrome,
+.ar-edit-stage.is-image-mode .ar-cap-divider::before {
+  display: none;
+}
+.ar-edit-stage.is-image-mode .ar-cap-divider {
+  background: transparent;
+}
+/* 選択枠（解説ブロックを囲む角丸の線）。編集UIのみ・出力には焼き込まれない。 */
+.ar-caption::before {
+  content: "";
+  position: absolute;
+  inset: -1cqmax;
+  border: 0.2cqmax solid rgba(214, 180, 106, 0.6);
+  border-radius: 1cqmax;
+  pointer-events: none;
+}
+/* 4辺のリサイズハンドル（枠線と同色の半透明ドット・小さめ）。 */
+.ar-cap-handle {
+  position: absolute;
+  width: 26px; /* 当たり判定は広め（見た目の青丸は ::before で小さく保つ） */
+  height: 26px;
+  background: transparent;
+  touch-action: none;
+  z-index: 3;
+}
+.ar-cap-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: clamp(7px, 1.5cqmax, 11px);
+  height: clamp(7px, 1.5cqmax, 11px);
+  background: rgba(214, 180, 106, 0.6);
+  border-radius: 50%;
+}
+.ar-cap-handle--l {
+  left: -1cqmax;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+}
+.ar-cap-handle--r {
+  right: -1cqmax;
+  top: 50%;
+  transform: translate(50%, -50%);
+  cursor: ew-resize;
+}
+.ar-cap-handle--t {
+  top: -1cqmax;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: ns-resize;
+}
+.ar-cap-handle--b {
+  bottom: -1cqmax;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  cursor: ns-resize;
+}
+.ar-cap-cols {
+  display: flex;
+  gap: 0;
+}
+/* 縦並び（日英を上下に積む）。段間は焼き込みの rowGap(≈本文0.9倍)に合わせる。 */
+.ar-cap-cols.is-vertical {
+  flex-direction: column;
+  row-gap: calc(1.4cqmax * var(--cap-body-fs, 1)); /* 本文どうしの段間（タグ周りと均等） */
+}
+.ar-cap-col {
+  flex: 1;
+  min-width: 0;
+}
+.ar-cap-cols.is-vertical .ar-cap-col {
+  flex: none;
+  width: 100%;
+}
+/* 日英の区切り線（ドラッグで分割比を変える）。中央に丸グリップ。 */
+.ar-cap-divider {
+  position: relative;
+  flex: 0 0 auto;
+  width: 0.3cqmax;
+  min-width: 1px;
+  margin: 0 1.7%; /* 焼き込みの colGap(≈3.5%) と一致 */
+  align-self: stretch;
+  background: rgba(214, 180, 106, 0.55);
+  border-radius: 1px;
+  cursor: ew-resize;
+  touch-action: none;
+  z-index: 2;
+}
+.ar-cap-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(7px, 1.5cqmax, 11px);
+  height: clamp(7px, 1.5cqmax, 11px);
+  background: rgba(214, 180, 106, 0.6);
+  border-radius: 50%;
+}
+/* 当たり判定を横に広げる（見た目は変えない）。 */
+.ar-cap-divider::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+}
+.ar-caption-title {
+  font-family: var(--cap-title-ff, inherit);
+  font-size: calc(2.6cqmax * var(--cap-title-fs, 1)); /* 写真長辺の 2.6% × タイトル倍率 */
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+}
+/* タグ（ピル）。山名と本文の間。焼き込み（本文0.82倍・角丸ピル）と見た目を合わせる。 */
+.ar-cap-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(0.6cqmax * var(--cap-body-fs, 1));
+  /* タイトル↔タグ↔本文 を均等に（焼き込みの capGap=本文0.7倍 と一致）。 */
+  margin: calc(1.4cqmax * var(--cap-body-fs, 1)) 0;
+}
+/* タグ直後の本文は上マージンを消す（タグの下マージンだけで均等に保つ）。 */
+.ar-cap-tags + .ar-caption-text {
+  margin-top: 0;
+}
+.ar-cap-tag {
+  font-family: var(--cap-body-ff, inherit);
+  font-size: calc(1.64cqmax * var(--cap-body-fs, 1));
+  line-height: 1;
+  padding: 0.34em 0.6em;
+  border-radius: 999px;
+  background: var(--cap-tag-bg, rgba(0, 0, 0, 0.4));
+  color: var(--cap-tag-fg, inherit);
+  text-shadow: none;
+  white-space: nowrap;
+}
+.ar-caption-title b {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: #ece3cf;
+}
+/* 共有見出し（まとめ表示）。上下は縦積み、左右は1行（ベースライン揃え＋スラッシュ区切り）。 */
+.ar-cap-shared {
+  margin-bottom: calc(2cqmax * var(--cap-body-fs, 1)); /* 見出しと本文の間（焼き込みの 本文1.0倍 と一致） */
+}
+/* タグが続くときは見出しの下マージンを消し、タグの上マージン(capGap)で均等に保つ。 */
+.ar-cap-shared.has-tags {
+  margin-bottom: 0;
+}
+.ar-cap-shared.is-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.32em;
+  flex-wrap: wrap;
+}
+/* まとめ表示の従（英語）見出しは小さめにしておしゃれに。上下=0.6 / 左右=0.8（--cap-sub-ratio）。 */
+.ar-caption-title.is-sub {
+  font-size: calc(2.6cqmax * var(--cap-title-fs, 1) * var(--cap-sub-ratio, 0.6));
+}
+/* 左右まとめのスラッシュ区切り（少し控えめ）。 */
+.ar-cap-sep {
+  opacity: 0.7;
+}
+.ar-caption-text {
+  margin: 0.35em 0 0;
+  font-family: var(--cap-body-ff, inherit);
+  font-size: calc(2cqmax * var(--cap-body-fs, 1));
+  line-height: 1.5;
+  color: inherit; /* 解説の色を本文にも適用 */
+}
+/* 文字サイズ選択行（ラベル左＋セグメント右） */
+.ar-fs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: #cdd6e2;
+}
+/* 色ピッカー（余白色・文字色）。任意色を選べる小さなスウォッチ。 */
+.ar-color-input {
+  inline-size: 44px;
+  block-size: 26px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+}
+.ar-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+.ar-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+.ar-color-input::-moz-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+/* 文字サイズスライダーの見出し行（ラベル左＋現在値%右） */
+.ar-fs-slider-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #cdd6e2;
+}
+.ar-fs-slider-row .ar-fs-val {
+  font-variant-numeric: tabular-nums;
+  color: #9fb0c4;
+}
+.ar-fs-slider {
+  width: 100%;
+  margin: 2px 0 2px; /* 上下のみ。左右0でUA既定マージンを消して枠内に収める */
+  accent-color: #d6b46a; /* 他のスライダーと同じ金に（既定の青を上書き） */
+}
+/* フォント選択（役割ごとに和文＋欧文セットを1つ選ぶ）。 */
+.ar-font-sel {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: rgba(40, 52, 68, 0.5);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 8px;
+}
+.ar-font-sel select {
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cdd6e2;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.ar-font-sel select option {
+  color: #1a2230;
+}
+/* 選択中フォントペアの説明（セレクト直下の小さな補足）。 */
+.ar-font-desc {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #8b9bb0;
+}
+/* 焼き込み設定の折りたたみセクション（山名ラベル / 解説）。既定は開く。 */
+.ar-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+  border-top: 1px solid rgba(130, 150, 175, 0.18);
+}
+.ar-sec:first-child {
+  border-top: none;
+}
+.ar-flat {
+  border-top: none;
+}
+/* 折りたたみ（山名・解説）。展開時の中身は .ar-sec-body の flex gap で行間を確実に出す
+   （details を直接 flex 化すると匿名コンテンツボックスに包まれて gap が行間に効かないため）。 */
+details.ar-sec {
+  gap: 8px;
+  padding: 7px 0;
+}
+.ar-sec-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ar-sec > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e3eaf3;
+  user-select: none;
+}
+.ar-sec > summary::-webkit-details-marker {
+  display: none;
+}
+.ar-sec > summary::before {
+  content: "▾ ";
+  font-size: 10px;
+  color: #9fb0c4;
+}
+.ar-sec:not([open]) > summary::before {
+  content: "▸ ";
+}
+/* 色ピッカー（ラベル/解説の文字色）。 */
+.ar-color {
+  width: 44px;
+  height: var(--btn-h);
+  padding: 2px;
+  background: rgba(40, 52, 68, 0.5);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ar-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+.ar-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+/* キャプションの焼き込み設定（トグル＋取り上げる山の切替チップ） */
+.ar-caption-ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0 6px;
+  border-top: 1px solid rgba(130, 150, 175, 0.16); /* 「操作」セクションと「設定」を区切る */
+}
+.ar-caption-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ar-cap-chip {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #cdd9e8;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ar-cap-chip.is-on {
+  color: #fff;
+  background: rgba(214, 180, 106, 0.55);
+  border-color: rgba(214, 180, 106, 0.7);
+}
+/* 山選択フェーズ: 決定バー内の選択数 */
+.ar-select-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #ece6d8;
+  white-space: nowrap;
+}
+
+/* 向き・画角フェーズ: コンパスダイヤル */
+.compass-dial {
+  align-self: center;
+  touch-action: none;
+  cursor: grab;
+}
+.compass-dial:active {
+  cursor: grabbing;
+}
+.compass-bg {
+  fill: rgba(20, 27, 38, 0.85);
+  stroke: rgba(130, 150, 175, 0.45);
+  stroke-width: 1.2;
+}
+.compass-wedge {
+  fill: rgba(214, 180, 106, 0.32);
+  stroke: rgba(214, 180, 106, 0.7);
+  stroke-width: 0.6;
+}
+.compass-needle {
+  stroke: #ffb74d;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.compass-needle-tip {
+  fill: #ffb74d;
+}
+.compass-center {
+  fill: #e6edf5;
+}
+.compass-label {
+  fill: #aebccf;
+  font-size: 8px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.compass-label--n {
+  fill: #ff8a6a;
+  font-weight: 700;
+}
+/* 向き・画角の読み値 */
+
+/* ライブAR ②: 方位センサ追従のON/OFFトグル */
+.ar-follow-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: var(--btn-h);
+  padding: 0 10px;
+  font-size: 12.5px;
+  white-space: nowrap;
+  color: #cdd6e2;
+  background: rgba(40, 52, 68, 0.6);
+  border: 1px solid rgba(130, 150, 175, 0.3);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.ar-follow-toggle.is-on {
+  color: #0b1118;
+  background: #d6b46a;
+  border-color: #d6b46a;
+}
+
+
+/* ===================== 山の図鑑 ===================== */
+/* 一覧・詳細ともホームと同じ背景の全画面スクロール（.home を併用）。 */
+.zukan-inner {
+  width: min(860px, 100%);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: var(--top-browse); /* 探す画面の上余白（中くらい）を共通化 */
+  padding-bottom: 0;
+}
+/* 末尾の下余白。.home は overflow付き flex コンテナで、子の padding-bottom は
+   スクロール時に詰められて効かない。実体のあるスペーサー(::after の flex item)なら
+   確実にスクロール領域に含まれるので、こちらで下余白を作る（+セーフエリア）。 */
+.zukan-inner::after {
+  content: "";
+  flex: none;
+  height: calc(70px + env(safe-area-inset-bottom, 0px));
+}
+/* 検索＋フィルタ＋ソートを1枚のパネルにまとめる（“フォームが並ぶ業務アプリ感”を消す）。 */
+/* 検索を主役に。外枠パネルはやめ、検索欄だけ枠で囲む（管理画面感を消す）。 */
+.zukan-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.zukan-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  color: var(--sub);
+}
+.zukan-search:focus-within {
+  border-color: rgba(214, 180, 106, 0.55);
+}
+.zukan-search input {
+  flex: 1;
+  height: 46px;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  outline: none;
+}
+/* 絞り込みは横並び（画面幅を活かし、操作エリアを圧縮して一覧に面積を回す）。
+   狭い画面では自然に折り返す。各 select は内容ぶんの幅で詰める。 */
+.zukan-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 一覧の主役は検索。絞り込みは補助なので、検索欄より一段小さく・控えめに。 */
+.zukan-filters select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  padding: 0 12px;
+  color: var(--text-sub);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.zukan-filters select:hover {
+  color: var(--text-main);
+  border-color: var(--border-strong);
+}
+.zukan-count {
+  margin: 2px 0 0; /* 絞り込み下に右寄せで控えめに */
+  font-size: 12px;
+  color: var(--sub);
+  text-align: right;
+}
+/* 共有リンクのコピー（右上・ホームボタンの左隣）。図鑑・地形・太陽月で共用。 */
+.share-btn {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top, 8px));
+  right: calc(max(8px, env(safe-area-inset-right, 8px)) + 50px); /* 42px(home) + 8px */
+  z-index: 23;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 15px;
+  font-size: 13px;
+  color: #ece6d8;
+  background: rgba(16, 16, 18, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.share-btn:hover {
+  border-color: rgba(214, 180, 106, 0.6);
+  background: rgba(28, 26, 22, 0.82);
+}
+@media (max-width: 480px) {
+  /* 狭い画面では文字を隠してアイコンだけに（はみ出し防止）。 */
+  .share-btn {
+    padding: 0;
+    width: 42px;
+    justify-content: center;
+    gap: 0;
+    font-size: 0;
+  }
+}
+/* カード一覧。横長カードを詰めて並べ、一覧で比較しやすく（“目次”感）。 */
+.zukan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px; /* 検索/絞り込み → 一覧 */
+}
+@media (max-width: 720px) {
+  .zukan-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* カードは“図鑑の目次”。左に山頂の斜め3Dサムネ、中央に山名・場所・タグ、右に標高＋矢印。 */
+.zukan-card {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.zukan-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(214, 180, 106, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+}
+/* 左のサムネ（固定幅・カード高にストレッチ）。未生成は暗い地形風プレースホルダのまま。 */
+.zukan-card-thumb {
+  position: relative;
+  flex: none;
+  width: 116px;
+  align-self: stretch;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(255, 255, 255, 0.05), transparent 60%),
+    #0c0d10;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+.zukan-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 有名順のときの順位バッジ（サムネ左上）。ゴールド地に黒数字でランキング感。 */
+.zukan-card-rank {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: #0c0d10;
+  background: rgba(214, 180, 106, 0.92);
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.zukan-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 14px;
+}
+.zukan-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 読み / 英名（詳細ページと同じ並び）。1行に収めて省略。 */
+.zukan-card-reading {
+  font-size: 12.5px;
+  color: rgba(242, 240, 234, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 英名は読みの下に独立した1行。小さめ・薄めで、長くて切れても雑に見えにくく。 */
+.zukan-card-en {
+  font-size: 11.5px;
+  color: rgba(242, 240, 234, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 場所＋タグを補助情報として控えめに横並び。 */
+.zukan-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.zukan-card-pref {
+  flex-basis: 100%; /* 県は1行使い切り、タグはその下の行に折り返す */
+  font-size: 12.5px;
+  color: rgba(242, 240, 234, 0.62);
+}
+/* 右端：標高（指標）＋進む矢印。数字だけ少し強調し、他は控えめに。 */
+.zukan-card-aside {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 14px 12px 6px;
+  color: rgba(242, 240, 234, 0.4);
+}
+.zukan-card-elev {
+  font-size: 12px;
+  color: rgba(242, 240, 234, 0.55);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.zukan-card-elev b {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(242, 240, 234, 0.9);
+}
+/* 「+N」はタグと同じ形のチップ（他タグより一段弱い）。 */
+.zukan-tag--more {
+  color: rgba(242, 240, 234, 0.55);
+  border-color: rgba(242, 240, 234, 0.18);
+  cursor: default;
+}
+/* タグ（ピル）。詳細はクリックで一覧の絞り込みに使える。他のピルと枠・地・角丸を統一。 */
+.zukan-tag {
+  padding: 5px 12px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.zukan-tag:hover {
+  color: #f1e6cb;
+  background: rgba(214, 180, 106, 0.2);
+  border-color: rgba(214, 180, 106, 0.5);
+}
+.zukan-tag--mini {
+  padding: 1px 8px;
+  font-size: 11px;
+  cursor: inherit;
+}
+.zukan-more {
+  align-self: center;
+  padding: 10px 24px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.zukan-more:hover {
+  background: var(--panel-2);
+  border-color: rgba(214, 180, 106, 0.45);
+}
+.zukan-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0;
+  color: var(--sub);
+  font-size: 13px;
+}
+/* ---- 詳細ページ ---- */
+/* ピル共通の見た目（戻る・基本情報・タグ・CTA で統一）。半透明・細枠・全角丸・13px。 */
+.zukan-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px 7px 11px;
+  color: var(--sub);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.zukan-back:hover {
+  color: var(--fg);
+  background: var(--panel-2);
+}
+/* 写真の代わりの3D周回ビュー（ヒーロー）。
+   アスペクト比は常に16:9固定。.zukan-inner は画面高さにストレッチされた flex 列なので、
+   flex:none を付けないと中身が増えた時にこのボックスだけ縮められてしまう。
+   縦に収まらない分はページ（.home の overflow:auto）がスクロールを受け持つ。 */
+/* 写真（の代わりの3D周回ビュー）は“主役の1枚”。少し堂々と、作品カードとして置く。 */
+.zukan-orbit {
+  position: relative;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: 6px; /* チップ → 写真 ≈ 24 */
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0a0a0b;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+.zukan-orbit-canvas {
+  position: absolute;
+  inset: 0;
+}
+.zukan-orbit canvas {
+  display: block;
+}
+/* 読み込み幕。最初の約2秒はタイル読込のカクつきを隠し、ふわっと開ける。 */
+.zukan-orbit-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--sub);
+  background:
+    radial-gradient(640px 360px at 50% 30%, rgba(214, 180, 106, 0.12), transparent 70%),
+    #0b0c0e;
+  opacity: 1;
+  transition: opacity 0.7s ease;
+}
+.zukan-orbit-loading.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+/* 詳細の縦リズム（.zukan-inner の gap:18px に margin を足して、
+   画像↓32 → 山名↓12 → ふりがな↓28 → チップ↓20 → タグ↓32 → 日本語↓24 → 英語 にする）。 */
+/* 画像と山名はセットで見せたい。詰めすぎず適度に（flex gap 18 + 10 ≈ 28px）。 */
+.zukan-detail-head {
+  margin-top: 10px; /* 画像 → 山名 ≈ 28 */
+}
+.zukan-detail-head h1 {
+  margin: 0;
+  font-size: clamp(34px, 7.5vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+/* 読み・英名は同じ役割の“補足情報1行”。英名は補足なのでさらにトーンを落とす。 */
+.zukan-detail-sub {
+  margin: 10px 0 0; /* 山名 → 補足行 */
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.58);
+}
+.zukan-sub-en {
+  opacity: 0.82; /* 英名は読み（かな）よりさらに控えめに */
+}
+.zukan-detail-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0; /* 読み → チップ = gap18 */
+}
+/* 展示ラベル風：薄い半透明・細枠・しっかり角丸・アイコン付き（“ボタン”に見せない）。 */
+.zukan-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  font-size: 13px;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+.zukan-fact svg {
+  color: #b79a62; /* JA/EN ラベルと同じテーマアクセント（金）でそろえる */
+}
+.zukan-fact b {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+/* 座標は補助情報。写真の直下に、小さく薄く Mono ＋アイコンで控えめに。 */
+.zukan-coords {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px 0 0; /* 写真 → 座標 ≈ 14 */
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.4);
+}
+.zukan-coords svg {
+  opacity: 0.7;
+}
+/* 「位置」のラベル。座標は Mono だが、和文ラベルは通常フォントで控えめに前置き。 */
+.zukan-coords-label {
+  font-family: system-ui, "Noto Sans JP", sans-serif;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.34);
+  margin-right: 2px;
+}
+.zukan-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -4px; /* 座標 → タグ ≈ 14 */
+}
+/* シミュレーションへの導線（地形のみ / 太陽・月あり）。読み物のトーンを壊さないよう静かに。 */
+.zukan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px; /* 本文 → アクション（gap18と合わせて余白を確保） */
+}
+.zukan-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  font-size: 13px;
+  color: #ece6d8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.zukan-action:hover {
+  color: #f1e6cb;
+  background: rgba(214, 180, 106, 0.16);
+  border-color: rgba(214, 180, 106, 0.55);
+}
+/* 解説のかたまり（日本語→EN→英語）。flex gap に左右されず、内部の余白を精密に制御する。 */
+.zukan-desc-block {
+  margin-top: 6px; /* タグ → 本文（gap18と合わせて約24） */
+  max-width: 42em; /* 1行を少し抑えて読みやすく・上品に */
+}
+/* 本文は山名より一段控えめに（主従をつける）。 */
+.zukan-desc {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.95;
+  letter-spacing: 0.02em;
+  color: rgba(245, 242, 234, 0.9);
+}
+/* 言語ラベル（JA / EN）。落ち着いた金で、下に短い線を引いて“解説節”に。 */
+.zukan-section-label {
+  margin: 30px 0 12px; /* 前の本文 → ラベル / ラベル → 本文 */
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #b79a62;
+}
+.zukan-section-label::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 1px;
+  margin-top: 7px;
+  background: rgba(183, 154, 98, 0.5);
+}
+.zukan-section-label:first-child {
+  margin-top: 0; /* ブロック先頭(JA)はブロック側マージンに任せる */
+}
+/* 英語解説。淡いトーンで「同じ本文の続き」として読ませる。 */
+.zukan-desc--en {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(231, 226, 214, 0.66);
+}
+.zukan-src {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sub);
+  word-break: break-all;
+}
+.zukan-src a {
+  color: var(--accent);
+}
+
+/* ===================== ホーム（ランディング）：おしゃれ寄せ ===================== */
+/* 黒地＋くすんだ金1色アクセント。設定・図鑑(.home)には影響させず .home--landing 限定。 */
+.home--landing {
+  background:
+    radial-gradient(1100px 620px at 50% -6%, rgba(214, 180, 106, 0.08), transparent 70%),
+    #0b0c0e;
+  color: #f3f0e9;
+}
+.home--landing .home-inner {
+  width: min(760px, 100%);
+  gap: clamp(40px, 9vh, 84px);
+  padding: clamp(56px, 13vh, 132px) 0 calc(72px + env(safe-area-inset-bottom, 0px));
+}
+/* ヒーロー：マーク → 巨大タイトル → トラッキングしたタグライン → 小さな説明 */
+.home-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+.home-mark {
+  display: block;
+  margin-bottom: 2px;
+}
+.home-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(64px, 16vw, 132px);
+  font-weight: 600;
+  line-height: 0.85;
+  letter-spacing: -0.04em; /* Space Grotesk を詰めて“作品ロゴ”っぽく */
+  color: #f5f2ea;
+}
+/* タグラインは Mono のキッカー（映像・解析ツールっぽい精密さ） */
+.home-tagline {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 2.2vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #d6b46a;
+  padding-left: 0.34em; /* レタースペーシングの右余りを相殺して中央に見せる */
+}
+.home-lead {
+  margin: 8px 0 0;
+  max-width: 28em;
+  font-size: 14px;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  color: #9c9a94;
+}
+/* カード：半透明・細い枠・影なし・大きめ角丸（SaaSテンプレ感を抑える） */
+.home--landing .home-cards {
+  gap: 14px;
+}
+.home--landing .home-card {
+  gap: 16px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: none;
+  color: #f3f0e9;
+}
+.home--landing .home-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(214, 180, 106, 0.5);
+}
+.home--landing .home-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: #d6b46a;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.home--landing .home-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em; /* モード名（和文）は整然と。やや字間を締める */
+  color: #f5f2ea;
+}
+.home--landing .home-card-desc {
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #8f8d86;
+}
+
+/* 数値・座標・%・ステップ番号など「データ」系は Mono で映像・解析ツール感を出す。 */
+.zukan-card-elev,
+.zukan-fact b,
+.ar-fs-val,
+.slider-label b,
+.stage-zoom-val,
+.peak-clear b,
+.ar-stamp-elev,
+.ar-stamp-coord {
+  font-family: var(--font-mono);
+}
+
+/* 3Dミニマップ・スタンプ（写真ARの仕上げで写真の隅に重ねるカード）。PR#33: ミニマップ機能 */
+.ar-stamp {
+  position: absolute;
+  width: 30cqmin;
+  background: rgba(8, 12, 17, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.2cqmin;
+  padding: 1.2cqmin;
+  box-shadow: 0 1cqmin 2.4cqmin rgba(0, 0, 0, 0.32);
+  /* ラベル/解説と同じく写真内をドラッグで配置できる。 */
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  color: #f5f3ec;
+  z-index: 5;
+  box-sizing: border-box;
+}
+.ar-stamp:active {
+  cursor: grabbing;
+}
+/* スタンプの選択枠（ラベル/解説と同じ金枠）。編集UIのみ・出力には焼き込まれない。 */
+.ar-stamp::before {
+  content: "";
+  position: absolute;
+  inset: -0.6cqmin;
+  border: 0.25cqmin solid rgba(214, 180, 106, 0.7);
+  border-radius: 1.7cqmin;
+  pointer-events: none;
+}
+.ar-stamp--br { right: 3cqmin; bottom: 3cqmin; }
+.ar-stamp--bl { left: 3cqmin; bottom: 3cqmin; }
+.ar-stamp--tr { right: 3cqmin; top: 3cqmin; }
+.ar-stamp--tl { left: 3cqmin; top: 3cqmin; }
+.ar-stamp-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.6cqmin;
+}
+/* 情報ブロック。フォントは既存ラベル（2.7cqmax 基準）と桁を合わせ、
+   30cqmin 幅のカード内で読める大きさを確保する。 */
+.ar-stamp-info {
+  margin-top: 0.3cqmin;
+  line-height: 1.22;
+}
+.ar-stamp-name {
+  font-weight: 700;
+  font-size: 2.4cqmin;
+  letter-spacing: 0.01em;
+}
+.ar-stamp-meta {
+  margin-top: 0.4cqmin;
+  font-size: 1.95cqmin;
+  color: var(--stamp-accent, #d6b46a);
+}
+.ar-stamp-coord {
+  margin-top: 0.3cqmin;
+  font-size: 1.55cqmin;
+  color: rgba(245, 243, 236, 0.6);
+}
+
+/* =========================================================================
+   入口画面（Picker）— 山名を選び、写真をのせる。frame 専用。
+   ========================================================================= */
+.pick-screen {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--text-main);
+  -webkit-overflow-scrolling: touch;
+}
+.pick-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--top-entry) 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.pick-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.pick-head-ico {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.pick-head h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.02em;
+}
+.pick-head p {
+  margin: 0;
+  color: var(--text-sub);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pick-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pick-search-ico {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.pick-search input {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px 0 40px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--surface-solid);
+  color: var(--text-main);
+  font-size: 15px;
+  font-family: var(--font-body);
+  outline: none;
+}
+.pick-search input:focus {
+  border-color: var(--border-strong);
+}
+.pick-results {
+  list-style: none;
+  margin: -6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pick-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+}
+.pick-result:hover {
+  border-color: var(--border-strong);
+}
+.pick-result:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.pick-result-ico {
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+.pick-result-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.pick-result-meta {
+  color: var(--text-sub);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.pick-result-add {
+  margin-left: auto;
+  color: var(--text-sub);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+.pick-selected {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-soft);
+  padding: 14px;
+}
+.pick-selected-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.pick-selected-head > span:first-child {
+  font-size: 13px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+}
+.pick-selected-count {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+.pick-selected-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pick-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-solid);
+}
+.pick-chip-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+.pick-chip-elev {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-sub);
+}
+.pick-chip-x {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-sub);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.pick-chip-x:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text-main);
+}
+.pick-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.pick-pick-btn {
+  width: 100%;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-control);
+  border: none;
+  background: var(--accent);
+  color: #1a1408;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pick-pick-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pick-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* =========================================================================
+   Studio（仕上げ）レイアウト — frame 専用。
+   trace ではステージ寸法を 3D レンダーループが命令的に設定していたが、
+   frame は 3D を持たないので CSS でステージとパネルを並べる。
+   ========================================================================= */
+.studio {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+}
+/* .ar-edit(絶対配置)を flex コンテナに上書き。広い画面=左右、狭い画面=上下。 */
+.studio-edit {
+  display: flex;
+  flex-direction: row;
+}
+/* .ar-edit-stage(絶対配置・無寸法)を flex 子に上書きして実寸を持たせる。 */
+.studio-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  padding: 12px;
+}
+.studio-panel {
+  flex: 0 0 340px;
+  width: 340px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface-solid);
+  border-left: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+.studio-panel.is-closed {
+  flex-basis: auto;
+  height: auto;
+}
+.studio-panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-solid);
+  border-bottom: 1px solid var(--border);
+}
+.studio-panel-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+.studio-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-main);
+  cursor: pointer;
+}
+.studio-icon-btn:hover {
+  border-color: var(--border-strong);
+}
+.studio-panel-body {
+  padding: 12px 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.studio-sec {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.studio-sec:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.studio-sec h3 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--text-sub);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.studio-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.studio-tag {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-sub);
+  font-size: 12px;
+  cursor: pointer;
+}
+.studio-tag.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.studio-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.studio-actions .ar-btn-main {
+  flex: 1;
+}
+
+/* 狭い画面: ステージを上、パネルを下に積む。 */
+@media (max-width: 720px) {
+  .studio-edit {
+    flex-direction: column;
+  }
+  .studio-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: 48vh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  .studio-panel.is-closed {
+    max-height: none;
+  }
+}
