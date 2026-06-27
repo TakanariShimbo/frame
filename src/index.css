@@ -3820,3 +3820,12 @@ details.ar-sec {
     max-height: none;
   }
 }
+
+/* 書き出しプレビューの保存ヒント（iOSの長押し保存フォールバック案内）。 */
+.studio-save-hint {
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}

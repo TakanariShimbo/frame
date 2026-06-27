@@ -468,6 +468,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
 
   // --- 書き出し --- //
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
   const [styleDump, setStyleDump] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
@@ -717,7 +718,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   }, [exportView]);
 
   // ============================ 焼き込み（Canvas 2D） ============================ //
-  const bakeComposite = async (): Promise<string | null> => {
+  const bakeComposite = async (): Promise<{ url: string; blob: Blob | null } | null> => {
     const img = new Image();
     img.src = photoUrl;
     await img.decode();
@@ -733,11 +734,17 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     const pfx = (pu: number) => mL + ((pu - cropInset.l) / fCwF) * cwR;
     const pfy = (pv: number) => mT + ((pv - cropInset.t) / fChF) * chR;
     const L = Math.max(OW, OH);
+    // iOS(WebKit)は Canvas の最大ピクセル面積に上限があり、高解像度写真＋大きな余白で
+    // 上限を超えると書き出しが真っ白になる。出力長辺を OUT_CAP に収めるよう自動縮小する。
+    const OUT_CAP = 4096;
+    const outScale = Math.min(1, OUT_CAP / Math.max(OW, OH));
     const canvas = document.createElement("canvas");
-    canvas.width = OW;
-    canvas.height = OH;
+    canvas.width = Math.max(1, Math.round(OW * outScale));
+    canvas.height = Math.max(1, Math.round(OH * outScale));
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
+    // 以降の描画は論理座標(OW×OH)のまま行い、物理キャンバスへ一括縮小して載せる。
+    ctx.scale(outScale, outScale);
     if (mT || mB || mL || mR) {
       ctx.fillStyle = frameMarginColor;
       ctx.fillRect(0, 0, OW, OH);
@@ -1123,7 +1130,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
         ctx.restore();
       }
     }
-    return canvas.toDataURL("image/jpeg", 0.92);
+    const url = canvas.toDataURL("image/jpeg", 0.92);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
+    return { url, blob };
   };
 
   // テンプレートの値束を各 state に一括反映し、編集画面へ。
@@ -1191,16 +1200,33 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const openExportPreview = async () => {
     if (previewBaking) return;
     setPreviewBaking(true);
-    const url = await bakeComposite();
+    const r = await bakeComposite();
     setPreviewBaking(false);
-    if (url) setPreviewUrl(url);
+    if (r) {
+      setPreviewUrl(r.url);
+      setPreviewBlob(r.blob);
+    }
   };
-  const saveExportImage = () => {
-    if (!previewUrl) return;
+  // 保存。iOS(WebKit)は <a download> が効かないことが多いので、まず Web Share API
+  // （「"写真"に保存」/共有が出せる）を試し、未対応環境では従来のダウンロードへフォールバック。
+  const saveExportImage = async () => {
+    const file = previewBlob ? new File([previewBlob], "frame.jpg", { type: "image/jpeg" }) : null;
+    if (file && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: "frame" });
+        return;
+      } catch (e) {
+        if ((e as Error)?.name === "AbortError") return; // ユーザーがキャンセル
+        // それ以外（共有失敗）はダウンロードへフォールバック
+      }
+    }
+    const href = previewBlob ? URL.createObjectURL(previewBlob) : previewUrl;
+    if (!href) return;
     const a = document.createElement("a");
-    a.href = previewUrl;
+    a.href = href;
     a.download = "frame.jpg";
     a.click();
+    if (previewBlob) window.setTimeout(() => URL.revokeObjectURL(href), 1000);
   };
 
   // ============================ ドラッグ（編集） ============================ //
@@ -1427,11 +1453,12 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
             <div className="ar-preview-body">
               <img src={previewUrl} alt="書き出しプレビュー" />
             </div>
+            <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
             <div className="ar-preview-actions">
               <button className="ar-btn-sub" onClick={() => setPreviewUrl(null)}>もどる</button>
               <button className="ar-btn-main" onClick={saveExportImage}>
                 <IconDownload size={15} />
-                ダウンロード
+                保存
               </button>
             </div>
           </div>
