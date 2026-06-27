@@ -1468,7 +1468,22 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
       {/* 編集 */}
       {exportView === "edit" && (
         <div className="ar-edit studio-edit">
-          <div className="ar-edit-stage studio-stage" ref={arEditStageRef}>
+          <div
+            className="ar-edit-stage studio-stage"
+            ref={arEditStageRef}
+            style={
+              {
+                "--label-name-fs": labelNameScale, // ラベル1段目（山名）のサイズ倍率
+                "--label-sub-fs": labelSubScale, // ラベル2段目（補足）のサイズ倍率
+                "--cap-title-fs": captionTitleScale, // 解説見出しのサイズ倍率
+                "--cap-body-fs": captionBodyScale, // 解説本文のサイズ倍率
+                "--label-name-ff": roleFontStack(roleFonts.labelName), // 山名フォント
+                "--label-sub-ff": roleFontStack(roleFonts.labelSub), // 補足フォント
+                "--cap-title-ff": roleFontStack(roleFonts.captionTitle), // 見出しフォント
+                "--cap-body-ff": roleFontStack(roleFonts.captionBody), // 本文フォント
+              } as React.CSSProperties
+            }
+          >
             <div
               className="ar-frame"
               ref={arFrameRef}
