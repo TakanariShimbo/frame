@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { IconDownload, IconCaret, IconHome, IconMountain, IconInfo } from "./icons";
+import { IconDownload, IconCaret, IconHome } from "./icons";
 import type { ArLabel } from "../lib/labels";
 
 // ============================================================================
@@ -472,6 +472,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [previewBaking, setPreviewBaking] = useState(false);
   const [styleDump, setStyleDump] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  // 操作パネルのタブ（縦一列の設定を4分類に整理）。
+  const [panelTab, setPanelTab] = useState<"label" | "caption" | "title" | "frame">("label");
 
   // --- 計測・ドラッグ --- //
   const [photoNat, setPhotoNat] = useState<{ w: number; h: number } | null>(null);
@@ -1365,6 +1367,24 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
 
   // ============================ 描画 ============================ //
   const capItemTags = capItem?.tagsJa ?? [];
+  // タブの点灯ドット用: フレーム加工（余白/切り抜き/ふち）が効いているか。
+  const frameActive =
+    fAnyMargin || frameFade > 0 || cropInset.l > 0 || cropInset.t > 0 || cropInset.r > 0 || cropInset.b > 0;
+  const activeTemplate = EXPORT_TEMPLATES.find((t) => t.id === activeTemplateId) ?? null;
+  // 「取り上げる山」セレクト（解説・タイトルの両タブ先頭に出す）。
+  const subjectRow =
+    arLabels.length > 1 ? (
+      <div className="ar-fs-row">
+        <span>取り上げる山</span>
+        <div className="ar-font-sel">
+          <select value={captionIdx} onChange={(e) => setCaptionIdx(Number(e.target.value))} aria-label="取り上げる山">
+            {arLabels.map((l, i) => (
+              <option key={i} value={i}>{l.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="studio">
@@ -1372,8 +1392,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
       {exportView === "template" && (
         <div className="ar-tpl">
           <div className="ar-tpl-inner">
-            <header className="home-head ar-tpl-head">
-              <h1>テンプレートを選ぶ</h1>
+            <header className="ar-tpl-head">
+              <p className="kicker">Template</p>
+              <h1>仕上がりを選ぶ</h1>
               <p>雰囲気を選ぶと、文字・解説・余白をまとめて整えます。あとから細かく調整できます。</p>
             </header>
             <div className="ar-tpl-grid">
@@ -1396,11 +1417,11 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     {activeTemplateId === t.id && <span className="ar-tpl-check" aria-hidden="true">✓</span>}
                   </span>
                   <span className="ar-tpl-card-body">
-                    <span className="ar-tpl-card-head">
-                      <span className="ar-tpl-card-name">{t.name}</span>
+                    <span className="ar-tpl-card-kanji" aria-hidden="true">{t.name}</span>
+                    <span className="ar-tpl-card-text">
                       <span className="ar-tpl-card-sub">{t.sub}</span>
+                      <span className="ar-tpl-card-hint">{t.hint}</span>
                     </span>
-                    <span className="ar-tpl-card-hint">{t.hint}</span>
                   </span>
                 </button>
               ))}
@@ -1409,10 +1430,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                 className="ar-tpl-card ar-tpl-card--custom"
                 onClick={() => setExportView("edit")}
               >
-                <span className="ar-tpl-thumb ar-tpl-thumb--custom">自分で</span>
+                <span className="ar-tpl-thumb ar-tpl-thumb--custom">テンプレートなし</span>
                 <span className="ar-tpl-card-body">
-                  <span className="ar-tpl-card-name">自分で設定</span>
-                  <span className="ar-tpl-card-hint">テンプレートを使わず、最初から自分で仕上げる。</span>
+                  <span className="ar-tpl-card-kanji" aria-hidden="true">素</span>
+                  <span className="ar-tpl-card-text">
+                    <span className="ar-tpl-card-sub">自分で設定</span>
+                    <span className="ar-tpl-card-hint">テンプレートを使わず、最初から自分で仕上げる。</span>
+                  </span>
                 </span>
               </button>
             </div>
@@ -1447,7 +1471,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
         <div className="ar-preview" onClick={() => setPreviewUrl(null)}>
           <div className="ar-preview-card" onClick={(e) => e.stopPropagation()}>
             <div className="ar-preview-head">
-              <span>書き出しプレビュー</span>
+              <span>できあがり</span>
               <span className="ar-preview-note">この内容で保存します。よければダウンロードしてください。</span>
             </div>
             <div className="ar-preview-body">
@@ -1723,6 +1747,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                 );
               })()}
             </div>
+            <p className="studio-stage-hint">文字は写真の上でドラッグして動かせます</p>
           </div>
 
           {/* 操作パネル */}
@@ -1731,33 +1756,44 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
               <button className="studio-icon-btn" onClick={() => setExportView("template")} title="テンプレ選択へ戻る">
                 <IconHome size={16} />
               </button>
-              <span className="studio-panel-title">仕上げ</span>
+              <span className="studio-panel-title">
+                仕上げ
+                {activeTemplate && (
+                  <span className="studio-panel-tpl" title={activeTemplate.sub}>{activeTemplate.name}</span>
+                )}
+              </span>
               <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
                 <IconCaret dir={panelOpen ? "down" : "up"} size={16} />
               </button>
             </div>
             {panelOpen && (
+              <>
+              <div className="studio-tabs" role="tablist" aria-label="仕上げの設定">
+                {(
+                  [
+                    ["label", "山名", bakeLabels],
+                    ["caption", "解説", captionLang !== "none"],
+                    ["title", "タイトル", titleOn],
+                    ["frame", "フレーム", frameActive],
+                  ] as ["label" | "caption" | "title" | "frame", string, boolean][]
+                ).map(([id, label, on]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={panelTab === id}
+                    className={`studio-tab${panelTab === id ? " is-active" : ""}`}
+                    onClick={() => setPanelTab(id)}
+                  >
+                    {label}
+                    <span className={`studio-tab-dot${on ? " is-on" : ""}`} aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
               <div className="studio-panel-body">
-                {/* 取り上げる山 */}
-                {arLabels.length > 1 && (
-                  <section className="studio-sec">
-                    <h3>取り上げる山</h3>
-                    <div className="ar-fs-row">
-                      <span>解説・タイトル対象</span>
-                      <div className="ar-font-sel">
-                        <select value={captionIdx} onChange={(e) => setCaptionIdx(Number(e.target.value))} aria-label="取り上げる山">
-                          {arLabels.map((l, i) => (
-                            <option key={i} value={i}>{l.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
                 {/* 山名 */}
+                {panelTab === "label" && (
                 <section className="studio-sec">
-                  <h3><IconMountain size={13} /> 山名</h3>
                   <label className="switch-row">
                     <span>写真に山名を入れる</span>
                     <input type="checkbox" className="switch" checked={bakeLabels} onChange={(e) => setBakeLabels(e.target.checked)} />
@@ -1812,10 +1848,12 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     </>
                   )}
                 </section>
+                )}
 
                 {/* 解説 */}
+                {panelTab === "caption" && (
                 <section className="studio-sec">
-                  <h3><IconInfo size={13} /> 解説</h3>
+                  {subjectRow}
                   <div className="ar-fs-row">
                     <span>言語</span>
                     <div className="seg" role="group" aria-label="解説の言語">
@@ -1924,10 +1962,12 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     </>
                   )}
                 </section>
+                )}
 
                 {/* センタータイトル */}
+                {panelTab === "title" && (
                 <section className="studio-sec">
-                  <h3>タイトル</h3>
+                  {subjectRow}
                   <label className="switch-row">
                     <span>中央に大きな山名</span>
                     <input type="checkbox" className="switch" checked={titleOn} onChange={(e) => setTitleOn(e.target.checked)} />
@@ -1976,10 +2016,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     </>
                   )}
                 </section>
+                )}
 
                 {/* 余白・切り抜き */}
+                {panelTab === "frame" && (
+                <>
                 <section className="studio-sec">
-                  <h3>余白・切り抜き</h3>
+                  <h3>余白・ふち</h3>
                   {(["t", "b", "l", "r"] as const).map((d) => (
                     <div key={`m${d}`}>
                       <div className="ar-fs-slider-row">
@@ -2002,6 +2045,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     <span className="ar-fs-val">{Math.round(frameFade * 100)}%</span>
                   </div>
                   <input type="range" className="ar-fs-slider" min={0} max={0.5} step={0.01} value={frameFade} onChange={(e) => setFrameFade(Number(e.target.value))} aria-label="ふち" />
+                </section>
+                <section className="studio-sec">
+                  <h3>切り抜き</h3>
                   {(["l", "t", "r", "b"] as const).map((d) => (
                     <div key={`c${d}`}>
                       <div className="ar-fs-slider-row">
@@ -2012,17 +2058,22 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     </div>
                   ))}
                 </section>
-
-                {/* 書き出し */}
-                <div className="studio-actions">
-                  <button className="ar-btn-sub" onClick={dumpCurrentStyle}>設定を出力</button>
-                  <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
-                    <IconDownload size={15} />
-                    {previewBaking ? "生成中…" : "書き出す"}
-                  </button>
-                </div>
+                </>
+                )}
               </div>
+              </>
             )}
+
+            {/* 書き出し（常時表示の下部バー） */}
+            <div className="studio-panel-foot">
+              <button className="ar-btn-sub" onClick={dumpCurrentStyle} title="現在の仕上げ設定をJSONでコピー">
+                設定を出力
+              </button>
+              <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
+                <IconDownload size={15} />
+                {previewBaking ? "生成中…" : "書き出す"}
+              </button>
+            </div>
           </div>
         </div>
       )}
