@@ -264,8 +264,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "miyabi",
     name: "雅",
-    sub: "定番・山名入り",
-    hint: "明朝の山名で上品に。名前・英語名・標高を添える定番。",
+    sub: "山名を美しく",
+    hint: "明朝体の山名に英語名と標高を添える、まず選びたい王道の仕上がり。どんな写真にもなじむ。",
     style: {
       ...BASE_STYLE,
       labelMode: "jaSubEnElev",
@@ -277,8 +277,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "chou",
     name: "頂",
-    sub: "センタータイトル",
-    hint: "写真中央に大きな山名を据えるポスター風。小見出し・標高を添える。",
+    sub: "一座を主役に",
+    hint: "写真の真ん中に山名を大きく据えるポスター風。主役の一座を印象的に見せたいときに。",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -297,8 +297,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "katari",
     name: "語",
-    sub: "解説つき",
-    hint: "選んだ山の解説を添える読み物風。日英併記が基本で、日本語のみ・英語のみにも変えられる。",
+    sub: "山の物語を添えて",
+    hint: "山の解説を日英併記で添える読み物風。言語は日本語のみ・英語のみにも切り替えられる。",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -319,8 +319,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "ma",
     name: "間",
-    sub: "余白を活かす",
-    hint: "左に余白をとり、写真を細く切り出した縦組みの作品。",
+    sub: "余白と縦書きで",
+    hint: "大きな余白に縦書きの解説を組み、写真を掛け軸のように細く見せる。静けさを楽しむ作品風。",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -350,8 +350,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "sora",
     name: "空",
-    sub: "縦構図・余白",
-    hint: "上に空色の大きな余白をとり、写真へやわらかく溶かす。",
+    sub: "空へひらく",
+    hint: "上に空色の余白を広げ、写真の稜線へやわらかく溶かし込む縦構図。空の広さが主役になる。",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,

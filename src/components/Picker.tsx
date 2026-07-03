@@ -11,11 +11,11 @@ type Props = {
 // 作例（テンプレ5種の完成例）。id は public/template-previews/{id}.jpg と Studio のテンプレに対応。
 // テンプレの選択は写真追加後の仕上げ画面で行う。ここではあくまで「仕上がりのイメージ」。
 const SHOWCASE: { id: string; name: string; sub: string }[] = [
-  { id: "miyabi", name: "雅", sub: "定番・山名入り" },
-  { id: "chou", name: "頂", sub: "センタータイトル" },
-  { id: "katari", name: "語", sub: "解説つき" },
-  { id: "ma", name: "間", sub: "余白を活かす" },
-  { id: "sora", name: "空", sub: "縦構図・余白" },
+  { id: "miyabi", name: "雅", sub: "山名を美しく" },
+  { id: "chou", name: "頂", sub: "一座を主役に" },
+  { id: "katari", name: "語", sub: "山の物語を添えて" },
+  { id: "ma", name: "間", sub: "余白と縦書きで" },
+  { id: "sora", name: "空", sub: "空へひらく" },
 ];
 
 // 入口画面: まず写真を追加し、そのあと山名を辞書から選ぶ（複数可）。
