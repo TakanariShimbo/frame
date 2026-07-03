@@ -117,8 +117,10 @@ const contrastShadow = (textColor: string, dark = 0.82): string =>
 const tagBg = (textColor: string): string =>
   isDarkColor(textColor) ? "rgba(255,255,255,0.62)" : "rgba(0,0,0,0.4)";
 
-// 文字背景パネル。「あり(solid)」は選んだ色でベタ塗り（旧: 半透明固定は廃止）。
+// 文字背景パネル。「あり(solid)」は選んだ色＋濃さ(不透明度)で塗る。デフォルトは50%の半透明。
 type BgPanel = "none" | "solid";
+const DEFAULT_PANEL_OPACITY = 0.5;
+const panelRgba = (hex: string, opacity: number): string => `rgba(${hexToRgb(hex)},${opacity})`;
 
 // ふち（フェード）の S字イージング停止点。t=0(縁,不透明)→t=1(内側,透明)。
 const FADE_STOPS = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map((t) => ({
@@ -163,6 +165,7 @@ type ExportStyle = {
   labelMode: LabelMode;
   labelBg: BgPanel;
   labelPanelColor: string;
+  labelPanelOpacity: number;
   labelColor: string;
   labelShadow: boolean;
   labelLineOn: boolean;
@@ -175,6 +178,7 @@ type ExportStyle = {
   captionLength: "long" | "short";
   captionBg: BgPanel;
   captionPanelColor: string;
+  captionPanelOpacity: number;
   captionColor: string;
   captionShadow: boolean;
   captionTitleScale: number;
@@ -213,6 +217,7 @@ const BASE_STYLE: ExportStyle = {
   labelMode: "jaSubElev",
   labelBg: "none",
   labelPanelColor: "#1f2633",
+  labelPanelOpacity: DEFAULT_PANEL_OPACITY,
   labelColor: "#ffffff",
   labelShadow: true,
   labelLineOn: true,
@@ -225,6 +230,7 @@ const BASE_STYLE: ExportStyle = {
   captionLength: "short",
   captionBg: "none",
   captionPanelColor: "#1f2633",
+  captionPanelOpacity: DEFAULT_PANEL_OPACITY,
   captionColor: "#ffffff",
   captionShadow: true,
   captionTitleScale: 1,
@@ -301,7 +307,6 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
       labelSubScale: 0.85,
       captionLang: "en",
       captionLength: "long",
-      captionBg: "solid",
       captionTitleScale: 1.4,
       captionBodyScale: 0.85,
       captionPos: { u: 0.051, v: 0.704 },
@@ -445,6 +450,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [labelShadow, setLabelShadow] = useState(true);
   const [labelBg, setLabelBg] = useState<BgPanel>("none");
   const [labelPanelColor, setLabelPanelColor] = useState("#1f2633");
+  const [labelPanelOpacity, setLabelPanelOpacity] = useState(DEFAULT_PANEL_OPACITY);
   const [labelLineOn, setLabelLineOn] = useState(true);
   const [labelLineColor, setLabelLineColor] = useState("#ffffff");
   const [labelNameScale, setLabelNameScale] = useState(1);
@@ -458,6 +464,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [captionLength, setCaptionLength] = useState<"long" | "short">("long");
   const [captionBg, setCaptionBg] = useState<BgPanel>("none");
   const [captionPanelColor, setCaptionPanelColor] = useState("#1f2633");
+  const [captionPanelOpacity, setCaptionPanelOpacity] = useState(DEFAULT_PANEL_OPACITY);
   const [captionColor, setCaptionColor] = useState("#ffffff");
   const [captionShadow, setCaptionShadow] = useState(true);
   const [captionTitleScale, setCaptionTitleScale] = useState(1);
@@ -866,7 +873,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
           ctx.globalAlpha = 1;
         }
         if (labelBg !== "none") {
-          drawPanel(cx - boxW / 2 - padH, boxTop - padV, boxW + padH * 2, boxBottom - boxTop + padV * 2, Math.round(L * 0.011), labelPanelColor);
+          drawPanel(cx - boxW / 2 - padH, boxTop - padV, boxW + padH * 2, boxBottom - boxTop + padV * 2, Math.round(L * 0.011), panelRgba(labelPanelColor, labelPanelOpacity));
         }
         ctx.save();
         if (labelShadow) {
@@ -1032,7 +1039,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
         const by = Math.min(Math.max(0, Math.round(pfy(captionPos.v))), Math.max(0, OH - blockH));
         if (captionBg !== "none") {
           const px = Math.round(L * 0.018), py = Math.round(L * 0.015);
-          drawPanel(bx - px, by - py, blockW + px * 2, bodyBlockH + py * 2, Math.round(L * 0.016), captionPanelColor);
+          drawPanel(bx - px, by - py, blockW + px * 2, bodyBlockH + py * 2, Math.round(L * 0.016), panelRgba(captionPanelColor, captionPanelOpacity));
         }
         ctx.save();
         if (captionShadow) {
@@ -1177,6 +1184,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setLabelMode(s.labelMode);
     setLabelBg(s.labelBg);
     setLabelPanelColor(s.labelPanelColor);
+    setLabelPanelOpacity(s.labelPanelOpacity);
     setLabelColor(s.labelColor);
     setLabelShadow(s.labelShadow);
     setLabelLineOn(s.labelLineOn);
@@ -1189,6 +1197,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setCaptionLength(s.captionLength);
     setCaptionBg(s.captionBg);
     setCaptionPanelColor(s.captionPanelColor);
+    setCaptionPanelOpacity(s.captionPanelOpacity);
     setCaptionColor(s.captionColor);
     setCaptionShadow(s.captionShadow);
     setCaptionTitleScale(s.captionTitleScale);
@@ -1223,9 +1232,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   // 現在の仕上げ設定を ExportStyle 形式の JSON で書き出す（位置は写真依存なので含めない）。
   const dumpCurrentStyle = () => {
     const style: ExportStyle = {
-      bakeLabels, labelMode, labelBg, labelPanelColor, labelColor, labelShadow, labelLineOn, labelLineColor,
+      bakeLabels, labelMode, labelBg, labelPanelColor, labelPanelOpacity, labelColor, labelShadow, labelLineOn, labelLineColor,
       labelNameScale, labelSubScale,
-      captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionColor, captionShadow,
+      captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
       captionTitleScale, captionBodyScale, captionPos, captionW, captionSplit,
       tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
       titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titlePos,
@@ -1683,7 +1692,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                             top: `${lp.v * 100}%`,
                             color: labelColor,
                             "--label-sh": labelShadow ? contrastShadow(labelColor) : "transparent",
-                            ...(labelBg !== "none" ? { "--label-panel-bg": labelPanelColor } : {}),
+                            ...(labelBg !== "none" ? { "--label-panel-bg": panelRgba(labelPanelColor, labelPanelOpacity) } : {}),
                           } as React.CSSProperties
                         }
                         onPointerDown={onEditDown(i, "label")}
@@ -1713,7 +1722,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         "--cap-sh": captionShadow ? contrastShadow(captionColor, 0.85) : "transparent",
                         "--cap-tag-bg": pillColors().bg,
                         "--cap-tag-fg": pillColors().fg,
-                        ...(captionBg !== "none" ? { "--cap-panel-bg": captionPanelColor } : {}),
+                        ...(captionBg !== "none" ? { "--cap-panel-bg": panelRgba(captionPanelColor, captionPanelOpacity) } : {}),
                       } as React.CSSProperties
                     }
                     onPointerDown={onCaptionDown}
@@ -1890,10 +1899,17 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         </div>
                       </div>
                       {labelBg !== "none" && (
-                        <div className="ar-fs-row">
-                          <span>背景の色</span>
-                          <input type="color" className="ar-color-input" value={labelPanelColor} onChange={(e) => setLabelPanelColor(e.target.value)} aria-label="文字背景の色" />
-                        </div>
+                        <>
+                          <div className="ar-fs-row">
+                            <span>背景の色</span>
+                            <input type="color" className="ar-color-input" value={labelPanelColor} onChange={(e) => setLabelPanelColor(e.target.value)} aria-label="文字背景の色" />
+                          </div>
+                          <div className="ar-fs-slider-row">
+                            <span>背景の濃さ</span>
+                            <span className="ar-fs-val">{Math.round(labelPanelOpacity * 100)}%</span>
+                          </div>
+                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={labelPanelOpacity} onChange={(e) => setLabelPanelOpacity(Number(e.target.value))} aria-label="文字背景の濃さ" />
+                        </>
                       )}
                       <div className="ar-fs-row">
                         <span>文字の色</span>
@@ -1989,10 +2005,17 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         </div>
                       </div>
                       {captionBg !== "none" && (
-                        <div className="ar-fs-row">
-                          <span>背景の色</span>
-                          <input type="color" className="ar-color-input" value={captionPanelColor} onChange={(e) => setCaptionPanelColor(e.target.value)} aria-label="解説の文字背景の色" />
-                        </div>
+                        <>
+                          <div className="ar-fs-row">
+                            <span>背景の色</span>
+                            <input type="color" className="ar-color-input" value={captionPanelColor} onChange={(e) => setCaptionPanelColor(e.target.value)} aria-label="解説の文字背景の色" />
+                          </div>
+                          <div className="ar-fs-slider-row">
+                            <span>背景の濃さ</span>
+                            <span className="ar-fs-val">{Math.round(captionPanelOpacity * 100)}%</span>
+                          </div>
+                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={captionPanelOpacity} onChange={(e) => setCaptionPanelOpacity(Number(e.target.value))} aria-label="解説の文字背景の濃さ" />
+                        </>
                       )}
                       <div className="ar-fs-row">
                         <span>文字の色</span>
