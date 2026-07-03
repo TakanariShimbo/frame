@@ -19,7 +19,22 @@ const API = "https://ja.wikipedia.org/w/api.php";
 const UA = "FrameBot/0.1 (https://github.com/TakanariShimbo/frame; mountain descriptions)";
 const DEG_TOL = 0.2; // 山頂座標と記事座標の許容差（度）
 const EXTRACT_MAX = 300;
-const SLEEP_MS = 100; // リクエストは直列（Wikimedia API エチケット）。待機は控えめに
+const SLEEP_MS = 100;
+const CONCURRENCY = 4; // 控えめな並列数（UA明示・各ワーカーは直列。全体で ~5req/s 程度）
+
+// 単純なワーカープール: items を CONCURRENCY 本のワーカーで並列処理
+async function pool(items, fn) {
+  let idx = 0;
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, async () => {
+      for (;;) {
+        const i = idx++;
+        if (i >= items.length) return;
+        await fn(items[i], i);
+      }
+    }),
+  );
+}
 
 
 const outDir = process.argv[2];
@@ -161,11 +176,13 @@ console.error(`対象: ${targets.length}（解説あり ${hasDesc.size}・取得
 const write = (obj) => fs.appendFileSync(outPath, JSON.stringify(obj) + "\n");
 let hit = 0, miss = 0;
 
-// Phase A: 名前一括取得（20件ずつ随時判定・保存）
+// Phase A: 名前一括取得（20件ずつのチャンクをワーカー並列で処理）
 console.error("Phase A: 名前一括取得…");
 const unresolved = [];
-for (let i = 0; i < targets.length; i += 20) {
-  const chunk = targets.slice(i, i + 20);
+const chunks = [];
+for (let i = 0; i < targets.length; i += 20) chunks.push(targets.slice(i, i + 20));
+let aDone = 0;
+await pool(chunks, async (chunk) => {
   const pages = await fetchPages(chunk.map((m) => stripParen(m.name)));
   for (const mt of chunk) {
     const p = pages[stripParen(mt.name)];
@@ -174,21 +191,23 @@ for (let i = 0; i < targets.length; i += 20) {
     const r = best ? mkResult(mt, best, "name") : null;
     if (r) { write(r); hit++; } else unresolved.push(mt);
   }
-  if ((i / 20) % 50 === 0) console.error(`  A: ${Math.min(i + 20, targets.length)}/${targets.length} hit=${hit}`);
-}
+  aDone += chunk.length;
+  if (aDone % 1000 < 20) console.error(`  A: ${aDone}/${targets.length} hit=${hit}`);
+});
 console.error(`Phase A 完了: hit=${hit} 未解決=${unresolved.length}`);
 
-// Phase B: 別名＋検索フォールバック（未解決のみ、個別に）
+// Phase B: 別名＋検索フォールバック（未解決のみ、ワーカー並列）
 console.error("Phase B: 別名/検索フォールバック…");
-for (let i = 0; i < unresolved.length; i++) {
-  const mt = unresolved[i];
+let bDone = 0;
+await pool(unresolved, async (mt) => {
   const cand = (mt.aliases ?? []).map((a) => a.name);
   cand.push(...(await searchCandidates(stripParen(mt.name))));
   const pages = cand.length ? await fetchPages(cand) : {};
   const best = chooseMountain(mt, pages, true);
   const r = best ? mkResult(mt, best, "search") : null;
   if (r) { write(r); hit++; } else { write({ id: mt.id, miss: true }); miss++; }
-  if ((i + 1) % 100 === 0 || i === unresolved.length - 1)
-    console.error(`  B: ${i + 1}/${unresolved.length} hit=${hit} miss=${miss}`);
-}
+  bDone++;
+  if (bDone % 200 === 0 || bDone === unresolved.length)
+    console.error(`  B: ${bDone}/${unresolved.length} hit=${hit} miss=${miss}`);
+});
 console.error(`完了: hit=${hit} miss=${miss} (${((hit / (hit + miss || 1)) * 100).toFixed(0)}%)`);
