@@ -8,13 +8,12 @@ type Props = {
   onStart: (photoUrl: string, labels: ArLabel[]) => void;
 };
 
-// 作例（テンプレ6種の完成例）。id は public/template-previews/{id}.jpg と Studio のテンプレに対応。
+// 作例（テンプレ5種の完成例）。id は public/template-previews/{id}.jpg と Studio のテンプレに対応。
 // テンプレの選択は写真追加後の仕上げ画面で行う。ここではあくまで「仕上がりのイメージ」。
 const SHOWCASE: { id: string; name: string; sub: string }[] = [
   { id: "miyabi", name: "雅", sub: "定番・山名入り" },
   { id: "chou", name: "頂", sub: "センタータイトル" },
-  { id: "shiori", name: "栞", sub: "英語解説" },
-  { id: "sou", name: "双", sub: "日英併記" },
+  { id: "katari", name: "語", sub: "解説つき" },
   { id: "ma", name: "間", sub: "余白を活かす" },
   { id: "sora", name: "空", sub: "縦構図・余白" },
 ];

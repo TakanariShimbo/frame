@@ -259,7 +259,7 @@ const BASE_STYLE: ExportStyle = {
   cropInset: NO_CROP,
   frameFade: 0,
 };
-// テンプレートは「図(zu)」=3Dミニマップ入りを除いた6種。
+// テンプレートは「図(zu)」=3Dミニマップ入りを除いた5種（栞・双は「語」に統合）。
 const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "miyabi",
@@ -295,29 +295,10 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
     },
   },
   {
-    id: "shiori",
-    name: "栞",
-    sub: "英語解説",
-    hint: "名札は出さず、選んだ山の解説を英語で添える読み物風。",
-    style: {
-      ...BASE_STYLE,
-      bakeLabels: false,
-      labelMode: "jaSubEnElev",
-      labelNameScale: 1.2,
-      labelSubScale: 0.85,
-      captionLang: "en",
-      captionLength: "long",
-      captionTitleScale: 1.4,
-      captionBodyScale: 0.85,
-      captionPos: { u: 0.051, v: 0.704 },
-      roleFonts: { labelName: "posterMincho", labelSub: "mincho", captionTitle: "modernGothic", captionBody: "gothic" },
-    },
-  },
-  {
-    id: "sou",
-    name: "双",
-    sub: "日英併記",
-    hint: "日本語と英語を併記。パネルなしで解説を見せる見開き風。",
+    id: "katari",
+    name: "語",
+    sub: "解説つき",
+    hint: "選んだ山の解説を添える読み物風。日英併記が基本で、日本語のみ・英語のみにも変えられる。",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
