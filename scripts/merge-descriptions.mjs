@@ -18,7 +18,10 @@ if (!src) {
 }
 
 const DESC_PATH = "public/data/mountain_descriptions.json";
-const base = JSON.parse(readFileSync(DESC_PATH, "utf8"));
+// ベースは手作り解説の原本（コミット済み）から読む。DESC_PATH はマージ後にメタのみへ
+// 縮退させるため、そこをベースにすると再実行時に手作り分が消える。
+const BASE_PATH = "data-work/handmade_descriptions.json";
+const base = JSON.parse(readFileSync(BASE_PATH, "utf8"));
 const descs = base.descriptions ?? {};
 const existing = new Set(Object.keys(descs));
 
