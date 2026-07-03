@@ -47,7 +47,7 @@ export function buildLabels(
       descriptionShort: d?.description_ja_short,
       descriptionEn: d?.description_en_long,
       descriptionEnShort: d?.description_en_short,
-      nameEn: d?.title_en,
+      nameEn: d?.title_en ?? m.nameEn, // 解説DBの英名を優先、無ければ機械生成ローマ字
       prefecture: m.prefecture,
       tagsJa: d?.tags_ja,
       tagsEn: d?.tags_en,

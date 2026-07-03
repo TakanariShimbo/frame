@@ -1,11 +1,14 @@
-// 山名検索。隣プロジェクト由来の山岳データ（public/data/mountains.json、約1,061山）を
-// 使い、名前・読み(カナ)で部分一致検索する。正確な山頂座標と標高を持つのでオフライン可。
-//   出典: 「日本の主な山岳標高一覧」（国土地理院）を加工。
+// 山名検索。山岳データ（public/data/mountains.json、約27,000山）を
+// 使い、名前・読み(カナ)・別名で部分一致検索する。正確な山頂座標と標高を持つのでオフライン可。
+//   出典: 「山名一覧 on the Web地図」(map.jpn.org, あにねこ氏) ＋「日本の主な山岳標高一覧」（国土地理院）を加工。
+//   ※ map.jpn.org 由来データの利用はあにねこ氏への許諾確認が前提（このブランチで並行確認中）。
 
 type MountainRecord = {
   id: number;
   name: string;
   name_kana?: string;
+  name_en?: string; // 機械生成ローマ字英名（例: Fujisan）。解説DBの title_en が無い山向け
+  aliases?: { name: string; kana?: string }[]; // 別名（例: 蝦夷富士）。検索ヒット用
   latitude: number;
   longitude: number;
   elevation_m: number;
@@ -16,6 +19,7 @@ type MountainRecord = {
 export type MountainHit = {
   id: number;
   name: string;
+  nameEn?: string;
   lat: number;
   lon: number;
   elevationM: number;
@@ -70,6 +74,7 @@ export async function loadAllMountains(): Promise<MountainHit[]> {
   return list.map((m) => ({
     id: m.id,
     name: m.name,
+    nameEn: m.name_en,
     lat: m.latitude,
     lon: m.longitude,
     elevationM: m.elevation_m,
@@ -131,7 +136,7 @@ export async function loadZukanEntries(): Promise<ZukanEntry[]> {
       elevationM: m.elevation_m,
       prefecture: m.prefecture,
       priority: m.priority,
-      titleEn: d?.title_en,
+      titleEn: d?.title_en ?? m.name_en,
       descriptionJa: d?.description_ja_long,
       descriptionShortJa: d?.description_ja_short,
       descriptionEn: d?.description_en_long,
@@ -149,12 +154,16 @@ export async function searchMountains(query: string, limit = 12): Promise<Mounta
   const qh = toHiragana(q);
   const hits = list.filter((m) => {
     if (m.name.toLowerCase().includes(q)) return true;
-    return m.name_kana ? toHiragana(m.name_kana).includes(qh) : false;
+    if (m.name_kana && toHiragana(m.name_kana).includes(qh)) return true;
+    return (m.aliases ?? []).some(
+      (a) => a.name.toLowerCase().includes(q) || (a.kana ? toHiragana(a.kana).includes(qh) : false),
+    );
   });
   hits.sort((a, b) => b.priority - a.priority || b.elevation_m - a.elevation_m);
   return hits.slice(0, limit).map((m) => ({
     id: m.id,
     name: m.name,
+    nameEn: m.name_en,
     lat: m.latitude,
     lon: m.longitude,
     elevationM: m.elevation_m,

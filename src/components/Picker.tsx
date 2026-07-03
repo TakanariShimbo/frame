@@ -89,7 +89,7 @@ export default function Picker({ onStart }: Props) {
           <h1>山を、作品に。</h1>
           <p className="pick-lead">
             山の写真に山名・標高・解説を美しく重ねて、ポスターのような一枚に。
-            約1,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。
+            約27,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。
           </p>
         </header>
 
@@ -222,7 +222,7 @@ export default function Picker({ onStart }: Props) {
         </section>
 
         <p className="pick-credit">
-          山岳データ: 国土地理院「日本の主な山岳標高一覧」を加工 ／ 解説文は事実情報をもとにAIで生成
+          山岳データ: あにねこ氏「山名一覧 on the Web地図」(map.jpn.org)・国土地理院「日本の主な山岳標高一覧」を加工 ／ 解説文は事実情報をもとにAIで生成
         </p>
       </div>
     </div>
