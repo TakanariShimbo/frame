@@ -4,10 +4,10 @@ import Studio from "./components/Studio";
 import type { ArLabel } from "./lib/labels";
 
 // frame の画面は2つだけ:
-//   pick   … 山名を選び、写真をのせる（入口）
+//   pick   … 写真を追加し、山名を選ぶ（入口）
 //   studio … テンプレートを選び、文字・解説を仕上げて書き出す
 // 元 trace の「山を写す(AR)」から 3D マップ・撮影地点・向き合わせを取り除き、
-// 「山名を選ぶ → 写真をのせる → 仕上げる」に絞ったもの。
+// 「写真を追加 → 山名を選ぶ → 仕上げる」に絞ったもの。
 type Session = { photoUrl: string; labels: ArLabel[] };
 
 export default function App() {

@@ -86,6 +86,28 @@ const samplePhotoEdgeColor = async (
   const hx = (v: number) => Math.round(v / n).toString(16).padStart(2, "0");
   return `#${hx(r)}${hx(g)}${hx(b)}`;
 };
+// ドラッグのスナップ。中央(0.5)と上下左右端（端から SNAP_PAD 内側）で一度止まる。
+const SNAP_DIST = 0.02;
+const SNAP_PAD = 0.04;
+const SNAP_LINES = [SNAP_PAD, 0.5, 1 - SNAP_PAD];
+// pos(アンカー座標)＋offs(アンカーから要素の端・中央までの距離)が基準線に近ければ、
+// その線に吸着させた pos と、吸着先の線位置（ガイド描画用）を返す。
+const snapAxis = (pos: number, offs: number[]): { pos: number; line: number | null } => {
+  let best = pos;
+  let line: number | null = null;
+  let bestD = SNAP_DIST;
+  for (const o of offs)
+    for (const L of SNAP_LINES) {
+      const d = Math.abs(pos + o - L);
+      if (d < bestD) {
+        bestD = d;
+        best = L - o;
+        line = L;
+      }
+    }
+  return { pos: best, line };
+};
+
 const isDarkColor = (hex: string): boolean => {
   const [r, g, b] = hexToRgb(hex).split(",").map(Number);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
@@ -95,10 +117,8 @@ const contrastShadow = (textColor: string, dark = 0.82): string =>
 const tagBg = (textColor: string): string =>
   isDarkColor(textColor) ? "rgba(255,255,255,0.62)" : "rgba(0,0,0,0.4)";
 
-type BgPanel = "none" | "translucent";
-const panelFill = (textColor: string) =>
-  isDarkColor(textColor) ? "rgba(255,255,255,0.55)" : "rgba(17,21,29,0.42)";
-const panelStroke = (textColor: string) => (isDarkColor(textColor) ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.14)");
+// 文字背景パネル。「あり(solid)」は選んだ色でベタ塗り（旧: 半透明固定は廃止）。
+type BgPanel = "none" | "solid";
 
 // ふち（フェード）の S字イージング停止点。t=0(縁,不透明)→t=1(内側,透明)。
 const FADE_STOPS = [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1].map((t) => ({
@@ -142,8 +162,11 @@ type ExportStyle = {
   bakeLabels: boolean;
   labelMode: LabelMode;
   labelBg: BgPanel;
+  labelPanelColor: string;
   labelColor: string;
   labelShadow: boolean;
+  labelLineOn: boolean;
+  labelLineColor: string;
   labelNameScale: number;
   labelSubScale: number;
   captionLang: "ja" | "en" | "both" | "none";
@@ -151,6 +174,7 @@ type ExportStyle = {
   captionTitleMode: "each" | "groupV" | "groupH" | "ja" | "en";
   captionLength: "long" | "short";
   captionBg: BgPanel;
+  captionPanelColor: string;
   captionColor: string;
   captionShadow: boolean;
   captionTitleScale: number;
@@ -188,8 +212,11 @@ const BASE_STYLE: ExportStyle = {
   bakeLabels: true,
   labelMode: "jaSubElev",
   labelBg: "none",
+  labelPanelColor: "#1f2633",
   labelColor: "#ffffff",
   labelShadow: true,
+  labelLineOn: true,
+  labelLineColor: "#ffffff",
   labelNameScale: 1,
   labelSubScale: 1,
   captionLang: "none",
@@ -197,6 +224,7 @@ const BASE_STYLE: ExportStyle = {
   captionTitleMode: "each",
   captionLength: "short",
   captionBg: "none",
+  captionPanelColor: "#1f2633",
   captionColor: "#ffffff",
   captionShadow: true,
   captionTitleScale: 1,
@@ -273,7 +301,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
       labelSubScale: 0.85,
       captionLang: "en",
       captionLength: "long",
-      captionBg: "translucent",
+      captionBg: "solid",
       captionTitleScale: 1.4,
       captionBodyScale: 0.85,
       captionPos: { u: 0.051, v: 0.704 },
@@ -416,6 +444,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [labelColor, setLabelColor] = useState("#ffffff");
   const [labelShadow, setLabelShadow] = useState(true);
   const [labelBg, setLabelBg] = useState<BgPanel>("none");
+  const [labelPanelColor, setLabelPanelColor] = useState("#1f2633");
+  const [labelLineOn, setLabelLineOn] = useState(true);
+  const [labelLineColor, setLabelLineColor] = useState("#ffffff");
   const [labelNameScale, setLabelNameScale] = useState(1);
   const [labelSubScale, setLabelSubScale] = useState(1);
   const labelHasSub = labelMode !== "jaOnly" && labelMode !== "enOnly";
@@ -426,6 +457,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [captionTitleMode, setCaptionTitleMode] = useState<"each" | "groupV" | "groupH" | "ja" | "en">("each");
   const [captionLength, setCaptionLength] = useState<"long" | "short">("long");
   const [captionBg, setCaptionBg] = useState<BgPanel>("none");
+  const [captionPanelColor, setCaptionPanelColor] = useState("#1f2633");
   const [captionColor, setCaptionColor] = useState("#ffffff");
   const [captionShadow, setCaptionShadow] = useState(true);
   const [captionTitleScale, setCaptionTitleScale] = useState(1);
@@ -453,7 +485,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [titleShadow, setTitleShadow] = useState(true);
   const [titleFont, setTitleFont] = useState<FontPairId>("posterMincho");
   const [titlePos, setTitlePos] = useState({ u: 0.5, v: 0.44 });
-  const titleDragRef = useRef<{ offU: number; offV: number } | null>(null);
+  const titleDragRef = useRef<{ offU: number; offV: number; w: number; h: number } | null>(null);
 
   // --- フォント（役割ごと） --- //
   const [roleFonts, setRoleFonts] = useState<RoleFonts>(DEFAULT_ROLE_FONTS);
@@ -482,7 +514,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [measureTick, setMeasureTick] = useState(0);
   const arEditStageRef = useRef<HTMLDivElement | null>(null);
   const arFrameRef = useRef<HTMLDivElement | null>(null);
-  const captionDragRef = useRef<{ offU: number; offV: number } | null>(null);
+  const captionDragRef = useRef<{ offU: number; offV: number; h: number } | null>(null);
+  // ドラッグ中にスナップした基準線（フレーム正規化座標）。ガイド線の描画用。
+  const [snapGuide, setSnapGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const capResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startW: number; startV: number; boxLeft: number; boxRight: number } | null>(null);
   const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" } | null>(null);
 
@@ -772,19 +806,15 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     const ffSub = roleFontStack(roleFonts.labelSub);
     const ffTitle = roleFontStack(roleFonts.captionTitle);
     const ffBody = roleFontStack(roleFonts.captionBody);
-    const drawPanel = (x: number, y: number, w: number, h: number, r: number, textColor: string) => {
+    const drawPanel = (x: number, y: number, w: number, h: number, r: number, fill: string) => {
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.26)";
       ctx.shadowBlur = Math.round(L * 0.012);
       ctx.shadowOffsetY = Math.round(L * 0.0045);
-      ctx.fillStyle = panelFill(textColor);
+      ctx.fillStyle = fill;
       ctx.beginPath();
       ctx.roundRect(x, y, w, h, r);
       ctx.fill();
-      ctx.shadowColor = "transparent";
-      ctx.lineWidth = Math.max(1, Math.round(L * 0.0009));
-      ctx.strokeStyle = panelStroke(textColor);
-      ctx.stroke();
       ctx.restore();
     };
     const fontLoads: Promise<unknown>[] = [];
@@ -824,17 +854,19 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
         const padH = L * 0.012, padV = L * 0.008;
         const ax = anchor === "left" ? cx - boxW / 2 - padH : anchor === "right" ? cx + boxW / 2 + padH : cx;
         const ay = anchor === "top" ? boxTop - padV : anchor === "bottom" ? boxBottom + padV : boxMidY;
-        const bx = dotX, by = dotY;
-        ctx.strokeStyle = labelColor;
-        ctx.globalAlpha = 0.9;
-        ctx.lineWidth = Math.max(1, L * 0.0022);
-        ctx.beginPath();
-        ctx.moveTo(ax + (bx - ax) * 0.17, ay + (by - ay) * 0.17);
-        ctx.lineTo(ax + (bx - ax) * 0.83, ay + (by - ay) * 0.83);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        if (labelLineOn) {
+          const bx = dotX, by = dotY;
+          ctx.strokeStyle = labelLineColor;
+          ctx.globalAlpha = 0.9;
+          ctx.lineWidth = Math.max(1, L * 0.0022);
+          ctx.beginPath();
+          ctx.moveTo(ax + (bx - ax) * 0.17, ay + (by - ay) * 0.17);
+          ctx.lineTo(ax + (bx - ax) * 0.83, ay + (by - ay) * 0.83);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
         if (labelBg !== "none") {
-          drawPanel(cx - boxW / 2 - padH, boxTop - padV, boxW + padH * 2, boxBottom - boxTop + padV * 2, Math.round(L * 0.011), labelColor);
+          drawPanel(cx - boxW / 2 - padH, boxTop - padV, boxW + padH * 2, boxBottom - boxTop + padV * 2, Math.round(L * 0.011), labelPanelColor);
         }
         ctx.save();
         if (labelShadow) {
@@ -1000,7 +1032,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
         const by = Math.min(Math.max(0, Math.round(pfy(captionPos.v))), Math.max(0, OH - blockH));
         if (captionBg !== "none") {
           const px = Math.round(L * 0.018), py = Math.round(L * 0.015);
-          drawPanel(bx - px, by - py, blockW + px * 2, bodyBlockH + py * 2, Math.round(L * 0.016), captionColor);
+          drawPanel(bx - px, by - py, blockW + px * 2, bodyBlockH + py * 2, Math.round(L * 0.016), captionPanelColor);
         }
         ctx.save();
         if (captionShadow) {
@@ -1144,8 +1176,11 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setBakeLabels(s.bakeLabels);
     setLabelMode(s.labelMode);
     setLabelBg(s.labelBg);
+    setLabelPanelColor(s.labelPanelColor);
     setLabelColor(s.labelColor);
     setLabelShadow(s.labelShadow);
+    setLabelLineOn(s.labelLineOn);
+    setLabelLineColor(s.labelLineColor);
     setLabelNameScale(s.labelNameScale);
     setLabelSubScale(s.labelSubScale);
     setCaptionLang(s.captionLang);
@@ -1153,6 +1188,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setCaptionTitleMode(s.captionTitleMode);
     setCaptionLength(s.captionLength);
     setCaptionBg(s.captionBg);
+    setCaptionPanelColor(s.captionPanelColor);
     setCaptionColor(s.captionColor);
     setCaptionShadow(s.captionShadow);
     setCaptionTitleScale(s.captionTitleScale);
@@ -1187,8 +1223,9 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   // 現在の仕上げ設定を ExportStyle 形式の JSON で書き出す（位置は写真依存なので含めない）。
   const dumpCurrentStyle = () => {
     const style: ExportStyle = {
-      bakeLabels, labelMode, labelBg, labelColor, labelShadow, labelNameScale, labelSubScale,
-      captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionColor, captionShadow,
+      bakeLabels, labelMode, labelBg, labelPanelColor, labelColor, labelShadow, labelLineOn, labelLineColor,
+      labelNameScale, labelSubScale,
+      captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionColor, captionShadow,
       captionTitleScale, captionBodyScale, captionPos, captionW, captionSplit,
       tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
       titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titlePos,
@@ -1245,10 +1282,11 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     const stage = arFrameRef.current;
     if (stage) {
       const r = stage.getBoundingClientRect();
+      const b = (e.currentTarget as Element).getBoundingClientRect();
       const pu = (e.clientX - r.left) / r.width;
       const pv = (e.clientY - r.top) / r.height;
       const cf = photoToFrame(captionPos.u, captionPos.v);
-      captionDragRef.current = { offU: pu - cf.u, offV: pv - cf.v };
+      captionDragRef.current = { offU: pu - cf.u, offV: pv - cf.v, h: b.height / r.height };
     }
     arDragRef.current = { i: -1, kind: "caption" };
   };
@@ -1259,10 +1297,11 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     const stage = arFrameRef.current;
     if (stage) {
       const r = stage.getBoundingClientRect();
+      const b = (e.currentTarget as Element).getBoundingClientRect();
       const pu = (e.clientX - r.left) / r.width;
       const pv = (e.clientY - r.top) / r.height;
       const tf = photoToFrame(titlePos.u, titlePos.v);
-      titleDragRef.current = { offU: pu - tf.u, offV: pv - tf.v };
+      titleDragRef.current = { offU: pu - tf.u, offV: pv - tf.v, w: b.width / r.width, h: b.height / r.height };
     }
     arDragRef.current = { i: -1, kind: "title" };
   };
@@ -1300,21 +1339,35 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     const d = arDragRef.current;
     const stage = arFrameRef.current;
     if (!d || !stage) return;
+    // ボタンを離したまま move が来たら（up の取りこぼし）ドラッグを終了する。
+    if (e.pointerType === "mouse" && e.buttons === 0) {
+      arDragRef.current = null;
+      setSnapGuide({ x: null, y: null });
+      return;
+    }
     const r = stage.getBoundingClientRect();
     const u = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
     const v = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
     if (d.kind === "caption") {
-      const off = captionDragRef.current ?? { offU: 0, offV: 0 };
+      const off = captionDragRef.current ?? { offU: 0, offV: 0, h: 0 };
       const maxU = Math.max(0, 1 - captionW);
-      const fU = Math.min(maxU, Math.max(0, u - off.offU));
-      const fV = Math.min(0.82, Math.max(0, v - off.offV));
+      // 左端・中央・右端／上端・中央・下端でスナップ（ブロックは左上アンカー）。
+      const sx = snapAxis(u - off.offU, [0, captionW / 2, captionW]);
+      const sy = snapAxis(v - off.offV, off.h > 0 ? [0, off.h / 2, off.h] : [0]);
+      const fU = Math.min(maxU, Math.max(0, sx.pos));
+      const fV = Math.min(0.82, Math.max(0, sy.pos));
+      setSnapGuide({ x: fU === sx.pos ? sx.line : null, y: fV === sy.pos ? sy.line : null });
       setCaptionPos(frameToPhoto(fU, fV));
       return;
     }
     if (d.kind === "title") {
-      const off = titleDragRef.current ?? { offU: 0, offV: 0 };
-      const fU = Math.min(1, Math.max(0, u - off.offU));
-      const fV = Math.min(1, Math.max(0, v - off.offV));
+      const off = titleDragRef.current ?? { offU: 0, offV: 0, w: 0, h: 0 };
+      // 中央アンカーなので、左右端・中央・上下端の候補は ±サイズ/2 のオフセット。
+      const sx = snapAxis(u - off.offU, off.w > 0 ? [-off.w / 2, 0, off.w / 2] : [0]);
+      const sy = snapAxis(v - off.offV, off.h > 0 ? [-off.h / 2, 0, off.h / 2] : [0]);
+      const fU = Math.min(1, Math.max(0, sx.pos));
+      const fV = Math.min(1, Math.max(0, sy.pos));
+      setSnapGuide({ x: sx.line, y: sy.line });
       setTitlePos(frameToPhoto(fU, fV));
       return;
     }
@@ -1354,15 +1407,22 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
       setArLabels((prev) => prev.map((l, idx) => (idx !== d.i ? l : { ...l, labelAnchor: side })));
       return;
     }
+    if (d.kind === "label") {
+      // 名札は中央下アンカー。左右端・中央・上下端でスナップ。
+      const box = labelBoxes[d.i] ?? { w: 0, h: 0 };
+      const sx = snapAxis(u, box.w > 0 ? [-box.w / 2, 0, box.w / 2] : [0]);
+      const sy = snapAxis(v, box.h > 0 ? [-box.h, -box.h / 2, 0] : [0]);
+      setSnapGuide({ x: sx.line, y: sy.line });
+      const p = frameToPhoto(sx.pos, sy.pos);
+      setArLabels((prev) => prev.map((lb, idx) => (idx !== d.i ? lb : { ...lb, labelU: p.u, labelV: p.v })));
+      return;
+    }
     const p = frameToPhoto(u, v);
-    setArLabels((prev) =>
-      prev.map((lb, idx) =>
-        idx !== d.i ? lb : d.kind === "dot" ? { ...lb, dotU: p.u, dotV: p.v } : { ...lb, labelU: p.u, labelV: p.v },
-      ),
-    );
+    setArLabels((prev) => prev.map((lb, idx) => (idx !== d.i ? lb : { ...lb, dotU: p.u, dotV: p.v })));
   };
   const onEditUp = () => {
     arDragRef.current = null;
+    setSnapGuide({ x: null, y: null });
   };
 
   // ============================ 描画 ============================ //
@@ -1530,9 +1590,17 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                   return s ? <div key={d} style={s} /> : null;
                 })}
               </div>
+              {/* スナップガイド（ドラッグ中、中央・端に吸着した時だけ出る） */}
+              {snapGuide.x !== null && (
+                <div className="ar-snap-line ar-snap-line--v" style={{ left: `${snapGuide.x * 100}%` }} aria-hidden="true" />
+              )}
+              {snapGuide.y !== null && (
+                <div className="ar-snap-line ar-snap-line--h" style={{ top: `${snapGuide.y * 100}%` }} aria-hidden="true" />
+              )}
               {/* 山名ラベル */}
               {bakeLabels && (
                 <>
+                  {labelLineOn && (
                   <svg className="ar-edit-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {arLabels.map((lb, i) => {
                       const sp = labelSidePoint(i);
@@ -1546,7 +1614,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                           y1={ay + (by - ay) * 0.17}
                           x2={ax + (bx - ax) * 0.83}
                           y2={ay + (by - ay) * 0.83}
-                          stroke={labelColor}
+                          stroke={labelLineColor}
                           strokeOpacity={0.9}
                           strokeWidth={1.2}
                           vectorEffect="non-scaling-stroke"
@@ -1554,6 +1622,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                       );
                     })}
                   </svg>
+                  )}
+                  {labelLineOn && (
                   <div className="ar-edit-chrome">
                     <svg className="ar-edit-guides" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {arLabels.map((lb, i) => {
@@ -1584,6 +1654,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                             onPointerDown={onEditDown(i, "dot")}
                             onPointerMove={onEditMove}
                             onPointerUp={onEditUp}
+                            onPointerCancel={onEditUp}
                           />
                           <div
                             className="ar-edit-dot ar-edit-anchor"
@@ -1591,11 +1662,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                             onPointerDown={onEditDown(i, "labelAnchor")}
                             onPointerMove={onEditMove}
                             onPointerUp={onEditUp}
+                            onPointerCancel={onEditUp}
                           />
                         </div>
                       );
                     })}
                   </div>
+                  )}
                   {arLabels.map((lb, i) => {
                     const lc = labelContent(lb);
                     const lp = photoToFrame(lb.labelU, lb.labelV);
@@ -1610,17 +1683,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                             top: `${lp.v * 100}%`,
                             color: labelColor,
                             "--label-sh": labelShadow ? contrastShadow(labelColor) : "transparent",
-                            ...(labelBg !== "none"
-                              ? {
-                                  "--label-panel-bg": panelFill(labelColor),
-                                  "--label-panel-bd": panelStroke(labelColor),
-                                }
-                              : {}),
+                            ...(labelBg !== "none" ? { "--label-panel-bg": labelPanelColor } : {}),
                           } as React.CSSProperties
                         }
                         onPointerDown={onEditDown(i, "label")}
                         onPointerMove={onEditMove}
                         onPointerUp={onEditUp}
+                        onPointerCancel={onEditUp}
                       >
                         <span className="ar-label-name">{lc.name}</span>
                         {lc.sub && <span className="ar-label-sub">{lc.sub}</span>}
@@ -1644,17 +1713,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         "--cap-sh": captionShadow ? contrastShadow(captionColor, 0.85) : "transparent",
                         "--cap-tag-bg": pillColors().bg,
                         "--cap-tag-fg": pillColors().fg,
-                        ...(captionBg !== "none"
-                          ? {
-                              "--cap-panel-bg": panelFill(captionColor),
-                              "--cap-panel-bd": panelStroke(captionColor),
-                            }
-                          : {}),
+                        ...(captionBg !== "none" ? { "--cap-panel-bg": captionPanelColor } : {}),
                       } as React.CSSProperties
                     }
                     onPointerDown={onCaptionDown}
                     onPointerMove={onEditMove}
                     onPointerUp={onEditUp}
+                    onPointerCancel={onEditUp}
                   >
                     {capSharedTitleParts.length > 0 && (
                       <div
@@ -1693,6 +1758,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                           onPointerDown={onCapSplitDown}
                           onPointerMove={onEditMove}
                           onPointerUp={onEditUp}
+                          onPointerCancel={onEditUp}
                         />
                       )}
                       {(captionLang === "en" || captionLang === "both") && arLabels[captionIdx].descriptionEn && (
@@ -1714,6 +1780,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         onPointerDown={onCapResizeDown}
                         onPointerMove={onEditMove}
                         onPointerUp={onEditUp}
+                        onPointerCancel={onEditUp}
                       />
                     ))}
                   </div>
@@ -1739,6 +1806,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     onPointerDown={onTitleDown}
                     onPointerMove={onEditMove}
                     onPointerUp={onEditUp}
+                    onPointerCancel={onEditUp}
                   >
                     {tp.over && <span className="ar-title-over">{tp.over}</span>}
                     <span className="ar-title-main">{tp.main}</span>
@@ -1814,17 +1882,33 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         </div>
                       </div>
                       <div className="ar-fs-row">
-                        <span>背景パネル</span>
-                        <div className="seg" role="group" aria-label="背景パネル">
-                          {([["なし", "none"], ["半透明", "translucent"]] as [string, BgPanel][]).map(([lab, v]) => (
+                        <span>文字の背景</span>
+                        <div className="seg" role="group" aria-label="文字の背景">
+                          {([["なし", "none"], ["あり", "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
                             <button key={v} className={labelBg === v ? "is-active" : ""} onClick={() => setLabelBg(v)}>{lab}</button>
                           ))}
                         </div>
                       </div>
+                      {labelBg !== "none" && (
+                        <div className="ar-fs-row">
+                          <span>背景の色</span>
+                          <input type="color" className="ar-color-input" value={labelPanelColor} onChange={(e) => setLabelPanelColor(e.target.value)} aria-label="文字背景の色" />
+                        </div>
+                      )}
                       <div className="ar-fs-row">
                         <span>文字の色</span>
                         <input type="color" className="ar-color-input" value={labelColor} onChange={(e) => setLabelColor(e.target.value)} aria-label="文字の色" />
                       </div>
+                      <label className="switch-row">
+                        <span>引き出し線（矢印）</span>
+                        <input type="checkbox" className="switch" checked={labelLineOn} onChange={(e) => setLabelLineOn(e.target.checked)} />
+                      </label>
+                      {labelLineOn && (
+                        <div className="ar-fs-row">
+                          <span>線の色</span>
+                          <input type="color" className="ar-color-input" value={labelLineColor} onChange={(e) => setLabelLineColor(e.target.value)} aria-label="引き出し線の色" />
+                        </div>
+                      )}
                       <label className="switch-row">
                         <span>文字の影</span>
                         <input type="checkbox" className="switch" checked={labelShadow} onChange={(e) => setLabelShadow(e.target.checked)} />
@@ -1897,13 +1981,19 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                         </div>
                       </div>
                       <div className="ar-fs-row">
-                        <span>背景パネル</span>
-                        <div className="seg" role="group" aria-label="解説の背景パネル">
-                          {([["なし", "none"], ["半透明", "translucent"]] as [string, BgPanel][]).map(([lab, v]) => (
+                        <span>文字の背景</span>
+                        <div className="seg" role="group" aria-label="解説の文字の背景">
+                          {([["なし", "none"], ["あり", "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
                             <button key={v} className={captionBg === v ? "is-active" : ""} onClick={() => setCaptionBg(v)}>{lab}</button>
                           ))}
                         </div>
                       </div>
+                      {captionBg !== "none" && (
+                        <div className="ar-fs-row">
+                          <span>背景の色</span>
+                          <input type="color" className="ar-color-input" value={captionPanelColor} onChange={(e) => setCaptionPanelColor(e.target.value)} aria-label="解説の文字背景の色" />
+                        </div>
+                      )}
                       <div className="ar-fs-row">
                         <span>文字の色</span>
                         <input type="color" className="ar-color-input" value={captionColor} onChange={(e) => setCaptionColor(e.target.value)} aria-label="解説の文字の色" />

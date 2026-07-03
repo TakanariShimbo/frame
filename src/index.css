@@ -165,10 +165,7 @@ button {
   background: #000;
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
-.pick-gallery-item:hover img {
-  transform: translateY(-3px);
-  border-color: var(--gold-line);
-}
+/* 作例はあくまで見本。クリックできそうな hover 演出は付けない。 */
 .pick-gallery-item figcaption {
   display: flex;
   align-items: baseline;
@@ -435,6 +432,62 @@ button {
   text-align: center;
   color: var(--ink-faint);
   font-size: 12px;
+}
+
+/* 追加した写真のプレビュー（STEP 01 完了後） */
+.pick-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pick-photo-img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #000;
+}
+.pick-photo-change {
+  align-self: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-sub);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.pick-photo-change:hover {
+  border-color: var(--gold-line);
+  color: var(--ink);
+}
+
+/* 作例（テンプレの完成サンプル。選択UIではない） */
+.pick-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pick-showcase-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pick-showcase-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.pick-showcase-head p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-faint);
 }
 
 /* 出典（最下部の小さなクレジット） */
@@ -768,7 +821,7 @@ button {
   border-radius: 0.8cqmax;
   pointer-events: none;
 }
-/* 背景パネル（半透明）。選択枠と同じ範囲に文字の下へ敷く。出力にも焼き込む。 */
+/* 文字背景パネル（選んだ色でベタ塗り）。選択枠と同じ範囲に文字の下へ敷く。出力にも焼き込む。 */
 .ar-edit-label.has-panel::after {
   content: "";
   position: absolute;
@@ -791,6 +844,26 @@ button {
   font-size: calc(1.55cqmax * var(--label-sub-fs, 1));
   font-weight: 500;
   opacity: 0.92;
+}
+
+/* スナップガイド（ドラッグ中、中央・端に吸着した時だけ表示する基準線） */
+.ar-snap-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  background: rgba(120, 200, 255, 0.85);
+}
+.ar-snap-line--v {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+.ar-snap-line--h {
+  left: 0;
+  right: 0;
+  height: 1px;
+  transform: translateY(-0.5px);
 }
 
 /* --- 解説ブロック（出力と一致させる寸法。変更しない） --- */
@@ -1216,6 +1289,8 @@ input[type="range"].ar-fs-slider {
   margin: 0;
   background: transparent;
   cursor: pointer;
+  /* パネルの縦スクロールにジェスチャを奪われてスライダーが反応しなくなるのを防ぐ */
+  touch-action: none;
 }
 .ar-fs-slider::-webkit-slider-runnable-track {
   height: 3px;
