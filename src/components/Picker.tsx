@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IconSearch, IconImage, IconMountain, IconPlus } from "./icons";
-import { searchMountains, loadMountainDescriptions, type MountainHit } from "../lib/mountains";
+import { searchMountains, loadDescriptionsFor, type MountainHit } from "../lib/mountains";
 import { buildLabels, type ArLabel } from "../lib/labels";
 
 type Props = {
@@ -71,7 +71,7 @@ export default function Picker({ onStart }: Props) {
   const onProceed = async () => {
     if (!photoUrl || selected.length === 0 || loading) return;
     setLoading(true);
-    const descMap = await loadMountainDescriptions();
+    const descMap = await loadDescriptionsFor(selected.map((m) => m.id));
     const labels = buildLabels(selected, descMap);
     setLoading(false);
     onStart(photoUrl, labels);
