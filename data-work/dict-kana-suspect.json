@@ -1,0 +1,524 @@
+[
+ {
+  "id": 173,
+  "name": "毛勝山",
+  "dict_kana": "けかつやま",
+  "correct_kana": "けかちやま",
+  "romaji": "Kekachiyama",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・魚津市観光サイトとも「けかちやま」"
+ },
+ {
+  "id": 33,
+  "name": "大天井岳",
+  "dict_kana": "だいてんじょうだけ",
+  "correct_kana": "おてんしょうだけ",
+  "romaji": "Otenshodake",
+  "confidence": "high",
+  "evidence": "Wikipedia・山頂直下の山小屋「大天荘」公式が「おてんしょうだけ」（だいてんじょうだけ併記もあり）"
+ },
+ {
+  "id": 72,
+  "name": "薬師ヶ岳",
+  "dict_kana": "やくしがだけ",
+  "correct_kana": "やくしがたけ",
+  "romaji": "Yakushigatake",
+  "confidence": "low",
+  "evidence": "コトバンク「薬師ヶ岳（やくしがたけ）」。山岳サイトでは「薬師岳（やくしだけ）」表記が主"
+ },
+ {
+  "id": 77,
+  "name": "大籠岳",
+  "dict_kana": "おおかごだけ",
+  "correct_kana": "おおこもりだけ",
+  "romaji": "Okomoridake",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン「大籠岳（おおこもりだけ）2,767m」"
+ },
+ {
+  "id": 197,
+  "name": "鳥海山",
+  "dict_kana": "ちょうかいざん",
+  "correct_kana": "ちょうかいさん",
+  "romaji": "Chokaisan",
+  "confidence": "high",
+  "evidence": "気象庁公式英名がChokaisan、yamachizu等も「ちょうかいさん」。山形県側では「ちょうかいざん」も併用（山形県公式・山と溪谷オンラインは両読み併記）"
+ },
+ {
+  "id": 198,
+  "name": "大雪山",
+  "dict_kana": "たいせつざん",
+  "correct_kana": "だいせつざん",
+  "romaji": "Daisetsuzan",
+  "confidence": "high",
+  "evidence": "環境省（大雪山国立公園）および英語圏でDaisetsuzanが定着。国土地理院読みは「たいせつざん」で両読み併存（北海道公式X・NDLレファレンス）"
+ },
+ {
+  "id": 221,
+  "name": "大雪山",
+  "dict_kana": "たいせつざん",
+  "correct_kana": "だいせつざん",
+  "romaji": "Daisetsuzan",
+  "confidence": "high",
+  "evidence": "id198と同じ大雪山系。環境省・英語圏でDaisetsuzanが定着、国土地理院は「たいせつざん」"
+ },
+ {
+  "id": 234,
+  "name": "帝釈山",
+  "dict_kana": "たいしゃくざん",
+  "correct_kana": "たいしゃくさん",
+  "romaji": "Taishakusan",
+  "confidence": "high",
+  "evidence": "Wikipedia（標高2060m、南会津・日光境）およびふくしま30座（福島県観光公式）が「たいしゃくさん」。山と溪谷オンラインは「たいしゃくざん」"
+ },
+ {
+  "id": 245,
+  "name": "白石山",
+  "dict_kana": "はくせきさん",
+  "correct_kana": "しろいしやま",
+  "romaji": "Shiroishiyama",
+  "confidence": "high",
+  "evidence": "山と溪谷オンライン「和名倉山（白石山）しろいしやま」、yamachizuも「しろいしやま」。通称は和名倉山（わなくらやま）"
+ },
+ {
+  "id": 259,
+  "name": "大雪山",
+  "dict_kana": "たいせつざん",
+  "correct_kana": "だいせつざん",
+  "romaji": "Daisetsuzan",
+  "confidence": "high",
+  "evidence": "id198と同じ大雪山系。環境省・英語圏でDaisetsuzanが定着、国土地理院は「たいせつざん」"
+ },
+ {
+  "id": 278,
+  "name": "入笠山",
+  "dict_kana": "にゅうがさやま",
+  "correct_kana": "にゅうかさやま",
+  "romaji": "Nyukasayama",
+  "confidence": "high",
+  "evidence": "Wikipedia・コトバンクとも主読みは「にゅうかさやま」（「にゅうがさやま」は併記の別読み）"
+ },
+ {
+  "id": 280,
+  "name": "万太郎山",
+  "dict_kana": "まんたろうさん",
+  "correct_kana": "まんたろうやま",
+  "romaji": "Mantaroyama",
+  "confidence": "high",
+  "evidence": "Wikipedia・コトバンク・YAMAPが「まんたろうやま」。山と溪谷オンラインのみ「まんたろうさん」"
+ },
+ {
+  "id": 295,
+  "name": "八経ヶ岳",
+  "dict_kana": "はっきょうがだけ",
+  "correct_kana": "はっきょうがたけ",
+  "romaji": "Hakkyogatake",
+  "confidence": "high",
+  "evidence": "Wikipedia・YAMAP・山歩みちいずれも「はっきょうがたけ」"
+ },
+ {
+  "id": 320,
+  "name": "矢筈山",
+  "dict_kana": "やはずさん",
+  "correct_kana": "やはずやま",
+  "romaji": "Yahazuyama",
+  "confidence": "high",
+  "evidence": "Wikipedia（三好市・つるぎ町1,849m）・コトバンク・YAMAPが「やはずやま」。山と溪谷オンラインのみ「やはずさん」"
+ },
+ {
+  "id": 324,
+  "name": "笈ヶ岳",
+  "dict_kana": "おいずるがだけ",
+  "correct_kana": "おいずるがたけ",
+  "romaji": "Oizurugatake",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコ・YAMAPが「おいずるがたけ」。山と溪谷オンラインは「おいずるがだけ」"
+ },
+ {
+  "id": 338,
+  "name": "黒岳",
+  "dict_kana": "くろたけ",
+  "correct_kana": "くろだけ",
+  "romaji": "Kurodake",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・Wikipedia（御坂山地の黒岳）とも「くろだけ」"
+ },
+ {
+  "id": 345,
+  "name": "男鹿岳",
+  "dict_kana": "おがたけ",
+  "correct_kana": "おじかだけ",
+  "romaji": "Ojikadake",
+  "confidence": "high",
+  "evidence": "YAMAP・ヤマケイオンラインとも主読みは「おじかだけ」（福島側で「おがたけ」併記）"
+ },
+ {
+  "id": 365,
+  "name": "人形山",
+  "dict_kana": "にんぎょうやま",
+  "correct_kana": "にんぎょうざん",
+  "romaji": "Ningyozan",
+  "confidence": "high",
+  "evidence": "ヤマケイオンラインの主読みが「にんぎょうざん」（にんぎょうやま・ひとがたやま併記）"
+ },
+ {
+  "id": 374,
+  "name": "鶏冠山（黒川山）",
+  "dict_kana": "けいかんやま（くろかわやま）",
+  "correct_kana": "けいかんざん（くろかわやま）",
+  "romaji": "Keikanzan (Kurokawayama)",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・甲州市観光サイトとも「けいかんざん」（山梨市の同名峰とさかやまとは別）"
+ },
+ {
+  "id": 380,
+  "name": "石立山",
+  "dict_kana": "いしたてざん",
+  "correct_kana": "いしだてやま",
+  "romaji": "Ishidateyama",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・YAMAP「いしだてやま」（徳島/高知、1708m）"
+ },
+ {
+  "id": 394,
+  "name": "野伏ヶ岳",
+  "dict_kana": "のぶせがだけ",
+  "correct_kana": "のぶせがたけ",
+  "romaji": "Nobusegatake",
+  "confidence": "low",
+  "evidence": "Wikipedia「のぶせがたけ」（ヤマケイオンラインは「のぶせがだけ」で読みが割れる）"
+ },
+ {
+  "id": 429,
+  "name": "犬ヶ岳",
+  "dict_kana": "いぬがだけ",
+  "correct_kana": "いぬがたけ",
+  "romaji": "Inugatake",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコ・コトバンクが「いぬがたけ」（ヤマケイのみ「いぬがだけ」）"
+ },
+ {
+  "id": 494,
+  "name": "中津山",
+  "dict_kana": "なかつざん",
+  "correct_kana": "なかつさん",
+  "romaji": "Nakatsusan",
+  "confidence": "high",
+  "evidence": "ヤマケイオンラインが「なかつさん」（なかつざん併記の資料もあり）、徳島県三好市の山"
+ },
+ {
+  "id": 512,
+  "name": "国見山",
+  "dict_kana": "くにみざん",
+  "correct_kana": "くにみやま",
+  "romaji": "Kunimiyama",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・高知新聞（四国百山）・yamaquestが「くにみやま」"
+ },
+ {
+  "id": 589,
+  "name": "口三方岳",
+  "dict_kana": "くちさんぼうだけ",
+  "correct_kana": "くちさんぼうだけ",
+  "romaji": "Kuchisanbodake",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・好日山荘とも「くちさんぼうだけ」（ぽうではなく濁音ぼう）"
+ },
+ {
+  "id": 630,
+  "name": "大万木山",
+  "dict_kana": "おおよろぎやま",
+  "correct_kana": "おおよろぎさん",
+  "romaji": "Oyorogisan",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコ・コトバンクが「おおよろぎさん」（ヤマケイのみ「おおよろぎやま」）"
+ },
+ {
+  "id": 633,
+  "name": "武奈ヶ岳",
+  "dict_kana": "ぶながだけ",
+  "correct_kana": "ぶながたけ",
+  "romaji": "Bunagatake",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコが「ぶながたけ」と明記（ヤマケイは「ぶながだけ」）"
+ },
+ {
+  "id": 638,
+  "name": "剣山",
+  "dict_kana": "つるぎやま",
+  "correct_kana": "つるぎさん",
+  "romaji": "Tsurugisan",
+  "confidence": "low",
+  "evidence": "Wikipedia「剣山（つるぎさん）」（北海道十勝、1204.9m）。ヤマケイは「つるぎやま」で分かれる"
+ },
+ {
+  "id": 667,
+  "name": "ウェンシリ岳",
+  "dict_kana": "うぇんしりだけ",
+  "correct_kana": "うえんしりだけ",
+  "romaji": "Uenshiridake",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマケイとも「ウエンシリ岳（うえんしりだけ）」で「ウェ」でなく「ウエ」"
+ },
+ {
+  "id": 682,
+  "name": "高陽山",
+  "dict_kana": "こうようざん",
+  "correct_kana": "こうようさん",
+  "romaji": "Koyosan",
+  "confidence": "high",
+  "evidence": "YAMAPが「こうようさん」と明記（福島・新潟県境1126m）"
+ },
+ {
+  "id": 683,
+  "name": "金剛山",
+  "dict_kana": "こんごうざん",
+  "correct_kana": "こんごうさん",
+  "romaji": "Kongosan",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコ・コトバンク・奈良県観光が「こんごうさん」（ヤマケイは「こんごうざん」）"
+ },
+ {
+  "id": 699,
+  "name": "竜ヶ岳",
+  "dict_kana": "りゅうがだけ",
+  "correct_kana": "りゅうがたけ",
+  "romaji": "Ryugatake",
+  "confidence": "high",
+  "evidence": "Wikipedia（三重県・滋賀県）・YAMAPが「りゅうがたけ」（ヤマケイは「りゅうがだけ」）"
+ },
+ {
+  "id": 705,
+  "name": "玉置山",
+  "dict_kana": "たまきやま",
+  "correct_kana": "たまきさん",
+  "romaji": "Tamakisan",
+  "confidence": "high",
+  "evidence": "ヤマケイが「たまきさん・たまきやま」併記で「たまきさん」を主読みに、玉置神社（たまきじんじゃ）でも知られる"
+ },
+ {
+  "id": 708,
+  "name": "蘇武岳",
+  "dict_kana": "そぶがたけ",
+  "correct_kana": "そぶだけ",
+  "romaji": "Sobudake",
+  "confidence": "low",
+  "evidence": "Wikipedia・Weblioが「そぶだけ」（ヤマケイは「そぶがたけ」で分かれる）"
+ },
+ {
+  "id": 725,
+  "name": "浄法寺山",
+  "dict_kana": "じょうほうじやま",
+  "correct_kana": "じょうほうじさん",
+  "romaji": "Johojisan",
+  "confidence": "low",
+  "evidence": "Wikipediaは「じょうほうじさん」、ヤマケイオンラインは「じょうほうじやま」で分裂。Wikipedia採用"
+ },
+ {
+  "id": 739,
+  "name": "杢蔵山",
+  "dict_kana": "もくぞうやま",
+  "correct_kana": "もくぞうさん",
+  "romaji": "Mokuzosan",
+  "confidence": "high",
+  "evidence": "Wikipedia・山形県観光サイト・新庄市（1026m、神室連峰南端）で「もくぞうさん」"
+ },
+ {
+  "id": 748,
+  "name": "三頭山",
+  "dict_kana": "さんとうさん",
+  "correct_kana": "さんとうざん",
+  "romaji": "Santozan",
+  "confidence": "high",
+  "evidence": "Wikipedia・コトバンク・北海道森林管理局（幌加内・1009m）で「さんとうざん」（ヤマレコのみ「さんとうさん」）"
+ },
+ {
+  "id": 751,
+  "name": "宝仏山",
+  "dict_kana": "ほうぶつざん",
+  "correct_kana": "ほうぶつさん",
+  "romaji": "Hobutsusan",
+  "confidence": "high",
+  "evidence": "鳥取県公式サイト・日野町（1005m）で「ほうぶつさん」"
+ },
+ {
+  "id": 781,
+  "name": "大滝山",
+  "dict_kana": "おおたきやま",
+  "correct_kana": "おおたきさん",
+  "romaji": "Otakisan",
+  "confidence": "low",
+  "evidence": "Wikipedia（大滝山 (讃岐山脈)）は「おおたきさん」。ヤマケイは「おおたきやま」で併存"
+ },
+ {
+  "id": 791,
+  "name": "東根山",
+  "dict_kana": "あずまねやま",
+  "correct_kana": "あずまねさん",
+  "romaji": "Azumanesan",
+  "confidence": "low",
+  "evidence": "コトバンク・yamaquest等は「あずまねさん」。ヤマケイのみ「あずまねやま」"
+ },
+ {
+  "id": 795,
+  "name": "鷹ノ巣山",
+  "dict_kana": "たかのすざん",
+  "correct_kana": "たかのすやま",
+  "romaji": "Takanosuyama",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン（922m）・東広島市観光サイトとも「たかのすやま」"
+ },
+ {
+  "id": 802,
+  "name": "雲月山",
+  "dict_kana": "うんげつやま",
+  "correct_kana": "うんげつざん",
+  "romaji": "Ungetsuzan",
+  "confidence": "high",
+  "evidence": "昭和38年に地元三町協議で「うんげつざん」に統一（ヤマケイオンラインも同読み）。「うづきやま」等も残存"
+ },
+ {
+  "id": 804,
+  "name": "笙ヶ岳",
+  "dict_kana": "しょうがだけ",
+  "correct_kana": "しょうがたけ",
+  "romaji": "Shogatake",
+  "confidence": "high",
+  "evidence": "Wikipedia・ヤマレコとも「しょうがたけ」（養老山地最高峰908m）"
+ },
+ {
+  "id": 870,
+  "name": "七洞岳",
+  "dict_kana": "ななほらがたけ",
+  "correct_kana": "ななほらだけ",
+  "romaji": "Nanahoradake",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・YAMAPとも「ななほらだけ」778m 三重県大紀町"
+ },
+ {
+  "id": 873,
+  "name": "中津峰山",
+  "dict_kana": "なかつみねやま",
+  "correct_kana": "なかつみねさん",
+  "romaji": "Nakatsuminesan",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン「なかつみねさん」773m 徳島（四国百名山）"
+ },
+ {
+  "id": 876,
+  "name": "霊山",
+  "dict_kana": "れいさん",
+  "correct_kana": "れいざん",
+  "romaji": "Reizan",
+  "confidence": "high",
+  "evidence": "Wikipedia（伊賀市）・好日山荘とも「れいざん」766m（ヤマケイのみ「れいさん」）"
+ },
+ {
+  "id": 897,
+  "name": "八塩山",
+  "dict_kana": "やしおやま",
+  "correct_kana": "やしおさん",
+  "romaji": "Yashiosan",
+  "confidence": "high",
+  "evidence": "ヤマケイ・ヤマレコ・由利本荘市観光協会とも「やしおさん」713m"
+ },
+ {
+  "id": 899,
+  "name": "徳仙丈山",
+  "dict_kana": "とくせんじょうやま",
+  "correct_kana": "とくせんじょうさん",
+  "romaji": "Tokusenjosan",
+  "confidence": "low",
+  "evidence": "Wikipediaは「とくせんじょうさん」、ヤマケイは「とくせんじょうやま」で分かれる"
+ },
+ {
+  "id": 904,
+  "name": "敏音知岳",
+  "dict_kana": "びんねしりだけ",
+  "correct_kana": "ぴんねしりだけ",
+  "romaji": "Pinneshiridake",
+  "confidence": "high",
+  "evidence": "Wikipedia・コトバンク「ぴんねしりだけ」703m 中頓別町（アイヌ語ピンネシリ）"
+ },
+ {
+  "id": 916,
+  "name": "鷲峰山",
+  "dict_kana": "じゅうぶざん",
+  "correct_kana": "じゅぶせん",
+  "romaji": "Jubusen",
+  "confidence": "low",
+  "evidence": "ヤマケイ・コトバンクは「じゅぶせん」を主とする（じゅうぶさん等の併読あり）682m"
+ },
+ {
+  "id": 952,
+  "name": "虚空蔵山",
+  "dict_kana": "こくぞうざん",
+  "correct_kana": "こくぞうさん",
+  "romaji": "Kokuzosan",
+  "confidence": "high",
+  "evidence": "Wikipedia（川棚町608.5m）・ヤマケイが「こくぞうさん」、ざんではない"
+ },
+ {
+  "id": 967,
+  "name": "飯盛山",
+  "dict_kana": "はんせいざん",
+  "correct_kana": "いいもりやま",
+  "romaji": "Iimoriyama",
+  "confidence": "high",
+  "evidence": "Wikipedia（小浜市584.5m）・ヤマケイとも「いいもりやま」。はんせいざんの根拠なし"
+ },
+ {
+  "id": 985,
+  "name": "妙見山",
+  "dict_kana": "みょうけんやま",
+  "correct_kana": "みょうけんざん",
+  "romaji": "Myokenzan",
+  "confidence": "high",
+  "evidence": "ヤマケイオンライン・yamaquestが兵庫522m峰を「みょうけんざん」と表記（dictはやま、titleはさん）"
+ },
+ {
+  "id": 990,
+  "name": "黒髪山",
+  "dict_kana": "くろかみざん",
+  "correct_kana": "くろかみやま",
+  "romaji": "Kurokamiyama",
+  "confidence": "high",
+  "evidence": "Wikipediaの定義文で「くろかみやま、くろかみざん」の順、地元ではくろかみやまが多いと明記"
+ },
+ {
+  "id": 1004,
+  "name": "金峰山",
+  "dict_kana": "きんぼうさん",
+  "correct_kana": "きんぼうざん",
+  "romaji": "Kinbozan",
+  "confidence": "high",
+  "evidence": "山と溪谷オンライン「金峯山（きんぼうざん）471m」、Wikipediaもきんぼうざん併記"
+ },
+ {
+  "id": 1023,
+  "name": "房住山",
+  "dict_kana": "ぼうじゅうさん",
+  "correct_kana": "ぼうじゅうざん",
+  "romaji": "Bojuzan",
+  "confidence": "high",
+  "evidence": "Wikipedia「房住山（ぼうじゅうざん）」秋田県三種町・能代市 409m"
+ },
+ {
+  "id": 100701,
+  "name": "屛風山",
+  "dict_kana": "びょうぶさん",
+  "correct_kana": "びょうぶざん",
+  "romaji": "Byobuzan",
+  "confidence": "high",
+  "evidence": "山と溪谷オンライン「屏風山（びょうぶざん）1,354m」本巣市・大野市境で確認（さんでもやまでもなくざん）"
+ },
+ {
+  "id": 117869,
+  "name": "後袈裟丸山",
+  "dict_kana": "あとけさまるやま",
+  "correct_kana": "うしろけさまるやま",
+  "romaji": "Ushirokesamaruyama",
+  "confidence": "high",
+  "evidence": "YAMAP山ページ（1908m）に「読み方：うしろけさまるやま」と明記（あとけさまる表記のサイトも一部あり）"
+ }
+]
