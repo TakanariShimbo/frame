@@ -18,7 +18,9 @@ import { join } from "node:path";
 const API = "https://ja.wikipedia.org/w/api.php";
 const UA = "FrameBot/0.1 (https://github.com/TakanariShimbo/frame; mountain descriptions)";
 const DEG_TOL = 0.2; // 山頂座標と記事座標の許容差（度）
-const EXTRACT_MAX = 300;
+// イントロの切り詰め上限（--max N で変更、0 = 切り詰めなし）。リメイク用の全文取得は --max 0
+const maxIdx = process.argv.indexOf("--max");
+const EXTRACT_MAX = maxIdx >= 0 ? Number(process.argv[maxIdx + 1]) : 300;
 const SLEEP_MS = 100;
 const CONCURRENCY = 4; // 控えめな並列数（UA明示・各ワーカーは直列。全体で ~5req/s 程度）
 
@@ -69,7 +71,7 @@ const stripParen = (s) => s.replace(/[（(].*?[)）]/g, "").trim();
 function trimExtract(s) {
   if (!s) return "";
   let t = s.replace(/\s+/g, " ").trim();
-  if (t.length <= EXTRACT_MAX) return t;
+  if (!EXTRACT_MAX || t.length <= EXTRACT_MAX) return t;
   t = t.slice(0, EXTRACT_MAX);
   const last = t.lastIndexOf("。");
   return last > EXTRACT_MAX * 0.5 ? t.slice(0, last + 1) : t + "…";
