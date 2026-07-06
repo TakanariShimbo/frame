@@ -530,7 +530,43 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
 
   // 解説プレビュー用の派生値（両方表示時の見出し構成）。焼き込み側のロジックと一致させる。
   const capItem = arLabels[captionIdx];
-  const capBoth = captionLang === "both" && !!capItem?.description && !!capItem?.descriptionEn;
+  const capBoth = captionLang === "both" && !!(capItem && descJa(capItem)) && !!(capItem && descEn(capItem));
+
+  // 解説の編集。表示中の言語・長さに対応するフィールドを書き換える（プレビュー・焼き込みに直結）。
+  // 辞書に解説がない山でも、ここで書けばキャプションとして表示・焼き込みできる。
+  const setCapText = (lang: "ja" | "en", text: string) =>
+    setArLabels((p) =>
+      p.map((l, i) => {
+        if (i !== captionIdx) return l;
+        const field =
+          lang === "ja"
+            ? captionLength === "short" ? "descriptionShort" : "description"
+            : captionLength === "short" ? "descriptionEnShort" : "descriptionEn";
+        return { ...l, [field]: text || undefined };
+      }),
+    );
+  const capOrig = capItem ? initialLabels.find((l) => l.id === capItem.id) : undefined;
+  const capEdited =
+    !!capItem &&
+    !!capOrig &&
+    (capItem.description !== capOrig.description ||
+      capItem.descriptionShort !== capOrig.descriptionShort ||
+      capItem.descriptionEn !== capOrig.descriptionEn ||
+      capItem.descriptionEnShort !== capOrig.descriptionEnShort);
+  const restoreCapText = () =>
+    setArLabels((p) =>
+      p.map((l, i) =>
+        i === captionIdx && capOrig
+          ? {
+              ...l,
+              description: capOrig.description,
+              descriptionShort: capOrig.descriptionShort,
+              descriptionEn: capOrig.descriptionEn,
+              descriptionEnShort: capOrig.descriptionEnShort,
+            }
+          : l,
+      ),
+    );
   const capName = capItem?.name ?? "";
   const capNameEn = capItem?.nameEn || capItem?.name || "";
   const capColHasTitle = !capBoth || captionTitleMode === "each";
@@ -1691,7 +1727,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
               {/* 解説 */}
               {captionLang !== "none" &&
                 arLabels[captionIdx] &&
-                (arLabels[captionIdx].description || arLabels[captionIdx].descriptionEn) && (
+                (descJa(arLabels[captionIdx]) || descEn(arLabels[captionIdx])) && (
                   <div
                     className={`ar-caption${captionBg !== "none" ? " has-panel" : ""}`}
                     style={
@@ -1731,7 +1767,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     )}
                     {capSharedTitleParts.length > 0 && capTagEls(capTagLang)}
                     <div className={`ar-cap-cols${capBoth && captionLayout === "vertical" ? " is-vertical" : ""}`}>
-                      {(captionLang === "ja" || captionLang === "both") && arLabels[captionIdx].description && (
+                      {(captionLang === "ja" || captionLang === "both") && descJa(arLabels[captionIdx]) && (
                         <div
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${captionSplit} 1 0` } : undefined}
@@ -1751,7 +1787,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                           onPointerCancel={onEditUp}
                         />
                       )}
-                      {(captionLang === "en" || captionLang === "both") && arLabels[captionIdx].descriptionEn && (
+                      {(captionLang === "en" || captionLang === "both") && descEn(arLabels[captionIdx]) && (
                         <div
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${1 - captionSplit} 1 0` } : undefined}
@@ -1977,6 +2013,33 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                           ))}
                         </div>
                       </div>
+                      {/* 本文の編集。辞書に解説がない山でもここで書ける */}
+                      {(captionLang === "ja" || captionLang === "both") && (
+                        <textarea
+                          className="ar-cap-editor"
+                          rows={4}
+                          value={capItem ? descJa(capItem) ?? "" : ""}
+                          placeholder="この山の解説は辞書にありません。ここに書くと写真に載せられます。"
+                          onChange={(e) => setCapText("ja", e.target.value)}
+                          aria-label={`解説本文（日本語・${captionLength === "short" ? "短め" : "長め"}）`}
+                        />
+                      )}
+                      {(captionLang === "en" || captionLang === "both") && (
+                        <textarea
+                          className="ar-cap-editor"
+                          rows={4}
+                          value={capItem ? descEn(capItem) ?? "" : ""}
+                          placeholder="No description in the dictionary. Write your own here."
+                          onChange={(e) => setCapText("en", e.target.value)}
+                          aria-label={`解説本文（英語・${captionLength === "short" ? "短め" : "長め"}）`}
+                        />
+                      )}
+                      {capEdited && (
+                        <div className="ar-fs-row">
+                          <span>編集済み</span>
+                          <button type="button" className="ar-cap-restore" onClick={restoreCapText}>辞書の解説に戻す</button>
+                        </div>
+                      )}
                       <div className="ar-fs-row">
                         <span>文字の背景</span>
                         <div className="seg" role="group" aria-label="解説の文字の背景">
