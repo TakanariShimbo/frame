@@ -405,6 +405,24 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
   return s;
 };
 
+// 操作パネルのタブID（表示順もこの順）。
+type PanelTab = "label" | "caption" | "title" | "frame";
+const PANEL_TABS: PanelTab[] = ["label", "caption", "title", "frame"];
+// テンプレが実際に使う機能からタブを導出する（シンプルモードの表示対象）。
+const templateTabs = (s: ExportStyle): PanelTab[] => {
+  const tabs: PanelTab[] = [];
+  if (s.bakeLabels) tabs.push("label");
+  if (s.captionLang !== "none") tabs.push("caption");
+  if (s.titleOn) tabs.push("title");
+  const m = s.frameMargin;
+  const c = s.cropInset;
+  if (m.t > 0 || m.r > 0 || m.b > 0 || m.l > 0 || s.frameFade > 0 || c.l > 0 || c.t > 0 || c.r > 0 || c.b > 0)
+    tabs.push("frame");
+  return tabs;
+};
+
+const PANEL_MODE_KEY = "frame.panelMode";
+
 type StudioProps = {
   photoUrl: string;
   initialLabels: ArLabel[];
@@ -493,7 +511,15 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [styleDump, setStyleDump] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。
-  const [panelTab, setPanelTab] = useState<"label" | "caption" | "title" | "frame">("label");
+  const [panelTab, setPanelTab] = useState<PanelTab>("label");
+  // パネル表示モード。シンプル=テンプレに関係するタブだけ / フル=全タブ。選択は次回も引き継ぐ。
+  const [panelMode, setPanelMode] = useState<"simple" | "full">(() => {
+    try {
+      return localStorage.getItem(PANEL_MODE_KEY) === "full" ? "full" : "simple";
+    } catch {
+      return "simple";
+    }
+  });
 
   // --- 計測・ドラッグ --- //
   const [photoNat, setPhotoNat] = useState<{ w: number; h: number } | null>(null);
@@ -1243,6 +1269,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setCropInset(s.cropInset);
     setFrameFade(s.frameFade);
     setActiveTemplateId(t.id);
+    // テンプレが使う最初の機能のタブを開く（例: 頂ならタイトル）。
+    setPanelTab(templateTabs(t.style)[0] ?? "label");
     setExportView("edit");
   };
 
@@ -1457,6 +1485,27 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const frameActive =
     fAnyMargin || frameFade > 0 || cropInset.l > 0 || cropInset.t > 0 || cropInset.r > 0 || cropInset.b > 0;
   const activeTemplate = EXPORT_TEMPLATES.find((t) => t.id === activeTemplateId) ?? null;
+  // タブの点灯状態と、シンプルモードで見せるタブ（テンプレが使う機能＋現在有効な機能）。
+  const tabOn: Record<PanelTab, boolean> = {
+    label: bakeLabels,
+    caption: captionLang !== "none",
+    title: titleOn,
+    frame: frameActive,
+  };
+  const relevantTabs = activeTemplate ? templateTabs(activeTemplate.style) : PANEL_TABS;
+  const visibleTabs = panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]) : PANEL_TABS;
+  const changePanelMode = (m: "simple" | "full") => {
+    setPanelMode(m);
+    try {
+      localStorage.setItem(PANEL_MODE_KEY, m);
+    } catch {
+      /* 保存できなくても動作に支障なし */
+    }
+    if (m === "simple") {
+      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]);
+      if (!simple.includes(panelTab)) setPanelTab(simple[0] ?? "label");
+    }
+  };
   // 「取り上げる山」セレクト（解説・タイトルの両タブ先頭に出す）。
   const subjectRow =
     arLabels.length > 1 ? (
@@ -1856,6 +1905,25 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                   <span className="studio-panel-tpl" title={activeTemplate.sub}>{activeTemplate.name}</span>
                 )}
               </span>
+              <div className="studio-mode" role="group" aria-label="パネル表示モード">
+                {(
+                  [
+                    ["simple", "シンプル", "テンプレに関係する設定だけ表示"],
+                    ["full", "フル", "すべての設定を表示"],
+                  ] as ["simple" | "full", string, string][]
+                ).map(([m, label, hint]) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={panelMode === m ? "is-active" : ""}
+                    onClick={() => changePanelMode(m)}
+                    title={hint}
+                    aria-pressed={panelMode === m}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
               <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
                 <IconCaret dir={panelOpen ? "down" : "up"} size={16} />
               </button>
@@ -1865,12 +1933,14 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
               <div className="studio-tabs" role="tablist" aria-label="仕上げの設定">
                 {(
                   [
-                    ["label", "山名", bakeLabels],
-                    ["caption", "解説", captionLang !== "none"],
-                    ["title", "タイトル", titleOn],
-                    ["frame", "フレーム", frameActive],
-                  ] as ["label" | "caption" | "title" | "frame", string, boolean][]
-                ).map(([id, label, on]) => (
+                    ["label", "山名"],
+                    ["caption", "解説"],
+                    ["title", "タイトル"],
+                    ["frame", "フレーム"],
+                  ] as [PanelTab, string][]
+                )
+                  .filter(([id]) => visibleTabs.includes(id))
+                  .map(([id, label]) => (
                   <button
                     key={id}
                     type="button"
@@ -1880,7 +1950,7 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
                     onClick={() => setPanelTab(id)}
                   >
                     {label}
-                    <span className={`studio-tab-dot${on ? " is-on" : ""}`} aria-hidden="true" />
+                    <span className={`studio-tab-dot${tabOn[id] ? " is-on" : ""}`} aria-hidden="true" />
                   </button>
                 ))}
               </div>

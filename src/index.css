@@ -1169,6 +1169,36 @@ button {
   border-color: var(--line-strong);
 }
 
+/* パネル表示モード切替（シンプル=テンプレに関係するタブのみ / フル=全タブ） */
+.studio-mode {
+  flex: none;
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+.studio-mode button {
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-sub);
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+.studio-mode button:hover {
+  color: var(--ink);
+}
+.studio-mode button.is-active {
+  color: var(--gold-strong);
+  background: var(--gold-soft);
+}
+
 /* タブ（山名・解説・タイトル・フレーム）。点灯ドットで有効な要素が分かる。 */
 .studio-tabs {
   flex: none;
