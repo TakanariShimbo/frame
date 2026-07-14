@@ -942,12 +942,11 @@ button {
   min-width: 260px;
 }
 
-/* --- スマホ: 画像だけをほぼ全幅で横スワイプ。カード枠なし --- */
+/* --- スマホ: 画像を画面の端から端まで（full-bleed）横スワイプ。カード枠なし --- */
 .tpl-swipe {
   display: flex;
-  gap: 12px; /* Studio.tsx のスクロール位置計算（offsetWidth + 12）と一致させる */
+  gap: 2px; /* Studio.tsx のスクロール位置計算（offsetWidth + 2）と一致させる */
   margin: 0 -16px;
-  padding: 0 7vw 4px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
@@ -956,10 +955,8 @@ button {
   display: none;
 }
 .tpl-swipe-slide {
-  flex: 0 0 86vw;
+  flex: 0 0 100%;
   scroll-snap-align: center;
-  border-radius: 12px;
-  overflow: hidden;
   background: #000;
   cursor: pointer;
 }

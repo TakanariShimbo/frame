@@ -1345,7 +1345,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const slide = el?.firstElementChild as HTMLElement | null;
     if (!el || !slide) return;
     // tplIdx は同期の起点としてだけ読む（スクロール操作のたびに巻き戻さないよう依存に含めない）
-    el.scrollLeft = tplIdx * (slide.offsetWidth + 12);
+    el.scrollLeft = tplIdx * (slide.offsetWidth + 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNarrow, exportView]);
 
@@ -1354,7 +1354,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const el = tplSwipeRef.current;
     const slide = el?.firstElementChild as HTMLElement | null;
     if (!el || !slide) return;
-    const w = slide.offsetWidth + 12; // 12 = gap
+    const w = slide.offsetWidth + 2; // 2 = gap
     setTplIdx(Math.max(0, Math.min(TPL_ITEMS.length - 1, Math.round(el.scrollLeft / w))));
   };
 
