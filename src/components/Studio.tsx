@@ -2115,7 +2115,18 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             <p className="studio-stage-hint">文字は写真の上でドラッグして動かせます</p>
           </div>
 
-          {/* 操作パネル */}
+          {/* 操作パネル。PCで畳んだときは右端の細いレールだけ残してステージを全幅に */}
+          {!panelOpen && !isNarrow ? (
+            <div className="studio-rail">
+              <button className="studio-icon-btn" onClick={() => setPanelOpen(true)} title="設定を開く">
+                <IconCaret dir="left" size={16} />
+              </button>
+              <span className="studio-rail-label" aria-hidden="true">仕上げ</span>
+              <button className="studio-icon-btn" onClick={openExportPreview} disabled={previewBaking} title="書き出す">
+                <IconDownload size={15} />
+              </button>
+            </div>
+          ) : (
           <div className={`studio-panel${panelOpen ? "" : " is-closed"}`}>
             <div className="studio-panel-head">
               <span className="studio-panel-title">
@@ -2143,8 +2154,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </button>
                 ))}
               </div>
+              {/* 畳む向き: PC=右（サイドパネルを右端へ）/ スマホ=下（ボトムシートを下へ） */}
               <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
-                <IconCaret dir={panelOpen ? "down" : "up"} size={16} />
+                <IconCaret dir={isNarrow ? (panelOpen ? "down" : "up") : "right"} size={16} />
               </button>
             </div>
             {panelOpen && (
@@ -2530,6 +2542,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>
