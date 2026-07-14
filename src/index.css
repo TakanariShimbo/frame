@@ -1,5 +1,5 @@
 /* ============================================================================
-   Frame — 山を写す
+   Frame — 山を、作品に。
    デザインシステム: 墨色の地に金のアクセント、見出しは明朝（和モダンの写真アトリエ）。
    焼き込みプレビュー（.ar-edit-label / .ar-caption / .ar-title 系）の寸法は
    Canvas 焼き込み（bakeComposite）と一致させているため変更しないこと。
@@ -271,21 +271,27 @@ button {
   line-height: 1.8;
   color: var(--ink-faint);
 }
+/* 列はJSで明示的に割り付ける（列数に応じてストック写真を足し引きし、下端を揃えるため）。 */
 .pick-mosaic-grid {
   max-width: 1240px;
   width: 100%;
   margin: 0 auto;
-  columns: 4 240px;
-  column-gap: 14px;
+  display: flex;
+  gap: 14px;
 }
-.pick-mosaic-grid img {
+.pick-mosaic-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pick-mosaic-col img {
   width: 100%;
   height: auto;
   display: block;
-  margin-bottom: 14px;
   border-radius: 12px;
   background: #000;
-  break-inside: avoid;
 }
 @media (prefers-reduced-motion: reduce) {
   .pick-wall-col {
