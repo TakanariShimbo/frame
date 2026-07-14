@@ -884,7 +884,8 @@ button {
   top: 50%;
   left: 50%;
   /* 横幅基準で大きく、ただし縦に収まる幅（高さ=幅/1.5 がステージを越えない）まで */
-  width: min(clamp(340px, 42vw, 600px), 64vh);
+  /* タブレット帯（~800-1100px）でも中央が主役に見えるよう52vw。上限600px・64vhでPC/横長は従来どおり */
+  width: min(clamp(340px, 52vw, 600px), 64vh);
   aspect-ratio: 3 / 2;
   border-radius: 14px;
   overflow: hidden;

@@ -1751,7 +1751,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           key={it.id}
                           className={`tpl-flow-card${off === 0 ? " is-center" : ""}`}
                           style={{
-                            transform: `translateY(-50%) translateX(calc(-50% + ${off} * clamp(170px, 19vw, 275px))) translateZ(${off === 0 ? 0 : -220 - abs * 70}px) rotateY(${off === 0 ? 0 : off < 0 ? 48 : -48}deg)`,
+                            transform: `translateY(-50%) translateX(calc(-50% + ${off} * clamp(170px, 24vw, 275px))) translateZ(${off === 0 ? 0 : -220 - abs * 70}px) rotateY(${off === 0 ? 0 : off < 0 ? 48 : -48}deg)`,
                             zIndex: 10 - abs,
                             opacity: abs > 2 ? 0 : 1,
                             pointerEvents: abs > 2 ? "none" : "auto",
