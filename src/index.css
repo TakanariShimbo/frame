@@ -96,14 +96,71 @@ button {
   background: var(--bg);
   -webkit-overflow-scrolling: touch;
 }
-.pick-inner {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: clamp(36px, 7vh, 72px) 22px 48px;
+/* ============================================================================
+   山選び（MountainPicker）— カードなしの全幅レイアウト。
+   写真は画面幅いっぱいのヒーロー（ぼかした同じ写真を下敷きに全体を見せる）。
+   ============================================================================ */
+.mtn-hero {
+  position: relative;
+  height: clamp(240px, 38vh, 480px);
+  overflow: hidden;
+  background: #000;
+}
+.mtn-hero-back {
+  position: absolute;
+  inset: -28px;
+  width: calc(100% + 56px);
+  height: calc(100% + 56px);
+  object-fit: cover;
+  filter: blur(26px) brightness(0.4);
+}
+.mtn-hero-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.mtn-hero-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 7, 8, 0.3), transparent 26%, transparent 48%, rgba(7, 7, 8, 0.9));
+}
+.mtn-hero-head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
-  scroll-margin-top: 12px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 20px;
+  text-align: center;
+}
+.mtn-hero-head h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: #fff;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.6);
+}
+.mtn-hero-head p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: rgba(242, 239, 231, 0.8);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+.mtn-body {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 18px 14px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* --- ヒーロー: 作例を敷き詰めた「動く写真の壁」。少し傾け、列ごとに逆方向へ流す --- */
@@ -300,50 +357,6 @@ button {
   .pick-hero-scroll::after {
     animation: none;
   }
-}
-
-/* --- 番号付きステップカード --- */
-.pick-step {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 22px 20px;
-  background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  transition: border-color 0.2s ease;
-}
-.pick-step.is-current {
-  border-color: var(--gold-line);
-}
-.pick-step-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-.pick-step-no {
-  font-family: var(--font-latin);
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--ink-faint);
-  transition: color 0.2s ease;
-}
-.pick-step.is-current .pick-step-no {
-  color: var(--gold);
-}
-.pick-step-head h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--ink);
-}
-.pick-step-note {
-  margin-left: auto;
-  font-size: 11.5px;
-  color: var(--ink-faint);
 }
 
 /* 検索 */
@@ -544,42 +557,6 @@ button {
   font-size: 12px;
 }
 
-/* 追加した写真のプレビュー（STEP 01 完了後） */
-.pick-photo {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.pick-photo-img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  display: block;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: #000;
-}
-/* 複数選択時のサムネイル列。先頭＝今から仕上げる1枚。 */
-.pick-thumbs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.pick-thumbs img {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  display: block;
-  border-radius: 8px;
-  opacity: 0.75;
-  background: #000;
-}
-.pick-thumbs img.is-current {
-  opacity: 1;
-  outline: 2px solid var(--gold-line);
-  outline-offset: 1px;
-}
-
 /* 続きモード（次の写真の山選び）の見出し。 */
 .pick-next-head {
   display: flex;
@@ -628,101 +605,140 @@ button {
 }
 
 /* ============================================================================
-   写真一覧（Board）— 進行のハブ。カードから好きな順に仕上げる。
+   写真一覧（Board）— 進行のハブ。余白なしのフォトグリッドから好きな順に仕上げる。
    ============================================================================ */
-.board-inner {
-  max-width: 880px;
+.board-head {
+  width: min(680px, 100%);
   margin: 0 auto;
-  padding: clamp(36px, 7vh, 72px) 22px 48px;
+  padding: clamp(28px, 6vh, 56px) 20px 20px;
+}
+.board-foot {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: 24px 20px 44px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 18px;
 }
+/* グリッドは画面幅いっぱい・隙間は2pxだけ（写真アプリ風） */
 .board-grid {
+  width: min(1280px, 100%);
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 2px;
 }
-.board-card {
+@media (max-width: 720px) {
+  .board-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.board-tile {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  aspect-ratio: 1;
   padding: 0;
   overflow: hidden;
   text-align: left;
   color: var(--ink);
-  background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
+  background: #000;
+  border: none;
   cursor: pointer;
-  transition: background 0.14s ease, transform 0.14s ease, border-color 0.14s ease;
 }
-.board-card:hover {
-  transform: translateY(-2px);
-  background: var(--surface-strong);
-}
-.board-card.is-todo {
-  border-color: var(--gold-line);
-}
-.board-card img {
+.board-tile img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
   object-fit: cover;
   display: block;
-  background: #000;
+  transition: transform 0.25s ease, opacity 0.2s ease;
 }
-.board-card.is-done img {
-  opacity: 0.82;
+@media (hover: hover) {
+  .board-tile:hover img {
+    transform: scale(1.04);
+  }
 }
-.board-card-meta {
+.board-tile.is-done img {
+  opacity: 0.78;
+}
+/* 山未選択のタイルは金の内枠で「次にやること」を示す */
+.board-tile.is-todo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1.5px var(--gold-line);
+  pointer-events: none;
+}
+.board-tile-veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46%;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.74));
+  pointer-events: none;
+}
+.board-tile-meta {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 12px;
+  align-items: baseline;
+  gap: 6px;
 }
-.board-card-no {
+.board-tile-no {
   font-family: var(--font-latin);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--ink-faint);
+  color: rgba(255, 255, 255, 0.72);
 }
-.board-card-name {
+.board-tile-name {
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
-.board-card-status {
+.board-tile-status {
   margin-left: auto;
-  font-size: 10.5px;
+  flex: none;
+  font-size: 10px;
   letter-spacing: 0.04em;
   white-space: nowrap;
-  color: var(--ink-faint);
+  color: rgba(255, 255, 255, 0.66);
 }
-.board-card-status.is-todo {
+.board-tile-status.is-todo {
   color: var(--gold-strong);
 }
-.board-card-status.is-done {
+.board-tile-status.is-done {
   color: var(--gold);
 }
-.board-card--add {
+.board-tile--add {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 160px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink-sub);
-  background: transparent;
-  border: 1px dashed var(--line-strong);
-}
-.board-card--add:hover {
-  color: var(--ink);
   background: var(--surface);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.board-tile--add::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  pointer-events: none;
+}
+.board-tile--add:hover {
+  color: var(--ink);
+  background: var(--surface-strong);
 }
 .board-actions {
   display: flex;
@@ -926,12 +942,12 @@ button {
   min-width: 260px;
 }
 
-/* --- スマホ: 1枚を大きく、横スワイプで切り替え --- */
+/* --- スマホ: 画像だけをほぼ全幅で横スワイプ。カード枠なし --- */
 .tpl-swipe {
   display: flex;
-  gap: 12px;
-  margin: 0 -24px;
-  padding: 4px 8vw 8px;
+  gap: 12px; /* Studio.tsx のスクロール位置計算（offsetWidth + 12）と一致させる */
+  margin: 0 -16px;
+  padding: 0 7vw 4px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
@@ -940,26 +956,28 @@ button {
   display: none;
 }
 .tpl-swipe-slide {
-  flex: 0 0 84vw;
+  flex: 0 0 86vw;
   scroll-snap-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 14px;
-  background: var(--surface);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
 }
 .tpl-swipe-slide img {
   width: 100%;
   aspect-ratio: 3 / 2;
   object-fit: cover;
   display: block;
-  border-radius: 10px;
-  background: #000;
 }
-/* 「素」タイルは grid センタリングを保ったまま角丸だけ合わせる */
-.tpl-swipe-slide .tpl-card-custom {
-  border-radius: 10px;
+/* 説明と決定ボタンはスライドの外（下部）で共有する */
+.tpl-swipe-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+.tpl-swipe-info .tpl-slide-body {
+  min-height: 88px;
 }
 .tpl-dots {
   display: flex;
@@ -983,6 +1001,17 @@ button {
   justify-content: center;
   gap: 8px;
   margin-top: 4px;
+}
+
+/* スマホ: 画面端の余白を最小に（スワイプの張り出し -16px と対応） */
+@media (max-width: 720px) {
+  .ar-tpl {
+    padding: 0 16px;
+  }
+  .ar-tpl-inner {
+    gap: 20px;
+    padding: 22px 0 40px;
+  }
 }
 
 /* ============================================================================

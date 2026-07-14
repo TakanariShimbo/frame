@@ -57,8 +57,12 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
 
   return (
     <div className="pick-screen">
-      <div className="pick-inner">
-        <header className="pick-next-head">
+      {/* 写真は画面幅いっぱいのヒーローに。ぼかした同じ写真を下敷きにして全体を見せる */}
+      <div className="mtn-hero">
+        <img className="mtn-hero-back" src={photoUrl} alt="" aria-hidden="true" />
+        <img className="mtn-hero-img" src={photoUrl} alt="仕上げる写真" />
+        <div className="mtn-hero-veil" aria-hidden="true" />
+        <header className="mtn-hero-head">
           <p className="kicker">Select</p>
           <h1>山を選ぶ</h1>
           <p>
@@ -66,84 +70,79 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
             この写真にのせる山を選んでください（複数選べます）。
           </p>
         </header>
+      </div>
 
-        {/* 写真と山選びをひとつのカードに（写真はこの画面では変えられない・確認表示のみ） */}
-        <section className="pick-step is-current">
-          <div className="pick-photo">
-            <img className="pick-photo-img" src={photoUrl} alt="仕上げる写真" />
+      <div className="mtn-body">
+        <div className="pick-search">
+          <IconSearch size={16} className="pick-search-ico" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (!e.target.value.trim()) setResults([]);
+            }}
+            placeholder="山名・読みで検索（例: 富士山 / ふじ）"
+            aria-label="山名で検索"
+            autoComplete="off"
+          />
+        </div>
+
+        {results.length > 0 && (
+          <ul className="pick-results">
+            {results.map((m) => (
+              <li key={m.id}>
+                <button
+                  type="button"
+                  className={`pick-result${isSelected(m.id) ? " is-added" : ""}`}
+                  onClick={() => addMountain(m)}
+                  disabled={isSelected(m.id)}
+                >
+                  <IconMountain size={16} className="pick-result-ico" />
+                  <span className="pick-result-name">{m.name}</span>
+                  <span className="pick-result-meta">
+                    {Math.round(m.elevationM).toLocaleString()}m
+                    {m.prefecture ? ` ・ ${m.prefecture.replace(/\//g, "・")}` : ""}
+                  </span>
+                  <span className="pick-result-add">{isSelected(m.id) ? "追加済み" : <IconPlus size={16} />}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* 選んだ山（複数可。写真に載せる順＝既定の並び順） */}
+        <div className="pick-selected">
+          <div className="pick-selected-head">
+            <span>のせる山</span>
+            <span className="pick-selected-count">{selected.length}座</span>
           </div>
-
-          <div className="pick-search">
-            <IconSearch size={16} className="pick-search-ico" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                if (!e.target.value.trim()) setResults([]);
-              }}
-              placeholder="山名・読みで検索（例: 富士山 / ふじ）"
-              aria-label="山名で検索"
-              autoComplete="off"
-            />
-          </div>
-
-          {results.length > 0 && (
-            <ul className="pick-results">
-              {results.map((m) => (
-                <li key={m.id}>
+          {selected.length === 0 ? (
+            <p className="pick-selected-empty">まだ選ばれていません。上の検索から山を追加してください。</p>
+          ) : (
+            <ul className="pick-chips">
+              {selected.map((m) => (
+                <li key={m.id} className="pick-chip">
+                  <span className="pick-chip-name">{m.name}</span>
+                  <span className="pick-chip-elev">{Math.round(m.elevationM).toLocaleString()}m</span>
                   <button
                     type="button"
-                    className={`pick-result${isSelected(m.id) ? " is-added" : ""}`}
-                    onClick={() => addMountain(m)}
-                    disabled={isSelected(m.id)}
+                    className="pick-chip-x"
+                    onClick={() => removeMountain(m.id)}
+                    aria-label={`${m.name}を外す`}
                   >
-                    <IconMountain size={16} className="pick-result-ico" />
-                    <span className="pick-result-name">{m.name}</span>
-                    <span className="pick-result-meta">
-                      {Math.round(m.elevationM).toLocaleString()}m
-                      {m.prefecture ? ` ・ ${m.prefecture.replace(/\//g, "・")}` : ""}
-                    </span>
-                    <span className="pick-result-add">{isSelected(m.id) ? "追加済み" : <IconPlus size={16} />}</span>
+                    ×
                   </button>
                 </li>
               ))}
             </ul>
           )}
+        </div>
 
-          {/* 選んだ山（複数可。写真に載せる順＝既定の並び順） */}
-          <div className="pick-selected">
-            <div className="pick-selected-head">
-              <span>のせる山</span>
-              <span className="pick-selected-count">{selected.length}座</span>
-            </div>
-            {selected.length === 0 ? (
-              <p className="pick-selected-empty">まだ選ばれていません。上の検索から山を追加してください。</p>
-            ) : (
-              <ul className="pick-chips">
-                {selected.map((m) => (
-                  <li key={m.id} className="pick-chip">
-                    <span className="pick-chip-name">{m.name}</span>
-                    <span className="pick-chip-elev">{Math.round(m.elevationM).toLocaleString()}m</span>
-                    <button
-                      type="button"
-                      className="pick-chip-x"
-                      onClick={() => removeMountain(m.id)}
-                      aria-label={`${m.name}を外す`}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <button type="button" className="pick-pick-btn" disabled={!canProceed || loading} onClick={onProceed}>
-            {loading ? "読み込み中…" : "テーマを選んで仕上げへ"}
-          </button>
-          {!canProceed && <p className="pick-hint">山を1座以上選んでください。</p>}
-        </section>
+        <button type="button" className="pick-pick-btn" disabled={!canProceed || loading} onClick={onProceed}>
+          {loading ? "読み込み中…" : "テーマを選んで仕上げへ"}
+        </button>
+        {!canProceed && <p className="pick-hint">山を1座以上選んでください。</p>}
 
         <div className="pick-home-row">
           <button type="button" className="pick-photo-change" onClick={onBoard}>
