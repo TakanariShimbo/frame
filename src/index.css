@@ -871,7 +871,7 @@ button {
   position: relative;
   flex: 1;
   min-width: 0;
-  height: clamp(280px, 46vh, 430px);
+  height: clamp(300px, 48vh, 460px);
   perspective: 1200px;
   overflow: hidden;
   /* スワイプでテーマ送り（横はJSが処理、縦は普通にページスクロール） */
@@ -883,8 +883,8 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
-  /* 横幅基準で大きく、ただし縦に収まる幅（高さ=幅/1.5 がステージを越えない）まで */
-  width: min(clamp(340px, 42vw, 600px), 64vh);
+  /* 横幅基準で大きく（タブレット縦持ちでも痩せない係数）、縦に収まる幅まで */
+  width: min(clamp(360px, 56vw, 640px), 68vh);
   aspect-ratio: 3 / 2;
   border-radius: 14px;
   overflow: hidden;
