@@ -1300,11 +1300,16 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
       setPreviewBlob(r.blob);
     }
   };
-  // 保存。iOS(WebKit)は <a download> が効かないことが多いので、まず Web Share API
-  // （「"写真"に保存」/共有が出せる）を試し、未対応環境では従来のダウンロードへフォールバック。
+  // 保存。iOS(WebKit)は <a download> が効かないことが多いので、モバイル端末では
+  // まず Web Share API（「"写真"に保存」/共有が出せる）を試す。PCでは共有シートを
+  // 出してもファイル保存に繋がらない（キャンセルすると保存自体が中断される）ため、
+  // 共有は使わず直接ダウンロードする。
   const saveExportImage = async () => {
+    const isMobileLike =
+      /iPhone|iPad|iPod|Android/.test(navigator.userAgent) ||
+      (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1); // iPadOSはMac名乗り
     const file = previewBlob ? new File([previewBlob], "frame.jpg", { type: "image/jpeg" }) : null;
-    if (file && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+    if (isMobileLike && file && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "frame" });
         return;
