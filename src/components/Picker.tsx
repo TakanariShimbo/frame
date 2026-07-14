@@ -88,9 +88,6 @@ export default function Picker({ onPick }: Props) {
             <img key={w} src={`${base}home/works/${w}.jpg`} alt="作例" loading="lazy" />
           ))}
         </div>
-        <p className="pick-credit">
-          山岳データ: あにねこ氏「山名一覧 on the Web地図」(map.jpn.org)・国土地理院「日本の主な山岳標高一覧」を加工 ／ 解説文は事実情報をもとにAIで生成
-        </p>
       </section>
     </div>
   );

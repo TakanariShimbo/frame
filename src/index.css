@@ -513,7 +513,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border-radius: var(--radius);
+  border-radius: 999px;
   border: none;
   background: var(--gold);
   color: var(--on-gold);
@@ -729,14 +729,6 @@ button {
   min-height: 48px;
 }
 
-/* 出典（最下部の小さなクレジット） */
-.pick-credit {
-  margin: 6px 0 0;
-  text-align: center;
-  font-size: 10.5px;
-  line-height: 1.8;
-  color: var(--ink-faint);
-}
 
 /* ============================================================================
    仕上げ（Studio）— テンプレート選択。
@@ -786,96 +778,8 @@ button {
   line-height: 1.8;
   color: var(--ink-sub);
 }
-.ar-tpl-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(150px, 1fr));
-  gap: 16px;
-  width: 100%;
-}
-.ar-tpl-card {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  padding: 0;
-  overflow: hidden;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
-}
-.ar-tpl-card:hover {
-  transform: translateY(-3px);
-  background: var(--surface-strong);
-}
-.ar-tpl-card:active {
-  transform: translateY(0);
-}
-.ar-tpl-card.is-active {
-  border-color: var(--gold-line);
-}
-.ar-tpl-card--custom {
-  background: transparent;
-  border-style: dashed;
-  border-color: var(--line);
-}
-/* 完成見本。3:2に整えたプレビューを cover で敷き詰め、写真を主役にする。 */
-.ar-tpl-thumb {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  background: #050505;
-  overflow: hidden;
-}
-.ar-tpl-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.25s ease;
-}
-.ar-tpl-card:hover .ar-tpl-thumb img {
-  transform: scale(1.03);
-}
-.ar-tpl-check {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--on-gold);
-  background: var(--gold);
-  border-radius: 999px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-}
-.ar-tpl-thumb--custom {
-  font-size: 13px;
-  color: var(--ink-faint);
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.03) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-/* 漢字一文字を主役に、右に短い説明。 */
-.ar-tpl-card-body {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 14px 16px 16px;
-}
-.ar-tpl-card-kanji {
+/* --- テーマ選択カルーセル（共通部品） --- */
+.tpl-kanji {
   flex: none;
   width: 44px;
   height: 44px;
@@ -889,40 +793,190 @@ button {
   border: 1px solid var(--gold-line);
   border-radius: 10px;
 }
-.ar-tpl-card-text {
+.tpl-slide-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-height: 64px;
+}
+.tpl-slide-text {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
-.ar-tpl-card-sub {
-  font-size: 13.5px;
+.tpl-slide-text b {
+  font-size: 14px;
   font-weight: 700;
   color: var(--ink);
 }
-.ar-tpl-card-hint {
+.tpl-slide-text p {
+  margin: 0;
   font-size: 11.5px;
   line-height: 1.65;
   color: var(--ink-sub);
 }
+.tpl-choose {
+  min-height: 46px;
+}
+.tpl-card-custom {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.04) 6px,
+    rgba(255, 255, 255, 0.01) 6px,
+    rgba(255, 255, 255, 0.01) 12px
+  );
+}
+
+/* --- PC: カバーフロー（中央が正面、左右は奥へ傾けて覗かせる） --- */
+.tpl-flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tpl-flow-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: clamp(240px, 36vh, 330px);
+  perspective: 1200px;
+  overflow: hidden;
+}
+.tpl-flow-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(300px, 34vw, 440px);
+  aspect-ratio: 3 / 2;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
+}
+.tpl-flow-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 脇のカードは少し沈める（中央だけが「いま選んでいる」1枚） */
+.tpl-flow-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 5, 6, 0.45);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.tpl-flow-card.is-center::after {
+  opacity: 0;
+}
+.tpl-flow-card.is-center {
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.09);
+}
+.tpl-flow-nav {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+.tpl-flow-nav:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+.tpl-flow-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.tpl-flow-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.tpl-flow-info .tpl-slide-body {
+  width: min(480px, 100%);
+}
+.tpl-flow-info .tpl-choose {
+  min-width: 260px;
+}
+
+/* --- スマホ: 1枚を大きく、横スワイプで切り替え --- */
+.tpl-swipe {
+  display: flex;
+  gap: 12px;
+  margin: 0 -24px;
+  padding: 4px 8vw 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.tpl-swipe::-webkit-scrollbar {
+  display: none;
+}
+.tpl-swipe-slide {
+  flex: 0 0 84vw;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+.tpl-swipe-slide img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+  background: #000;
+}
+/* 「素」タイルは grid センタリングを保ったまま角丸だけ合わせる */
+.tpl-swipe-slide .tpl-card-custom {
+  border-radius: 10px;
+}
+.tpl-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+.tpl-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.tpl-dots span.is-on {
+  background: var(--gold);
+  transform: scale(1.25);
+}
+
 .ar-tpl-foot {
   display: flex;
   justify-content: center;
+  gap: 8px;
   margin-top: 4px;
-}
-@media (max-width: 620px) {
-  .ar-tpl-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .ar-tpl-card-body {
-    gap: 10px;
-    padding: 12px;
-  }
-  .ar-tpl-card-kanji {
-    width: 38px;
-    height: 38px;
-    font-size: 22px;
-  }
 }
 
 /* ============================================================================
@@ -1396,7 +1450,7 @@ button {
   height: 32px;
   display: grid;
   place-items: center;
-  border-radius: 9px;
+  border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.06);
   color: var(--ink);
@@ -1798,7 +1852,7 @@ input[type="range"].ar-fs-slider {
   color: var(--on-gold);
   background: var(--gold);
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -1822,7 +1876,7 @@ input[type="range"].ar-fs-slider {
   color: var(--ink);
   background: rgba(255, 255, 255, 0.06);
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -1859,10 +1913,9 @@ input[type="range"].ar-fs-slider {
 }
 
 /* ============================================================================
-   オーバーレイ（書き出しプレビュー / 設定ダンプ）
+   オーバーレイ（書き出しプレビュー）
    ============================================================================ */
-.ar-preview,
-.ar-dump {
+.ar-preview {
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -1874,8 +1927,7 @@ input[type="range"].ar-fs-slider {
   justify-content: center;
   padding: 20px;
 }
-.ar-preview-card,
-.ar-dump-card {
+.ar-preview-card {
   width: min(720px, 100%);
   max-height: 88vh;
   display: flex;
@@ -1888,26 +1940,19 @@ input[type="range"].ar-fs-slider {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-pop);
 }
-.ar-dump-card {
-  width: min(640px, 100%);
-  max-height: 80vh;
-}
-.ar-preview-head,
-.ar-dump-head {
+.ar-preview-head {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
-.ar-preview-head > span:first-child,
-.ar-dump-head > span:first-child {
+.ar-preview-head > span:first-child {
   font-family: var(--font-display);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--ink);
 }
-.ar-preview-note,
-.ar-dump-note {
+.ar-preview-note {
   font-size: 12px;
   font-weight: 400;
   color: var(--ink-sub);
@@ -1929,8 +1974,7 @@ input[type="range"].ar-fs-slider {
   object-fit: contain;
   display: block;
 }
-.ar-preview-actions,
-.ar-dump-actions {
+.ar-preview-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -1944,18 +1988,4 @@ input[type="range"].ar-fs-slider {
   color: var(--ink-faint);
   font-size: 11.5px;
   line-height: 1.6;
-}
-.ar-dump-text {
-  flex: 1;
-  min-height: 280px;
-  resize: vertical;
-  padding: 10px 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink);
-  background: #05070a;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  white-space: pre;
 }

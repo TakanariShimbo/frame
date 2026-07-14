@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { IconDownload, IconCaret, IconHome } from "./icons";
+import { IconDownload, IconCaret, IconChevron } from "./icons";
 import type { ArLabel } from "../lib/labels";
 
 // ============================================================================
@@ -379,6 +379,25 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
 ];
 
 // テンプレを写真の向きに合わせて回す（横長基準。縦長は辺を入れ替える）。
+// テーマ選択カルーセルの並び（テンプレ5種＋「素」=テーマなし）。
+type TplItem = { id: string; name: string; sub: string; hint: string; tpl: ExportTemplate | null };
+const TPL_ITEMS: TplItem[] = [
+  ...EXPORT_TEMPLATES.map((t) => ({ id: t.id, name: t.name, sub: t.sub, hint: t.hint, tpl: t as ExportTemplate | null })),
+  { id: "custom", name: "素", sub: "自分で設定", hint: "テーマを使わず、最初から自分で仕上げる。", tpl: null },
+];
+
+// スマホ判定（テーマ選択をスワイプ式に切り替える）。
+function useIsNarrow(): boolean {
+  const [narrow, setNarrow] = useState(() => window.matchMedia("(max-width: 720px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px)");
+    const fn = (e: MediaQueryListEvent) => setNarrow(e.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+  return narrow;
+}
+
 const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
   const s = t.style;
   if (!portrait) return s;
@@ -453,6 +472,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 仕上げ画面の表示モード。入った直後はテンプレ選択、選ぶと編集へ。復元時は編集へ直行。
   const [exportView, setExportView] = useState<"template" | "edit">(initialSnapshot ? "edit" : "template");
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialSnapshot?.templateId ?? null);
+
+  // 一度でも編集に入ったか。テーマ選択に「戻る」だけでは編集内容を捨てない（一覧へ
+  // 戻るときのスナップショット保存はこのフラグで判定する）。
+  const [everEdited, setEverEdited] = useState(!!initialSnapshot);
 
   // 編集対象の山ラベル（入口で組み立て済み）。座標は写真フレーム内の正規化値(0..1)。
   const [arLabels, setArLabels] = useState<ArLabel[]>(initialSnapshot?.labels ?? initialLabels);
@@ -529,10 +552,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
-  const [styleDump, setStyleDump] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
+  // テーマ選択カルーセルの現在位置（スマホ=スワイプ / PC=カバーフロー共通）。
+  const [tplIdx, setTplIdx] = useState(() => {
+    const i = TPL_ITEMS.findIndex((x) => x.id === activeTemplateId);
+    return i >= 0 ? i : 0;
+  });
+  const tplSwipeRef = useRef<HTMLDivElement | null>(null);
+  const isNarrow = useIsNarrow();
   // パネル表示モード。シンプル=テンプレに関係するタブだけ / フル=全タブ。選択は次回も引き継ぐ。
   const [panelMode, setPanelMode] = useState<"simple" | "full">(() => {
     try {
@@ -1294,6 +1323,36 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     // テンプレが使う最初の機能のタブを開く（例: 頂ならタイトル）。
     setPanelTab(templateTabs(t.style)[0] ?? "label");
     setExportView("edit");
+    setEverEdited(true);
+  };
+
+  // カルーセルで選んだテーマを適用（素=テーマなしはそのまま編集へ）。
+  const chooseTpl = (it: TplItem) => {
+    if (it.tpl) {
+      applyTemplate(it.tpl);
+    } else {
+      setExportView("edit");
+      setEverEdited(true);
+    }
+  };
+  // スワイプ表示に入ったら、現在のテーマ位置までスクロールを合わせる（PC⇔スマホ切替時のずれ防止）。
+  useEffect(() => {
+    if (!isNarrow || exportView !== "template") return;
+    const el = tplSwipeRef.current;
+    const slide = el?.firstElementChild as HTMLElement | null;
+    if (!el || !slide) return;
+    // tplIdx は同期の起点としてだけ読む（スクロール操作のたびに巻き戻さないよう依存に含めない）
+    el.scrollLeft = tplIdx * (slide.offsetWidth + 12);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNarrow, exportView]);
+
+  // スマホのスワイプ位置 → ドット表示用の現在位置。
+  const onTplScroll = () => {
+    const el = tplSwipeRef.current;
+    const slide = el?.firstElementChild as HTMLElement | null;
+    if (!el || !slide) return;
+    const w = slide.offsetWidth + 12; // 12 = gap
+    setTplIdx(Math.max(0, Math.min(TPL_ITEMS.length - 1, Math.round(el.scrollLeft / w))));
   };
 
   // 現在の仕上げ設定（ExportStyle）。設定の書き出しと一覧へ戻るときの状態保存に使う。
@@ -1307,18 +1366,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     roleFonts, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
   });
 
-  // 一覧へ渡す編集状態。テンプレ選択前（編集に入っていない）なら null。
+  // 一覧へ渡す編集状態。一度も編集に入っていなければ null。
+  // テーマ選択へ「戻った」だけの状態でも、編集済みの内容は保存する。
   const makeSnapshot = (): StudioSnapshot | null =>
-    exportView === "edit"
+    everEdited
       ? { style: currentStyle(), templateId: activeTemplateId, labels: arLabels, captionIdx }
       : null;
-
-  // 現在の仕上げ設定を ExportStyle 形式の JSON で書き出す（位置は写真依存なので含めない）。
-  const dumpCurrentStyle = () => {
-    const json = JSON.stringify(currentStyle(), null, 2);
-    setStyleDump(json);
-    navigator.clipboard?.writeText(json).catch(() => {});
-  };
 
   const openExportPreview = async () => {
     if (previewBaking) return;
@@ -1329,6 +1382,21 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       setPreviewUrl(r.url);
       setPreviewBlob(r.blob);
     }
+  };
+
+  // 一覧へ戻る。編集に入っている写真は、その時点の見た目を自動で書き出してから戻る
+  // （一覧で「仕上げ済み」になり、まとめて保存にも含まれる。手動の「書き出す」は不要）。
+  const [exiting, setExiting] = useState(false);
+  const exitToBoard = async () => {
+    if (exiting) return;
+    let blob = previewBlob;
+    if (exportView === "edit") {
+      setExiting(true);
+      const r = await bakeComposite();
+      setExiting(false);
+      if (r) blob = r.blob;
+    }
+    onExit(makeSnapshot(), blob);
   };
   // 保存。iOS(WebKit)は <a download> が効かないことが多いので、モバイル端末では
   // まず Web Share API（「"写真"に保存」/共有が出せる）を試す。PCでは共有シートを
@@ -1563,75 +1631,109 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         <div className="ar-tpl">
           <div className="ar-tpl-inner">
             <header className="ar-tpl-head">
-              <p className="kicker">Template</p>
-              <h1>仕上がりを選ぶ</h1>
-              <p>雰囲気を選ぶと、文字・解説・余白をまとめて整えます。あとから細かく調整できます。</p>
+              <p className="kicker">Theme</p>
+              <h1>テーマを選ぶ</h1>
+              <p>{isNarrow ? "スワイプで見比べて、気に入ったテーマで仕上げへ。" : "左右で見比べて、気に入ったテーマで仕上げへ。"}あとから細かく調整できます。</p>
             </header>
-            <div className="ar-tpl-grid">
-              {EXPORT_TEMPLATES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`ar-tpl-card${activeTemplateId === t.id ? " is-active" : ""}`}
-                  onClick={() => applyTemplate(t)}
-                >
-                  <span className="ar-tpl-thumb">
-                    <img
-                      src={`${import.meta.env.BASE_URL}template-previews/${t.id}.jpg`}
-                      alt=""
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                    {activeTemplateId === t.id && <span className="ar-tpl-check" aria-hidden="true">✓</span>}
-                  </span>
-                  <span className="ar-tpl-card-body">
-                    <span className="ar-tpl-card-kanji" aria-hidden="true">{t.name}</span>
-                    <span className="ar-tpl-card-text">
-                      <span className="ar-tpl-card-sub">{t.sub}</span>
-                      <span className="ar-tpl-card-hint">{t.hint}</span>
-                    </span>
-                  </span>
-                </button>
-              ))}
-              <button
-                type="button"
-                className="ar-tpl-card ar-tpl-card--custom"
-                onClick={() => setExportView("edit")}
-              >
-                <span className="ar-tpl-thumb ar-tpl-thumb--custom">テンプレートなし</span>
-                <span className="ar-tpl-card-body">
-                  <span className="ar-tpl-card-kanji" aria-hidden="true">素</span>
-                  <span className="ar-tpl-card-text">
-                    <span className="ar-tpl-card-sub">自分で設定</span>
-                    <span className="ar-tpl-card-hint">テンプレートを使わず、最初から自分で仕上げる。</span>
-                  </span>
-                </span>
-              </button>
-            </div>
+
+            {isNarrow ? (
+              /* スマホ: 1枚を大きく、横スワイプで切り替え */
+              <>
+                <div className="tpl-swipe" ref={tplSwipeRef} onScroll={onTplScroll}>
+                  {TPL_ITEMS.map((it) => (
+                    <div key={it.id} className="tpl-swipe-slide">
+                      {it.tpl ? (
+                        <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg`} alt={it.sub} />
+                      ) : (
+                        <div className="tpl-card-custom">テーマなしで、まっさらから</div>
+                      )}
+                      <div className="tpl-slide-body">
+                        <span className="tpl-kanji" aria-hidden="true">{it.name}</span>
+                        <div className="tpl-slide-text">
+                          <b>{it.sub}</b>
+                          <p>{it.hint}</p>
+                        </div>
+                      </div>
+                      <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(it)}>
+                        このテーマで仕上げる
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="tpl-dots" aria-hidden="true">
+                  {TPL_ITEMS.map((it, i) => (
+                    <span key={it.id} className={i === tplIdx ? "is-on" : ""} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              /* PC: カバーフロー。中央が正面、左右は奥に傾けて覗かせる */
+              <>
+                <div className="tpl-flow">
+                  <button
+                    type="button"
+                    className="tpl-flow-nav"
+                    onClick={() => setTplIdx((i) => Math.max(0, i - 1))}
+                    disabled={tplIdx === 0}
+                    aria-label="前のテーマ"
+                  >
+                    ‹
+                  </button>
+                  <div className="tpl-flow-stage">
+                    {TPL_ITEMS.map((it, i) => {
+                      const off = i - tplIdx;
+                      const abs = Math.abs(off);
+                      return (
+                        <div
+                          key={it.id}
+                          className={`tpl-flow-card${off === 0 ? " is-center" : ""}`}
+                          style={{
+                            transform: `translateY(-50%) translateX(calc(-50% + ${off} * clamp(150px, 16vw, 205px))) translateZ(${off === 0 ? 0 : -170 - abs * 60}px) rotateY(${off === 0 ? 0 : off < 0 ? 48 : -48}deg)`,
+                            zIndex: 10 - abs,
+                            opacity: abs > 2 ? 0 : 1,
+                            pointerEvents: abs > 2 ? "none" : "auto",
+                          }}
+                          onClick={() => (off === 0 ? chooseTpl(it) : setTplIdx(i))}
+                          role="button"
+                          aria-label={off === 0 ? `${it.sub}で仕上げる` : `${it.sub}を見る`}
+                        >
+                          {it.tpl ? (
+                            <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg`} alt="" />
+                          ) : (
+                            <div className="tpl-card-custom">テーマなしで、まっさらから</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    className="tpl-flow-nav"
+                    onClick={() => setTplIdx((i) => Math.min(TPL_ITEMS.length - 1, i + 1))}
+                    disabled={tplIdx === TPL_ITEMS.length - 1}
+                    aria-label="次のテーマ"
+                  >
+                    ›
+                  </button>
+                </div>
+                <div className="tpl-flow-info">
+                  <div className="tpl-slide-body">
+                    <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
+                    <div className="tpl-slide-text">
+                      <b>{TPL_ITEMS[tplIdx].sub}</b>
+                      <p>{TPL_ITEMS[tplIdx].hint}</p>
+                    </div>
+                  </div>
+                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
+                    このテーマで仕上げる
+                  </button>
+                </div>
+              </>
+            )}
+
             <div className="ar-tpl-foot">
               <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), previewBlob)}>一覧へ</button>
               <button className="ar-btn-sub" onClick={onReselect}>山を選び直す</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 設定JSON ダンプ */}
-      {styleDump !== null && (
-        <div className="ar-dump" onClick={() => setStyleDump(null)}>
-          <div className="ar-dump-card" onClick={(e) => e.stopPropagation()}>
-            <div className="ar-dump-head">
-              <span>現在の設定（ExportStyle JSON）</span>
-              <span className="ar-dump-note">クリップボードにコピー済み。これを貼って共有してください。</span>
-            </div>
-            <textarea className="ar-dump-text" readOnly value={styleDump} onFocus={(e) => e.currentTarget.select()} />
-            <div className="ar-dump-actions">
-              <button className="ar-btn-sub" onClick={() => navigator.clipboard?.writeText(styleDump).catch(() => {})}>
-                もう一度コピー
-              </button>
-              <button className="ar-btn-main" onClick={() => setStyleDump(null)}>閉じる</button>
             </div>
           </div>
         </div>
@@ -1949,9 +2051,6 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           {/* 操作パネル */}
           <div className={`studio-panel${panelOpen ? "" : " is-closed"}`}>
             <div className="studio-panel-head">
-              <button className="studio-icon-btn" onClick={() => setExportView("template")} title="テンプレ選択へ戻る">
-                <IconHome size={16} />
-              </button>
               <span className="studio-panel-title">
                 仕上げ
                 {activeTemplate && (
@@ -2346,15 +2445,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
 
             {/* 書き出し（常時表示の下部バー） */}
             <div className="studio-panel-foot">
-              <button className="ar-btn-sub" onClick={dumpCurrentStyle} title="現在の仕上げ設定をJSONでコピー">
-                設定を出力
+              <button className="ar-btn-sub" onClick={() => setExportView("template")} title="テーマ選択へ戻る（編集内容は保持されます）">
+                <IconChevron dir="left" size={14} />
+                テーマ
               </button>
               <button
                 className="ar-btn-sub"
-                onClick={() => onExit(makeSnapshot(), previewBlob)}
-                title="編集状態を保って写真一覧へ戻る"
+                onClick={exitToBoard}
+                disabled={exiting}
+                title="この時点の見た目を保存して写真一覧へ戻る"
               >
-                一覧へ
+                {exiting ? "保存中…" : "一覧へ"}
               </button>
               <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
                 <IconDownload size={15} />

@@ -53,8 +53,14 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   };
 
   const status = (it: WorkItem) =>
-    it.exportBlob ? ("done" as const) : it.labels ? ("editing" as const) : ("todo" as const);
-  const STATUS_LABEL = { todo: "山を選ぶ", editing: "編集中", done: "書き出し済み" };
+    it.exportBlob
+      ? ("done" as const)
+      : it.snapshot
+        ? ("editing" as const)
+        : it.labels
+          ? ("noTheme" as const)
+          : ("todo" as const);
+  const STATUS_LABEL = { todo: "山を選ぶ", noTheme: "テーマ未選択", editing: "編集中", done: "仕上げ済み" };
 
   return (
     <div className="pick-screen">
@@ -64,7 +70,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
           <p className="kicker">Works</p>
           <h1>写真一覧</h1>
           <p>
-            {items.length}枚中 {exported.length}枚が書き出し済み。カードをタップして、好きな順に仕上げてください。
+            {items.length}枚中 {exported.length}枚が仕上げ済み。カードをタップして、好きな順に仕上げてください。
           </p>
         </header>
 
@@ -95,13 +101,13 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
             className="ar-btn-main"
             onClick={onSaveAll}
             disabled={exported.length === 0 || zipping}
-            title={exported.length === 0 ? "各写真の仕上げ画面で「書き出す」を済ませるとまとめて保存できます" : undefined}
+            title={exported.length === 0 ? "テーマを選んで仕上げ画面に入ると、まとめて保存できるようになります" : undefined}
           >
             <IconDownload size={15} />
             {zipping ? "作成中…" : `まとめて保存（${exported.length}枚）`}
           </button>
           {exported.length < items.length && (
-            <p className="pick-hint">まとめて保存に含まれるのは、仕上げ画面で一度「書き出す」を済ませた写真です。</p>
+            <p className="pick-hint">まとめて保存に含まれるのは、テーマを選んで仕上げまで進んだ写真です。</p>
           )}
         </div>
 

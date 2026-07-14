@@ -63,29 +63,15 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
           <h1>山を選ぶ</h1>
           <p>
             {photoTotal > 1 ? `${photoIndex} / ${photoTotal}枚目。` : ""}
-            この写真にのせる山を選んでください。
+            この写真にのせる山を選んでください（複数選べます）。
           </p>
         </header>
 
-        {/* 仕上げる写真（確認表示） */}
-        <section className="pick-step">
-          <header className="pick-step-head">
-            <span className="pick-step-no">01</span>
-            <h2>この写真を仕上げる</h2>
-            {photoTotal > 1 && <span className="pick-step-note">残り{photoTotal - photoIndex}枚</span>}
-          </header>
+        {/* 写真と山選びをひとつのカードに（写真はこの画面では変えられない・確認表示のみ） */}
+        <section className="pick-step is-current">
           <div className="pick-photo">
             <img className="pick-photo-img" src={photoUrl} alt="仕上げる写真" />
           </div>
-        </section>
-
-        {/* 山を選ぶ */}
-        <section className="pick-step is-current">
-          <header className="pick-step-head">
-            <span className="pick-step-no">02</span>
-            <h2>山を選ぶ</h2>
-            <span className="pick-step-note">複数選べます</span>
-          </header>
 
           <div className="pick-search">
             <IconSearch size={16} className="pick-search-ico" />
