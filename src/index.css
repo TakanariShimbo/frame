@@ -863,12 +863,15 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* 見出し等の幅（.ar-tpl-inner の 860px）を越えて、カルーセルだけ広く使う */
+  align-self: center;
+  width: min(1160px, calc(100vw - 48px));
 }
 .tpl-flow-stage {
   position: relative;
   flex: 1;
   min-width: 0;
-  height: clamp(240px, 36vh, 330px);
+  height: clamp(280px, 46vh, 430px);
   perspective: 1200px;
   overflow: hidden;
 }
@@ -876,7 +879,8 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: clamp(300px, 34vw, 440px);
+  /* 横幅基準で大きく、ただし縦に収まる幅（高さ=幅/1.5 がステージを越えない）まで */
+  width: min(clamp(340px, 42vw, 600px), 64vh);
   aspect-ratio: 3 / 2;
   border-radius: 14px;
   overflow: hidden;
