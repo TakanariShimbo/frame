@@ -46,8 +46,8 @@ const MOSAIC_STOCK: MosaicWork[] = [
   { id: "takamiishi-lake", ar: 1.78 },
   { id: "takamiishi-agepan", ar: 1.501 },
 ];
-// 画像間の隙間ぶんの正規化高さ（14px ÷ 列幅~280px）。
-const MOSAIC_GAP = 0.05;
+// 画像間の隙間ぶんの正規化高さ（2px ÷ 列幅~300px。full-bleed の詰めた隙間）。
+const MOSAIC_GAP = 0.007;
 
 // 貪欲法（次の1枚をいちばん低い列へ）で列に割り付け、下端の凸凹（最大-最小）を返す。
 function packMosaic(works: MosaicWork[], nCols: number): { cols: MosaicWork[][]; spread: number } {
@@ -94,7 +94,7 @@ export default function Picker({ onPick }: Props) {
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const w = el.clientWidth;
-      setMosaicCols(Math.max(1, Math.min(4, Math.floor((w + 14) / (240 + 14)))));
+      setMosaicCols(Math.max(1, Math.min(4, Math.floor((w + 2) / (240 + 2)))));
     });
     ro.observe(el);
     return () => ro.disconnect();
