@@ -2129,6 +2129,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ) : (
           <div className={`studio-panel${panelOpen ? "" : " is-closed"}`}>
             <div className="studio-panel-head">
+              {/* PC: 畳むボタンは左端（ステージとの境界側）。右へ縮む動きと向きが揃う */}
+              {!isNarrow && (
+                <button className="studio-icon-btn" onClick={() => setPanelOpen(false)} title="畳む">
+                  <IconCaret dir="right" size={16} />
+                </button>
+              )}
               <span className="studio-panel-title">
                 仕上げ
                 {activeTemplate && (
@@ -2154,10 +2160,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </button>
                 ))}
               </div>
-              {/* 畳む向き: PC=右（サイドパネルを右端へ）/ スマホ=下（ボトムシートを下へ） */}
-              <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
-                <IconCaret dir={isNarrow ? (panelOpen ? "down" : "up") : "right"} size={16} />
-              </button>
+              {/* スマホ: ボトムシートなので畳むボタンは従来どおり右端・下向き */}
+              {isNarrow && (
+                <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
+                  <IconCaret dir={panelOpen ? "down" : "up"} size={16} />
+                </button>
+              )}
             </div>
             {panelOpen && (
               <>
