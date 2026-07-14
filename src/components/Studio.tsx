@@ -564,6 +564,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     return i >= 0 ? i : 0;
   });
   const tplSwipeRef = useRef<HTMLDivElement | null>(null);
+  // PCカバーフローのスワイプ（タブレットのタッチ・マウスドラッグ）。100pxごとに1枚送る。
+  const flowDragRef = useRef<{ id: number; startX: number; lastX: number; steps: number; moved: boolean } | null>(null);
+  const flowSuppressClick = useRef(false);
   const isNarrow = useIsNarrow();
   // パネル表示モード。シンプル=テンプレに関係するタブだけ / フル=全タブ。選択は次回も引き継ぐ。
   const [panelMode, setPanelMode] = useState<"simple" | "full">(() => {
@@ -1358,6 +1361,45 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTplIdx(Math.max(0, Math.min(TPL_ITEMS.length - 1, Math.round(el.scrollLeft / w))));
   };
 
+  // PCカバーフローのスワイプ。ドラッグ中は100pxごとに1枚送り、短いフリックでも1枚動かす。
+  // 8px以上動いたらポインタをキャプチャ（＝カードの click は発火しなくなる）。
+  const stepTpl = (delta: number) =>
+    setTplIdx((i) => Math.max(0, Math.min(TPL_ITEMS.length - 1, i + delta)));
+  const onFlowPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    flowDragRef.current = { id: e.pointerId, startX: e.clientX, lastX: e.clientX, steps: 0, moved: false };
+  };
+  const onFlowPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = flowDragRef.current;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.moved && Math.abs(e.clientX - d.startX) > 8) {
+      d.moved = true;
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        /* 古いブラウザで未対応でもドラッグ自体は動く */
+      }
+    }
+    const dx = e.clientX - d.lastX;
+    if (Math.abs(dx) >= 100) {
+      stepTpl(dx < 0 ? 1 : -1); // 左へ払う＝次のテーマ
+      d.steps++;
+      d.lastX = e.clientX;
+    }
+  };
+  const onFlowPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = flowDragRef.current;
+    flowDragRef.current = null;
+    if (!d || d.id !== e.pointerId || !d.moved) return;
+    // ドラッグ中に1枚も送っていない短いフリックは1枚だけ動かす。
+    const dxTotal = e.clientX - d.startX;
+    if (d.steps === 0 && Math.abs(dxTotal) > 30) stepTpl(dxTotal < 0 ? 1 : -1);
+    // キャプチャ外のブラウザ差異に備えて、直後の click は無視する。
+    flowSuppressClick.current = true;
+    window.setTimeout(() => {
+      flowSuppressClick.current = false;
+    }, 0);
+  };
+
   // 現在の仕上げ設定（ExportStyle）。設定の書き出しと一覧へ戻るときの状態保存に使う。
   const currentStyle = (): ExportStyle => ({
     bakeLabels, labelMode, labelBg, labelPanelColor, labelPanelOpacity, labelColor, labelShadow, labelLineOn, labelLineColor,
@@ -1694,7 +1736,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   >
                     ‹
                   </button>
-                  <div className="tpl-flow-stage">
+                  <div
+                    className="tpl-flow-stage"
+                    onPointerDown={onFlowPointerDown}
+                    onPointerMove={onFlowPointerMove}
+                    onPointerUp={onFlowPointerUp}
+                    onPointerCancel={() => (flowDragRef.current = null)}
+                  >
                     {TPL_ITEMS.map((it, i) => {
                       const off = i - tplIdx;
                       const abs = Math.abs(off);
@@ -1708,7 +1756,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                             opacity: abs > 2 ? 0 : 1,
                             pointerEvents: abs > 2 ? "none" : "auto",
                           }}
-                          onClick={() => (off === 0 ? chooseTpl(it) : setTplIdx(i))}
+                          onClick={() => {
+                            if (flowSuppressClick.current) return;
+                            if (off === 0) chooseTpl(it);
+                            else setTplIdx(i);
+                          }}
                           role="button"
                           aria-label={off === 0 ? `${it.sub}で仕上げる` : `${it.sub}を見る`}
                         >

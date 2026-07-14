@@ -874,6 +874,10 @@ button {
   height: clamp(280px, 46vh, 430px);
   perspective: 1200px;
   overflow: hidden;
+  /* スワイプでテーマ送り（横はJSが処理、縦は普通にページスクロール） */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tpl-flow-card {
   position: absolute;
@@ -894,6 +898,7 @@ button {
   height: 100%;
   object-fit: cover;
   display: block;
+  -webkit-user-drag: none;
 }
 /* 脇のカードは少し沈める（中央だけが「いま選んでいる」1枚） */
 .tpl-flow-card::after {
