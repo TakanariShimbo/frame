@@ -863,20 +863,28 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* 見出し等の幅（.ar-tpl-inner の 860px）を越えて、カルーセルだけ広く使う */
+  align-self: center;
+  width: min(1160px, calc(100vw - 48px));
 }
 .tpl-flow-stage {
   position: relative;
   flex: 1;
   min-width: 0;
-  height: clamp(240px, 36vh, 330px);
+  height: clamp(280px, 46vh, 430px);
   perspective: 1200px;
   overflow: hidden;
+  /* スワイプでテーマ送り（横はJSが処理、縦は普通にページスクロール） */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tpl-flow-card {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: clamp(300px, 34vw, 440px);
+  /* 横幅基準で大きく、ただし縦に収まる幅（高さ=幅/1.5 がステージを越えない）まで */
+  width: min(clamp(340px, 42vw, 600px), 64vh);
   aspect-ratio: 3 / 2;
   border-radius: 14px;
   overflow: hidden;
@@ -890,6 +898,7 @@ button {
   height: 100%;
   object-fit: cover;
   display: block;
+  -webkit-user-drag: none;
 }
 /* 脇のカードは少し沈める（中央だけが「いま選んでいる」1枚） */
 .tpl-flow-card::after {
@@ -1489,8 +1498,43 @@ button {
   cursor: pointer;
   transition: background 0.12s ease;
 }
-.studio-icon-btn:hover {
+.studio-icon-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
+}
+.studio-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* PCでパネルを畳んだときに右端へ残す細いレール（開く・書き出しだけ）。 */
+.studio-rail {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 14px;
+  background: var(--bg-panel);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+.studio-rail-label {
+  flex: 1;
+  min-height: 0;
+  /* 1文字幅に絞って1字ずつ縦に折り返す簡易縦書き（writing-mode より描画が安定） */
+  width: 1em;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.9;
+  color: var(--ink-faint);
+  user-select: none;
 }
 
 /* パネル表示モード切替（シンプル=テンプレに関係するタブのみ / フル=全タブ） */
