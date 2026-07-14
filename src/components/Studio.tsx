@@ -423,86 +423,107 @@ const templateTabs = (s: ExportStyle): PanelTab[] => {
 
 const PANEL_MODE_KEY = "frame.panelMode";
 
+// 仕上げ画面の編集状態まるごと（一覧へ戻っても復元できるように）。
+// style はテンプレと同じ ExportStyle、labels はドラッグ位置・本文編集込みの現在値。
+export type StudioSnapshot = {
+  style: ExportStyle;
+  templateId: string | null;
+  labels: ArLabel[];
+  captionIdx: number;
+};
+
 type StudioProps = {
   photoUrl: string;
   initialLabels: ArLabel[];
-  onBack: () => void;
+  // 一覧から再編集で入るときの復元データ。あれば initialLabels より優先。
+  initialSnapshot?: StudioSnapshot | null;
+  // 一覧へ戻る。編集状態（テンプレ選択前なら null）と最新の書き出しを渡す。
+  onExit: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
+  // この写真の山選びへ戻る（編集は破棄）。
+  onReselect: () => void;
+  // 次の未仕上げ写真へ。残りがあるときだけ渡される。
+  nextCount?: number;
+  onNext?: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
 };
 
-export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps) {
-  // 仕上げ画面の表示モード。入った直後はテンプレ選択、選ぶと編集へ。
-  const [exportView, setExportView] = useState<"template" | "edit">("template");
-  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+export default function Studio({ photoUrl, initialLabels, initialSnapshot = null, onExit, onReselect, nextCount = 0, onNext }: StudioProps) {
+  // 復元用スタイル（一覧からの再編集時のみ non-null）。各stateの初期値に使う。
+  const initStyle = initialSnapshot?.style;
+
+  // 仕上げ画面の表示モード。入った直後はテンプレ選択、選ぶと編集へ。復元時は編集へ直行。
+  const [exportView, setExportView] = useState<"template" | "edit">(initialSnapshot ? "edit" : "template");
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(initialSnapshot?.templateId ?? null);
 
   // 編集対象の山ラベル（入口で組み立て済み）。座標は写真フレーム内の正規化値(0..1)。
-  const [arLabels, setArLabels] = useState<ArLabel[]>(initialLabels);
+  const [arLabels, setArLabels] = useState<ArLabel[]>(initialSnapshot?.labels ?? initialLabels);
   // 下部キャプション・センタータイトルで取り上げる山（arLabels 内の index）。
   const [captionIdx, setCaptionIdx] = useState(() => {
+    if (initialSnapshot) return initialSnapshot.captionIdx;
     const i = initialLabels.findIndex((l) => l.description);
     return i >= 0 ? i : 0;
   });
 
   // --- 山名ラベル --- //
-  const [bakeLabels, setBakeLabels] = useState(true);
-  const [labelMode, setLabelMode] = useState<LabelMode>("jaSubEnElev");
-  const [labelColor, setLabelColor] = useState("#ffffff");
-  const [labelShadow, setLabelShadow] = useState(true);
-  const [labelBg, setLabelBg] = useState<BgPanel>("none");
-  const [labelPanelColor, setLabelPanelColor] = useState("#1f2633");
-  const [labelPanelOpacity, setLabelPanelOpacity] = useState(DEFAULT_PANEL_OPACITY);
-  const [labelLineOn, setLabelLineOn] = useState(true);
-  const [labelLineColor, setLabelLineColor] = useState("#ffffff");
-  const [labelNameScale, setLabelNameScale] = useState(1);
-  const [labelSubScale, setLabelSubScale] = useState(1);
+  const [bakeLabels, setBakeLabels] = useState(initStyle?.bakeLabels ?? true);
+  const [labelMode, setLabelMode] = useState<LabelMode>(initStyle?.labelMode ?? "jaSubEnElev");
+  const [labelColor, setLabelColor] = useState(initStyle?.labelColor ?? "#ffffff");
+  const [labelShadow, setLabelShadow] = useState(initStyle?.labelShadow ?? true);
+  const [labelBg, setLabelBg] = useState<BgPanel>(initStyle?.labelBg ?? "none");
+  const [labelPanelColor, setLabelPanelColor] = useState(initStyle?.labelPanelColor ?? "#1f2633");
+  const [labelPanelOpacity, setLabelPanelOpacity] = useState(initStyle?.labelPanelOpacity ?? DEFAULT_PANEL_OPACITY);
+  const [labelLineOn, setLabelLineOn] = useState(initStyle?.labelLineOn ?? true);
+  const [labelLineColor, setLabelLineColor] = useState(initStyle?.labelLineColor ?? "#ffffff");
+  const [labelNameScale, setLabelNameScale] = useState(initStyle?.labelNameScale ?? 1);
+  const [labelSubScale, setLabelSubScale] = useState(initStyle?.labelSubScale ?? 1);
   const labelHasSub = labelMode !== "jaOnly" && labelMode !== "enOnly";
 
   // --- 解説（キャプション） --- //
-  const [captionLang, setCaptionLang] = useState<"ja" | "en" | "both" | "none">("none");
-  const [captionLayout, setCaptionLayout] = useState<"horizontal" | "vertical">("horizontal");
-  const [captionTitleMode, setCaptionTitleMode] = useState<"each" | "groupV" | "groupH" | "ja" | "en">("each");
-  const [captionLength, setCaptionLength] = useState<"long" | "short">("long");
-  const [captionBg, setCaptionBg] = useState<BgPanel>("none");
-  const [captionPanelColor, setCaptionPanelColor] = useState("#1f2633");
-  const [captionPanelOpacity, setCaptionPanelOpacity] = useState(DEFAULT_PANEL_OPACITY);
-  const [captionColor, setCaptionColor] = useState("#ffffff");
-  const [captionShadow, setCaptionShadow] = useState(true);
-  const [captionTitleScale, setCaptionTitleScale] = useState(1);
-  const [captionBodyScale, setCaptionBodyScale] = useState(1);
-  const [captionPos, setCaptionPos] = useState({ u: 0.05, v: 0.62 });
-  const [captionW, setCaptionW] = useState(0.55);
-  const [captionSplit, setCaptionSplit] = useState(0.5);
+  const [captionLang, setCaptionLang] = useState<"ja" | "en" | "both" | "none">(initStyle?.captionLang ?? "none");
+  const [captionLayout, setCaptionLayout] = useState<"horizontal" | "vertical">(initStyle?.captionLayout ?? "horizontal");
+  const [captionTitleMode, setCaptionTitleMode] = useState<"each" | "groupV" | "groupH" | "ja" | "en">(initStyle?.captionTitleMode ?? "each");
+  const [captionLength, setCaptionLength] = useState<"long" | "short">(initStyle?.captionLength ?? "long");
+  const [captionBg, setCaptionBg] = useState<BgPanel>(initStyle?.captionBg ?? "none");
+  const [captionPanelColor, setCaptionPanelColor] = useState(initStyle?.captionPanelColor ?? "#1f2633");
+  const [captionPanelOpacity, setCaptionPanelOpacity] = useState(initStyle?.captionPanelOpacity ?? DEFAULT_PANEL_OPACITY);
+  const [captionColor, setCaptionColor] = useState(initStyle?.captionColor ?? "#ffffff");
+  const [captionShadow, setCaptionShadow] = useState(initStyle?.captionShadow ?? true);
+  const [captionTitleScale, setCaptionTitleScale] = useState(initStyle?.captionTitleScale ?? 1);
+  const [captionBodyScale, setCaptionBodyScale] = useState(initStyle?.captionBodyScale ?? 1);
+  const [captionPos, setCaptionPos] = useState(initStyle?.captionPos ?? ({ u: 0.05, v: 0.62 }));
+  const [captionW, setCaptionW] = useState(initStyle?.captionW ?? 0.55);
+  const [captionSplit, setCaptionSplit] = useState(initStyle?.captionSplit ?? 0.5);
 
   // --- タグ（ピル） --- //
-  const [tagColor, setTagColor] = useState(GOLD);
-  const [tagColorTarget, setTagColorTarget] = useState<"bg" | "text">("bg");
-  const [capShowElev, setCapShowElev] = useState(false);
-  const [capShowLoc, setCapShowLoc] = useState(false);
-  const [capSelectedTags, setCapSelectedTags] = useState<string[]>([]);
+  const [tagColor, setTagColor] = useState(initStyle?.tagColor ?? GOLD);
+  const [tagColorTarget, setTagColorTarget] = useState<"bg" | "text">(initStyle?.tagColorTarget ?? "bg");
+  const [capShowElev, setCapShowElev] = useState(initStyle?.capShowElev ?? false);
+  const [capShowLoc, setCapShowLoc] = useState(initStyle?.capShowLoc ?? false);
+  const [capSelectedTags, setCapSelectedTags] = useState<string[]>(initStyle?.capSelectedTags ?? []);
   const toggleCapTag = (t: string) =>
     setCapSelectedTags((p) => (p.includes(t) ? p.filter((x) => x !== t) : [...p, t]));
 
   // --- センタータイトル（ポスター風） --- //
-  const [titleOn, setTitleOn] = useState(false);
-  const [titleLang, setTitleLang] = useState<"en" | "ja">("en");
-  const [titleShowOver, setTitleShowOver] = useState(true);
-  const [titleShowNum, setTitleShowNum] = useState(true);
-  const [titleScale, setTitleScale] = useState(1);
-  const [titleColor, setTitleColor] = useState("#ffffff");
-  const [titleShadow, setTitleShadow] = useState(true);
-  const [titleFont, setTitleFont] = useState<FontPairId>("posterMincho");
-  const [titlePos, setTitlePos] = useState({ u: 0.5, v: 0.44 });
+  const [titleOn, setTitleOn] = useState(initStyle?.titleOn ?? false);
+  const [titleLang, setTitleLang] = useState<"en" | "ja">(initStyle?.titleLang ?? "en");
+  const [titleShowOver, setTitleShowOver] = useState(initStyle?.titleShowOver ?? true);
+  const [titleShowNum, setTitleShowNum] = useState(initStyle?.titleShowNum ?? true);
+  const [titleScale, setTitleScale] = useState(initStyle?.titleScale ?? 1);
+  const [titleColor, setTitleColor] = useState(initStyle?.titleColor ?? "#ffffff");
+  const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
+  const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
+  const [titlePos, setTitlePos] = useState(initStyle?.titlePos ?? ({ u: 0.5, v: 0.44 }));
   const titleDragRef = useRef<{ offU: number; offV: number; w: number; h: number } | null>(null);
 
   // --- フォント（役割ごと） --- //
-  const [roleFonts, setRoleFonts] = useState<RoleFonts>(DEFAULT_ROLE_FONTS);
+  const [roleFonts, setRoleFonts] = useState<RoleFonts>(initStyle?.roleFonts ?? DEFAULT_ROLE_FONTS);
   const setRoleFont = (role: FontRole, value: FontPairId) => setRoleFonts((p) => ({ ...p, [role]: value }));
 
   // --- フレーム（切り抜き・余白・ふち） --- //
-  const [cropInset, setCropInset] = useState({ l: 0, t: 0, r: 0, b: 0 });
-  const [frameMargin, setFrameMargin] = useState({ t: 0, r: 0, b: 0, l: 0 });
-  const [frameMarginColor, setFrameMarginColor] = useState("#ffffff");
-  const [frameMarginAuto, setFrameMarginAuto] = useState(false);
-  const [frameFade, setFrameFade] = useState(0);
+  const [cropInset, setCropInset] = useState(initStyle?.cropInset ?? ({ l: 0, t: 0, r: 0, b: 0 }));
+  const [frameMargin, setFrameMargin] = useState(initStyle?.frameMargin ?? ({ t: 0, r: 0, b: 0, l: 0 }));
+  const [frameMarginColor, setFrameMarginColor] = useState(initStyle?.frameMarginColor ?? "#ffffff");
+  const [frameMarginAuto, setFrameMarginAuto] = useState(initStyle?.frameMarginAuto ?? false);
+  const [frameFade, setFrameFade] = useState(initStyle?.frameFade ?? 0);
 
   // --- 書き出し --- //
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -510,8 +531,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
   const [previewBaking, setPreviewBaking] = useState(false);
   const [styleDump, setStyleDump] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
-  // 操作パネルのタブ（縦一列の設定を4分類に整理）。
-  const [panelTab, setPanelTab] = useState<PanelTab>("label");
+  // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
+  const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
   // パネル表示モード。シンプル=テンプレに関係するタブだけ / フル=全タブ。選択は次回も引き継ぐ。
   const [panelMode, setPanelMode] = useState<"simple" | "full">(() => {
     try {
@@ -960,7 +981,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
             ? [Math.round((blockW - colGap) * captionSplit), blockW - colGap - Math.round((blockW - colGap) * captionSplit)]
             : [blockW];
         ctx.textAlign = "left";
-        const isCjk = (ch: string) => /[　-ヿ㐀-䶿一-鿿＀-￯]/.test(ch);
+        // 全角スペース(U+3000)〜かな・CJK・全角記号。lint(no-irregular-whitespace)対策でエスケープ表記。
+        const isCjk = (ch: string) => /[\u3000-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uFF00-\uFFEF]/.test(ch);
         const wrapBody = (text: string, w: number): string[] => {
           const lines: string[] = [];
           let cur = "";
@@ -1274,18 +1296,26 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
     setExportView("edit");
   };
 
+  // 現在の仕上げ設定（ExportStyle）。設定の書き出しと一覧へ戻るときの状態保存に使う。
+  const currentStyle = (): ExportStyle => ({
+    bakeLabels, labelMode, labelBg, labelPanelColor, labelPanelOpacity, labelColor, labelShadow, labelLineOn, labelLineColor,
+    labelNameScale, labelSubScale,
+    captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
+    captionTitleScale, captionBodyScale, captionPos, captionW, captionSplit,
+    tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titlePos,
+    roleFonts, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
+  });
+
+  // 一覧へ渡す編集状態。テンプレ選択前（編集に入っていない）なら null。
+  const makeSnapshot = (): StudioSnapshot | null =>
+    exportView === "edit"
+      ? { style: currentStyle(), templateId: activeTemplateId, labels: arLabels, captionIdx }
+      : null;
+
   // 現在の仕上げ設定を ExportStyle 形式の JSON で書き出す（位置は写真依存なので含めない）。
   const dumpCurrentStyle = () => {
-    const style: ExportStyle = {
-      bakeLabels, labelMode, labelBg, labelPanelColor, labelPanelOpacity, labelColor, labelShadow, labelLineOn, labelLineColor,
-      labelNameScale, labelSubScale,
-      captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
-      captionTitleScale, captionBodyScale, captionPos, captionW, captionSplit,
-      tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-      titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titlePos,
-      roleFonts, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
-    };
-    const json = JSON.stringify(style, null, 2);
+    const json = JSON.stringify(currentStyle(), null, 2);
     setStyleDump(json);
     navigator.clipboard?.writeText(json).catch(() => {});
   };
@@ -1581,7 +1611,8 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
               </button>
             </div>
             <div className="ar-tpl-foot">
-              <button className="ar-btn-sub" onClick={onBack}>山・写真を選び直す</button>
+              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), previewBlob)}>一覧へ</button>
+              <button className="ar-btn-sub" onClick={onReselect}>山を選び直す</button>
             </div>
           </div>
         </div>
@@ -1620,6 +1651,23 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
             <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
             <div className="ar-preview-actions">
               <button className="ar-btn-sub" onClick={() => setPreviewUrl(null)}>もどる</button>
+              {onNext ? (
+                <button
+                  className="ar-btn-sub"
+                  onClick={() => onNext(makeSnapshot(), previewBlob)}
+                  title="この写真を終えて、次のまだ仕上げていない写真へ"
+                >
+                  次の写真へ（あと{nextCount}枚）
+                </button>
+              ) : (
+                <button
+                  className="ar-btn-sub"
+                  onClick={() => onExit(makeSnapshot(), previewBlob)}
+                  title="仕上げを終えて一覧へ"
+                >
+                  一覧へ
+                </button>
+              )}
               <button className="ar-btn-main" onClick={saveExportImage}>
                 <IconDownload size={15} />
                 保存
@@ -2300,6 +2348,13 @@ export default function Studio({ photoUrl, initialLabels, onBack }: StudioProps)
             <div className="studio-panel-foot">
               <button className="ar-btn-sub" onClick={dumpCurrentStyle} title="現在の仕上げ設定をJSONでコピー">
                 設定を出力
+              </button>
+              <button
+                className="ar-btn-sub"
+                onClick={() => onExit(makeSnapshot(), previewBlob)}
+                title="編集状態を保って写真一覧へ戻る"
+              >
+                一覧へ
               </button>
               <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
                 <IconDownload size={15} />
