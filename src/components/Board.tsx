@@ -5,7 +5,7 @@ import type { WorkItem } from "../App";
 
 type Props = {
   items: WorkItem[];
-  // カードをタップ: 山未選択なら山選びへ、選択済みなら仕上げへ（App側で振り分け）。
+  // タイルをタップ: 山未選択なら山選びへ、選択済みなら仕上げへ（App側で振り分け）。
   onOpen: (id: number) => void;
   // 写真を追加（末尾に足す）。
   onAdd: (photoUrls: string[]) => void;
@@ -16,7 +16,7 @@ type Props = {
 // ファイル名に使えない文字を除いて短くする。
 const safeName = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, "").slice(0, 24) || "frame";
 
-// 写真一覧（ハブ画面）: 進み方は自由。好きなカードから仕上げ、まとめて保存もここから。
+// 写真一覧（ハブ画面）: 進み方は自由。好きな写真から仕上げ、まとめて保存もここから。
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [zipping, setZipping] = useState(false);
@@ -65,36 +65,40 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   return (
     <div className="pick-screen">
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPickMore} />
-      <div className="board-inner">
+      <div className="board-head">
         <header className="pick-next-head">
           <p className="kicker">Works</p>
           <h1>写真一覧</h1>
           <p>
-            {items.length}枚中 {exported.length}枚が仕上げ済み。カードをタップして、好きな順に仕上げてください。
+            {items.length}枚中 {exported.length}枚が仕上げ済み。写真をタップして、好きな順に仕上げてください。
           </p>
         </header>
+      </div>
 
-        <div className="board-grid">
-          {items.map((it, i) => {
-            const st = status(it);
-            return (
-              <button key={it.id} type="button" className={`board-card is-${st}`} onClick={() => onOpen(it.id)}>
-                <img src={it.photoUrl} alt={`${i + 1}枚目`} loading="lazy" />
-                <span className="board-card-meta">
-                  <span className="board-card-no">{String(i + 1).padStart(2, "0")}</span>
-                  {it.labels && <span className="board-card-name">{it.labels[0]?.name}</span>}
-                  <span className={`board-card-status is-${st}`}>{st === "done" ? "✓ " : ""}{STATUS_LABEL[st]}</span>
-                </span>
-              </button>
-            );
-          })}
-          {/* 写真の追加カード */}
-          <button type="button" className="board-card board-card--add" onClick={() => fileRef.current?.click()}>
-            <IconImage size={20} />
-            写真を追加
-          </button>
-        </div>
+      {/* 余白なしのフォトグリッド（画面幅いっぱい）。番号・状態は写真の上に重ねる */}
+      <div className="board-grid">
+        {items.map((it, i) => {
+          const st = status(it);
+          return (
+            <button key={it.id} type="button" className={`board-tile is-${st}`} onClick={() => onOpen(it.id)}>
+              <img src={it.photoUrl} alt={`${i + 1}枚目`} loading="lazy" />
+              <span className="board-tile-veil" aria-hidden="true" />
+              <span className="board-tile-meta">
+                <span className="board-tile-no">{String(i + 1).padStart(2, "0")}</span>
+                {it.labels && <span className="board-tile-name">{it.labels[0]?.name}</span>}
+                <span className={`board-tile-status is-${st}`}>{st === "done" ? "✓ " : ""}{STATUS_LABEL[st]}</span>
+              </span>
+            </button>
+          );
+        })}
+        {/* 写真の追加タイル */}
+        <button type="button" className="board-tile board-tile--add" onClick={() => fileRef.current?.click()}>
+          <IconImage size={20} />
+          写真を追加
+        </button>
+      </div>
 
+      <div className="board-foot">
         <div className="board-actions">
           <button
             type="button"

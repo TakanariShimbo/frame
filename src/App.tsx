@@ -7,7 +7,7 @@ import type { ArLabel } from "./lib/labels";
 
 // frame のフロー（一覧をハブにした自由な進行）:
 //   home     … 写真を選ぶ（複数可）→ 1枚目の山選びへ
-//   board    … 写真一覧。好きなカードから仕上げ・再編集。まとめて保存もここ
+//   board    … 写真一覧。好きな写真から仕上げ・再編集。まとめて保存もここ
 //   mountain … 写真1枚ぶんの山選び
 //   studio   … テーマを選び、文字・解説を仕上げて書き出す（編集状態は item に保存）
 export type WorkItem = {
@@ -47,7 +47,7 @@ export default function App() {
     [makeItems],
   );
 
-  // 一覧のカードをタップ: 山未選択なら山選びへ、選択済みなら仕上げへ。
+  // 一覧のタイルをタップ: 山未選択なら山選びへ、選択済みなら仕上げへ。
   const onOpen = useCallback(
     (id: number) => {
       const it = items.find((x) => x.id === id);

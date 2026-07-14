@@ -1345,7 +1345,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const slide = el?.firstElementChild as HTMLElement | null;
     if (!el || !slide) return;
     // tplIdx は同期の起点としてだけ読む（スクロール操作のたびに巻き戻さないよう依存に含めない）
-    el.scrollLeft = tplIdx * (slide.offsetWidth + 12);
+    el.scrollLeft = tplIdx * (slide.offsetWidth + 2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNarrow, exportView]);
 
@@ -1354,7 +1354,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const el = tplSwipeRef.current;
     const slide = el?.firstElementChild as HTMLElement | null;
     if (!el || !slide) return;
-    const w = slide.offsetWidth + 12; // 12 = gap
+    const w = slide.offsetWidth + 2; // 2 = gap
     setTplIdx(Math.max(0, Math.min(TPL_ITEMS.length - 1, Math.round(el.scrollLeft / w))));
   };
 
@@ -1640,26 +1640,26 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             </header>
 
             {isNarrow ? (
-              /* スマホ: 1枚を大きく、横スワイプで切り替え */
+              /* スマホ: 画像だけをほぼ全幅で横スワイプ。説明と決定ボタンは下部で共有 */
               <>
                 <div className="tpl-swipe" ref={tplSwipeRef} onScroll={onTplScroll}>
-                  {TPL_ITEMS.map((it) => (
-                    <div key={it.id} className="tpl-swipe-slide">
+                  {TPL_ITEMS.map((it, i) => (
+                    <div
+                      key={it.id}
+                      className="tpl-swipe-slide"
+                      onClick={(e) =>
+                        i === tplIdx
+                          ? chooseTpl(it)
+                          : e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
+                      }
+                      role="button"
+                      aria-label={i === tplIdx ? `${it.sub}で仕上げる` : `${it.sub}を見る`}
+                    >
                       {it.tpl ? (
                         <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg${TPL_PREVIEW_VER}`} alt={it.sub} />
                       ) : (
                         <div className="tpl-card-custom">テーマなしで、まっさらから</div>
                       )}
-                      <div className="tpl-slide-body">
-                        <span className="tpl-kanji" aria-hidden="true">{it.name}</span>
-                        <div className="tpl-slide-text">
-                          <b>{it.sub}</b>
-                          <p>{it.hint}</p>
-                        </div>
-                      </div>
-                      <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(it)}>
-                        このテーマで仕上げる
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -1667,6 +1667,18 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {TPL_ITEMS.map((it, i) => (
                     <span key={it.id} className={i === tplIdx ? "is-on" : ""} />
                   ))}
+                </div>
+                <div className="tpl-swipe-info">
+                  <div className="tpl-slide-body">
+                    <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
+                    <div className="tpl-slide-text">
+                      <b>{TPL_ITEMS[tplIdx].sub}</b>
+                      <p>{TPL_ITEMS[tplIdx].hint}</p>
+                    </div>
+                  </div>
+                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
+                    このテーマで仕上げる
+                  </button>
                 </div>
               </>
             ) : (
