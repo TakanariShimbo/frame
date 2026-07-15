@@ -1,12 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#0b0e13"/>
-  <polygon points="10,48 26,28 42,48" fill="#5a6478"/>
-  <polygon points="22,48 40,16 56,48" fill="#ffd34d"/>
-  <polygon points="34,26 40,16 46,26 43,24 40,25 37,23" fill="#ffffff"/>
-  <g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.92">
-    <path d="M18 7 H7 V18"/>
-    <path d="M46 7 H57 V18"/>
-    <path d="M18 57 H7 V46"/>
-    <path d="M46 57 H57 V46"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 「額」: 金の額縁に線描きの稜線と生成りの月（山を、作品に。）。
+       ブラウザタブの16〜32px表示向けに、PNG用の512pxデザインより線を太らせたチューニング。 -->
+  <rect width="512" height="512" rx="96" fill="#070708"/>
+  <rect x="72" y="72" width="368" height="368" fill="none" stroke="#d8b672" stroke-width="16"/>
+  <circle cx="348" cy="172" r="28" fill="#f2efe7"/>
+  <path d="M104 358 L206 246 L244 288 L306 216 L408 358 Z" fill="rgba(216,182,114,0.18)"/>
+  <path d="M104 358 L206 246 L244 288 L306 216 L408 358" fill="none" stroke="#d8b672" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/>
 </svg>
