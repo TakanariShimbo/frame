@@ -8,19 +8,18 @@ type Props = {
 
 // 作例（public/home/works/{name}.jpg）。すべてこのアプリで書き出した完成品。
 // ヒーローの「動く写真の壁」の列。縦横・明暗が混ざるように手で振り分けている。
-// 同じ元写真の使い回しは1点に絞る（槍ヶ岳4種 → yari-panel、別山2種 → bessan-sky）。
-// yari-climb は同じ槍ヶ岳でも別の写真（山荘へ下る登山者）なのでOK。
+// 山は1座につき1点に絞る（同じ山の重複はなし）。
 //
 // 配置ルール（壁の見え方を決めるので崩さないこと）:
-// - 白系（tanigawa / bessan-sky / tate-walk / utsukushigahara）は各列に1枚ずつ分散
+// - 白系（tanigawa / bessan-sky / tsubakuro / utsukushigahara）は各列に1枚ずつ分散
 // - ダーク系アンカー（akadake / tate-bird / kasagatake / iide）も各列に1枚ずつ
 // - 列内は 暗 → 明 → 中間 の順。ループで先頭に戻っても明暗が交互になる
-// - 縦長（akadake / tate-bird / kasagatake）は別々の列に
+// - 縦長（akadake / tate-bird / kasagatake / karamatsu）は別々の列に
 const WALL_COLS: string[][] = [
   ["akadake", "tanigawa", "jonen"],
   ["tate-bird", "utsukushigahara", "takamiishi-forest", "yari-panel"],
-  ["kasagatake", "tate-walk", "asama"],
-  ["iide", "yari-climb", "bessan-sky"],
+  ["kasagatake", "tsubakuro", "asama"],
+  ["iide", "karamatsu", "bessan-sky"],
 ];
 // 作例モザイク。ar = 幅/高さ（列の高さ計算に使う。public/home/works の実寸から）。
 // 列数はモニター幅で変わるため、基本セットに「ストック」を足し引きして
@@ -35,16 +34,16 @@ const MOSAIC_BASE: MosaicWork[] = [
   { id: "takamiishi-forest", ar: 1.501 },
   { id: "yari-panel", ar: 1.357 },
   { id: "kasagatake", ar: 0.667 },
-  { id: "tate-walk", ar: 1.78 },
+  { id: "karamatsu", ar: 0.37 },
   { id: "asama", ar: 2.353 },
   { id: "iide", ar: 1.501 },
-  { id: "yari-climb", ar: 1.501 },
+  { id: "shirouma", ar: 1.501 },
   { id: "bessan-sky", ar: 0.988 },
 ];
 const MOSAIC_STOCK: MosaicWork[] = [
-  { id: "takamiishi-stamp", ar: 0.667 },
-  { id: "takamiishi-lake", ar: 1.78 },
-  { id: "takamiishi-agepan", ar: 1.501 },
+  { id: "yokodake", ar: 1.501 },
+  { id: "tsubakuro", ar: 1.501 },
+  { id: "tengu", ar: 1.365 },
 ];
 // 画像間の隙間ぶんの正規化高さ（2px ÷ 列幅~300px。full-bleed の詰めた隙間）。
 const MOSAIC_GAP = 0.007;
