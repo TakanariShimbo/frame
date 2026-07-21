@@ -31,11 +31,10 @@ jobs:
 
       - run: npm ci
 
-      # プロジェクトページ (https://<user>.github.io/<repo>/) 用に base を設定。
-      # カスタムドメインや <user>.github.io リポジトリの場合は VITE_BASE=/ にする。
+      # カスタムドメイン (https://yamaframe.com/) はルート直下で公開する。
       - name: Build
         env:
-          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_BASE: /
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
