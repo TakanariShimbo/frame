@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
 import { canBakeVideo, pickRecorderMime, videoExtension } from "../lib/video";
+import { bakeVideoFast, canFastBake, type BakeGeom } from "../lib/videoBake";
 import type { ArLabel } from "../lib/labels";
 
 // ============================================================================
@@ -872,12 +873,8 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
   // ============================ 焼き込み（Canvas 2D） ============================ //
   // 全要素を1枚のキャンバスへ描く。img=null なら写真の領域を透明のまま残し、
   // 動画の全フレームへ重ねるオーバーレイとして使う（W/H は動画の実寸を渡す）。
-  // 返す geom は動画フレームを同じ位置へ描くための幾何（論理座標。outScale で物理へ縮小）。
-  type BakeGeom = {
-    cl: number; ct: number; cw: number; ch: number; // 元写真からの切り抜き（src矩形）
-    mL: number; mT: number; cwR: number; chR: number; // 出力上の写真位置（dst矩形）
-    OW: number; OH: number; outScale: number;
-  };
+  // 返す geom（videoBake.ts と共有）は動画フレームを同じ位置へ描くための幾何
+  // （論理座標。outScale で物理へ縮小）。
   const bakeCanvas = async (img: HTMLImageElement | null, W: number, H: number): Promise<{ canvas: HTMLCanvasElement; geom: BakeGeom } | null> => {
     const cl = cropInset.l * W, ct = cropInset.t * H;
     const cw = Math.max(1, W * (1 - cropInset.l - cropInset.r));
@@ -1300,9 +1297,40 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
   };
 
   // ============================ 動画の焼き込み ============================ //
-  // 文字・余白・ふちを一度だけオーバーレイに焼き、動画を等速再生しながら全フレームへ
-  // 同じ位置・同じ色で重ねて MediaRecorder で録画する（処理時間 ≒ 動画の長さ）。
+  // 文字・余白・ふちをポスター実寸で一度だけオーバーレイに焼き、全フレームへ同じ位置・
+  // 同じ色で合成する。まず WebCodecs の高速パス（実時間不要・元動画基準の高ビットレート・
+  // 音声は無劣化コピー）を試し、非対応の環境・形式では従来のリアルタイム録画へ落とす。
   const bakeVideo = async (onProgress: (ratio: number) => void): Promise<Blob | null> => {
+    if (!videoUrl) return null;
+    const img = new Image();
+    img.src = photoUrl;
+    await img.decode();
+    const baked = await bakeCanvas(null, img.naturalWidth, img.naturalHeight);
+    if (!baked) return null;
+    try {
+      const fast = await bakeVideoFast({
+        videoUrl,
+        displayW: img.naturalWidth,
+        displayH: img.naturalHeight,
+        overlay: baked.canvas,
+        geom: baked.geom,
+        onProgress,
+      });
+      if (fast) return fast;
+    } catch (e) {
+      // 解析失敗・コーデック非対応など。リアルタイム録画へフォールバック（原因は開発者向けに残す）
+      console.warn("動画の高速書き出しに失敗したため、リアルタイム録画で書き出します:", e);
+    }
+    return bakeVideoRealtime(baked.canvas, baked.geom, onProgress);
+  };
+
+  // フォールバック: 動画を等速再生しながら canvas.captureStream + MediaRecorder で録画
+  // （処理時間 ≒ 動画の長さ）。オーバーレイと幾何は高速パスと共通。
+  const bakeVideoRealtime = async (
+    overlay: HTMLCanvasElement,
+    geom: BakeGeom,
+    onProgress: (ratio: number) => void,
+  ): Promise<Blob | null> => {
     if (!videoUrl || !canBakeVideo()) return null;
     const video = document.createElement("video");
     video.muted = true;
@@ -1313,11 +1341,7 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
       video.onerror = () => reject(new Error("動画を読み込めませんでした"));
       video.src = videoUrl;
     });
-    const W = video.videoWidth, H = video.videoHeight;
-    if (!W || !H) return null;
-    const baked = await bakeCanvas(null, W, H);
-    if (!baked) return null;
-    const { canvas: overlay, geom } = baked;
+    if (!video.videoWidth || !video.videoHeight) return null;
     const out = document.createElement("canvas");
     out.width = overlay.width;
     out.height = overlay.height;
@@ -1584,10 +1608,10 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
     if (blob) window.setTimeout(() => URL.revokeObjectURL(href), 1000);
   };
   const saveExportImage = () => shareOrDownload(previewBlob, "frame.jpg", previewUrl);
-  // 動画の書き出し＋保存。オーバーレイを全フレームに焼き込むため、動画の長さぶん時間がかかる。
+  // 動画の書き出し＋保存。対応ブラウザでは WebCodecs で実時間より速く書き出す。
   const saveExportVideo = async () => {
     if (videoBaking) return;
-    if (!canBakeVideo()) {
+    if (!canFastBake() && !canBakeVideo()) {
       alert("このブラウザは動画の書き出しに対応していません。別のブラウザでお試しください。");
       return;
     }
@@ -1951,7 +1975,7 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
               <span>できあがり</span>
               <span className="ar-preview-note">
                 {videoUrl
-                  ? "この内容を動画の全フレームに焼き込んで保存します（動画の長さぶん時間がかかります）。"
+                  ? "この内容を動画の全フレームに焼き込んで保存します。"
                   : "この内容で保存します。よければダウンロードしてください。"}
               </span>
             </div>
