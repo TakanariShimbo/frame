@@ -1,14 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
-import { canBakeVideo, pickRecorderMime, videoExtension } from "../lib/video";
-import { bakeVideoFast, canFastBake, type BakeGeom } from "../lib/videoBake";
 import type { ArLabel } from "../lib/labels";
 
 // ============================================================================
 // 仕上げ（Studio）。元 trace「山を写す(AR)」の書き出し工程を、3D・撮影地点・向き合わせ
 // を取り除いて独立させたもの。テンプレートを選び、文字・解説・余白を整えて JPEG を書き出す。
-// 動画入力にも対応: 編集は先頭フレームのポスターで行い、書き出し時に同じオーバーレイを
-// 全フレームへ焼き込んで動画（mp4/webm）として保存する。
 // 描画ロジック（bakeComposite）と可動編集（名札/解説/タイトルのドラッグ）は trace から忠実に移植。
 // ============================================================================
 
@@ -460,9 +456,6 @@ export type StudioSnapshot = {
 
 type StudioProps = {
   photoUrl: string;
-  // 動画入力ならその動画URL。編集は photoUrl（先頭フレームのポスター）で行い、
-  // 書き出し時に全フレームへ同じオーバーレイを焼き込んで動画として保存する。
-  videoUrl?: string | null;
   initialLabels: ArLabel[];
   // 一覧から再編集で入るときの復元データ。あれば initialLabels より優先。
   initialSnapshot?: StudioSnapshot | null;
@@ -475,7 +468,7 @@ type StudioProps = {
   onNext?: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
 };
 
-export default function Studio({ photoUrl, videoUrl = null, initialLabels, initialSnapshot = null, onExit, onReselect, nextCount = 0, onNext }: StudioProps) {
+export default function Studio({ photoUrl, initialLabels, initialSnapshot = null, onExit, onReselect, nextCount = 0, onNext }: StudioProps) {
   // 復元用スタイル（一覧からの再編集時のみ non-null）。各stateの初期値に使う。
   const initStyle = initialSnapshot?.style;
 
@@ -562,10 +555,6 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
-  // 動画入力のとき: 最後に書き出した動画（一覧の「まとめて保存」へ渡す）と進捗（整数%）。
-  const [videoBlob, setVideoBlob] = useState<Blob | null>(null);
-  const [videoBaking, setVideoBaking] = useState(false);
-  const [videoProgress, setVideoProgress] = useState(0);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
@@ -871,11 +860,12 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
   }, [exportView]);
 
   // ============================ 焼き込み（Canvas 2D） ============================ //
-  // 全要素を1枚のキャンバスへ描く。img=null なら写真の領域を透明のまま残し、
-  // 動画の全フレームへ重ねるオーバーレイとして使う（W/H は動画の実寸を渡す）。
-  // 返す geom（videoBake.ts と共有）は動画フレームを同じ位置へ描くための幾何
-  // （論理座標。outScale で物理へ縮小）。
-  const bakeCanvas = async (img: HTMLImageElement | null, W: number, H: number): Promise<{ canvas: HTMLCanvasElement; geom: BakeGeom } | null> => {
+  const bakeComposite = async (): Promise<{ url: string; blob: Blob | null } | null> => {
+    const img = new Image();
+    img.src = photoUrl;
+    await img.decode();
+    const W = img.naturalWidth;
+    const H = img.naturalHeight;
     const cl = cropInset.l * W, ct = cropInset.t * H;
     const cw = Math.max(1, W * (1 - cropInset.l - cropInset.r));
     const ch = Math.max(1, H * (1 - cropInset.t - cropInset.b));
@@ -901,8 +891,7 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
       ctx.fillStyle = frameMarginColor;
       ctx.fillRect(0, 0, OW, OH);
     }
-    if (img) ctx.drawImage(img, cl, ct, cw, ch, mL, mT, cwR, chR);
-    else ctx.clearRect(mL, mT, cwR, chR); // オーバーレイ: 写真の位置は透明の「穴」にする
+    ctx.drawImage(img, cl, ct, cw, ch, mL, mT, cwR, chR);
     if (frameFade > 0 && (mT || mB || mL || mR)) {
       const fh = Math.round(frameFade * chR), fw = Math.round(frameFade * cwR);
       const rgba = (a: number) => `rgba(${hexToRgb(frameMarginColor)},${a})`;
@@ -1282,129 +1271,9 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
         ctx.restore();
       }
     }
-    return { canvas, geom: { cl, ct, cw, ch, mL, mT, cwR, chR, OW, OH, outScale } };
-  };
-
-  const bakeComposite = async (): Promise<{ url: string; blob: Blob | null } | null> => {
-    const img = new Image();
-    img.src = photoUrl;
-    await img.decode();
-    const baked = await bakeCanvas(img, img.naturalWidth, img.naturalHeight);
-    if (!baked) return null;
-    const url = baked.canvas.toDataURL("image/jpeg", 0.92);
-    const blob = await new Promise<Blob | null>((resolve) => baked.canvas.toBlob(resolve, "image/jpeg", 0.92));
+    const url = canvas.toDataURL("image/jpeg", 0.92);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
     return { url, blob };
-  };
-
-  // ============================ 動画の焼き込み ============================ //
-  // 文字・余白・ふちをポスター実寸で一度だけオーバーレイに焼き、全フレームへ同じ位置・
-  // 同じ色で合成する。まず WebCodecs の高速パス（実時間不要・元動画基準の高ビットレート・
-  // 音声は無劣化コピー）を試し、非対応の環境・形式では従来のリアルタイム録画へ落とす。
-  const bakeVideo = async (onProgress: (ratio: number) => void): Promise<Blob | null> => {
-    if (!videoUrl) return null;
-    const img = new Image();
-    img.src = photoUrl;
-    await img.decode();
-    const baked = await bakeCanvas(null, img.naturalWidth, img.naturalHeight);
-    if (!baked) return null;
-    try {
-      const fast = await bakeVideoFast({
-        videoUrl,
-        displayW: img.naturalWidth,
-        displayH: img.naturalHeight,
-        overlay: baked.canvas,
-        geom: baked.geom,
-        onProgress,
-      });
-      if (fast) return fast;
-    } catch (e) {
-      // 解析失敗・コーデック非対応など。リアルタイム録画へフォールバック（原因は開発者向けに残す）
-      console.warn("動画の高速書き出しに失敗したため、リアルタイム録画で書き出します:", e);
-    }
-    return bakeVideoRealtime(baked.canvas, baked.geom, onProgress);
-  };
-
-  // フォールバック: 動画を等速再生しながら canvas.captureStream + MediaRecorder で録画
-  // （処理時間 ≒ 動画の長さ）。オーバーレイと幾何は高速パスと共通。
-  const bakeVideoRealtime = async (
-    overlay: HTMLCanvasElement,
-    geom: BakeGeom,
-    onProgress: (ratio: number) => void,
-  ): Promise<Blob | null> => {
-    if (!videoUrl || !canBakeVideo()) return null;
-    const video = document.createElement("video");
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = "auto";
-    await new Promise<void>((resolve, reject) => {
-      video.onloadedmetadata = () => resolve();
-      video.onerror = () => reject(new Error("動画を読み込めませんでした"));
-      video.src = videoUrl;
-    });
-    if (!video.videoWidth || !video.videoHeight) return null;
-    const out = document.createElement("canvas");
-    out.width = overlay.width;
-    out.height = overlay.height;
-    const ctx = out.getContext("2d");
-    if (!ctx) return null;
-    const drawFrame = () => {
-      ctx.save();
-      ctx.scale(geom.outScale, geom.outScale);
-      ctx.drawImage(video, geom.cl, geom.ct, geom.cw, geom.ch, geom.mL, geom.mT, geom.cwR, geom.chR);
-      ctx.restore();
-      ctx.drawImage(overlay, 0, 0); // 余白・ふち・文字は全フレーム同じオーバーレイ
-    };
-    const stream = out.captureStream(30);
-    // 元動画に音声があれば引き継ぐ（muted は再生音の消音で、キャプチャには影響しない）。
-    try {
-      const cap = (video as HTMLVideoElement & { captureStream?: () => MediaStream }).captureStream?.();
-      cap?.getAudioTracks().forEach((t) => stream.addTrack(t));
-    } catch {
-      /* 音声キャプチャ非対応でも映像だけで続行 */
-    }
-    const mime = pickRecorderMime();
-    const rec = new MediaRecorder(stream, {
-      ...(mime ? { mimeType: mime } : {}),
-      videoBitsPerSecond: 12_000_000,
-    });
-    const chunks: BlobPart[] = [];
-    rec.ondataavailable = (e) => {
-      if (e.data.size) chunks.push(e.data);
-    };
-    const stopped = new Promise<void>((resolve) => {
-      rec.onstop = () => resolve();
-    });
-    let ended = false;
-    const endedP = new Promise<void>((resolve) => {
-      video.onended = () => {
-        ended = true;
-        resolve();
-      };
-    });
-    const rvfc = (video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number }).requestVideoFrameCallback?.bind(video);
-    const loop = () => {
-      if (ended) return;
-      drawFrame();
-      onProgress(video.duration ? Math.min(1, video.currentTime / video.duration) : 0);
-      if (rvfc) rvfc(loop);
-      else requestAnimationFrame(loop);
-    };
-    rec.start(1000); // 1秒ごとに回収（長尺でもメモリに一括で溜めない）
-    try {
-      await video.play();
-    } catch {
-      rec.stop();
-      return null;
-    }
-    loop();
-    await endedP;
-    drawFrame(); // 最終フレームを確実に描いてから止める
-    onProgress(1);
-    rec.stop();
-    await stopped;
-    stream.getTracks().forEach((t) => t.stop());
-    if (!chunks.length) return null;
-    return new Blob(chunks, { type: rec.mimeType || mime || "video/webm" });
   };
 
   // テンプレートの値束を各 state に一括反映し、編集画面へ。
@@ -1562,14 +1431,9 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
 
   // 一覧へ戻る。編集に入っている写真は、その時点の見た目を自動で書き出してから戻る
   // （一覧で「仕上げ済み」になり、まとめて保存にも含まれる。手動の「書き出す」は不要）。
-  // 動画は書き出しに実時間がかかるため自動では焼かず、最後に書き出した動画があればそれを渡す。
   const [exiting, setExiting] = useState(false);
   const exitToBoard = async () => {
     if (exiting) return;
-    if (videoUrl) {
-      onExit(makeSnapshot(), videoBlob);
-      return;
-    }
     let blob = previewBlob;
     if (exportView === "edit") {
       setExiting(true);
@@ -1579,17 +1443,15 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
     }
     onExit(makeSnapshot(), blob);
   };
-  // 一覧・次へ渡す成果物（動画入力なら動画、写真ならプレビューJPEG）。
-  const exportBlobForHandoff = videoUrl ? videoBlob : previewBlob;
   // 保存。iOS(WebKit)は <a download> が効かないことが多いので、モバイル端末では
   // まず Web Share API（「"写真"に保存」/共有が出せる）を試す。PCでは共有シートを
   // 出してもファイル保存に繋がらない（キャンセルすると保存自体が中断される）ため、
   // 共有は使わず直接ダウンロードする。
-  const shareOrDownload = async (blob: Blob | null, filename: string, fallbackHref: string | null) => {
+  const saveExportImage = async () => {
     const isMobileLike =
       /iPhone|iPad|iPod|Android/.test(navigator.userAgent) ||
       (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1); // iPadOSはMac名乗り
-    const file = blob ? new File([blob], filename, { type: blob.type }) : null;
+    const file = previewBlob ? new File([previewBlob], "frame.jpg", { type: "image/jpeg" }) : null;
     if (isMobileLike && file && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "frame" });
@@ -1599,36 +1461,13 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
         // それ以外（共有失敗）はダウンロードへフォールバック
       }
     }
-    const href = blob ? URL.createObjectURL(blob) : fallbackHref;
+    const href = previewBlob ? URL.createObjectURL(previewBlob) : previewUrl;
     if (!href) return;
     const a = document.createElement("a");
     a.href = href;
-    a.download = filename;
+    a.download = "frame.jpg";
     a.click();
-    if (blob) window.setTimeout(() => URL.revokeObjectURL(href), 1000);
-  };
-  const saveExportImage = () => shareOrDownload(previewBlob, "frame.jpg", previewUrl);
-  // 動画の書き出し＋保存。対応ブラウザでは WebCodecs で実時間より速く書き出す。
-  const saveExportVideo = async () => {
-    if (videoBaking) return;
-    if (!canFastBake() && !canBakeVideo()) {
-      alert("このブラウザは動画の書き出しに対応していません。別のブラウザでお試しください。");
-      return;
-    }
-    setVideoBaking(true);
-    setVideoProgress(0);
-    let blob: Blob | null;
-    try {
-      blob = await bakeVideo((r) => setVideoProgress(Math.round(r * 100)));
-    } finally {
-      setVideoBaking(false);
-    }
-    if (!blob) {
-      alert("動画の書き出しに失敗しました。");
-      return;
-    }
-    setVideoBlob(blob);
-    await shareOrDownload(blob, `frame.${videoExtension(blob.type)}`, null);
+    if (previewBlob) window.setTimeout(() => URL.revokeObjectURL(href), 1000);
   };
 
   // ============================ ドラッグ（編集） ============================ //
@@ -1960,7 +1799,7 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
             )}
 
             <div className="ar-tpl-foot">
-              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), exportBlobForHandoff)}>一覧へ</button>
+              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), previewBlob)}>一覧へ</button>
               <button className="ar-btn-sub" onClick={onReselect}>山を選び直す</button>
             </div>
           </div>
@@ -1969,29 +1808,22 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
 
       {/* 書き出しプレビュー */}
       {previewUrl !== null && (
-        <div className="ar-preview" onClick={() => !videoBaking && setPreviewUrl(null)}>
+        <div className="ar-preview" onClick={() => setPreviewUrl(null)}>
           <div className="ar-preview-card" onClick={(e) => e.stopPropagation()}>
             <div className="ar-preview-head">
               <span>できあがり</span>
-              <span className="ar-preview-note">
-                {videoUrl
-                  ? "この内容を動画の全フレームに焼き込んで保存します。"
-                  : "この内容で保存します。よければダウンロードしてください。"}
-              </span>
+              <span className="ar-preview-note">この内容で保存します。よければダウンロードしてください。</span>
             </div>
             <div className="ar-preview-body">
               <img src={previewUrl} alt="書き出しプレビュー" />
             </div>
-            {!videoUrl && (
-              <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
-            )}
+            <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
             <div className="ar-preview-actions">
-              <button className="ar-btn-sub" onClick={() => setPreviewUrl(null)} disabled={videoBaking}>もどる</button>
+              <button className="ar-btn-sub" onClick={() => setPreviewUrl(null)}>もどる</button>
               {onNext ? (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onNext(makeSnapshot(), exportBlobForHandoff)}
-                  disabled={videoBaking}
+                  onClick={() => onNext(makeSnapshot(), previewBlob)}
                   title="この写真を終えて、次のまだ仕上げていない写真へ"
                 >
                   次の写真へ（あと{nextCount}枚）
@@ -1999,24 +1831,16 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
               ) : (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onExit(makeSnapshot(), exportBlobForHandoff)}
-                  disabled={videoBaking}
+                  onClick={() => onExit(makeSnapshot(), previewBlob)}
                   title="仕上げを終えて一覧へ"
                 >
                   一覧へ
                 </button>
               )}
-              {videoUrl ? (
-                <button className="ar-btn-main" onClick={saveExportVideo} disabled={videoBaking}>
-                  <IconDownload size={15} />
-                  {videoBaking ? `書き出し中… ${videoProgress}%` : "動画を保存"}
-                </button>
-              ) : (
-                <button className="ar-btn-main" onClick={saveExportImage}>
-                  <IconDownload size={15} />
-                  保存
-                </button>
-              )}
+              <button className="ar-btn-main" onClick={saveExportImage}>
+                <IconDownload size={15} />
+                保存
+              </button>
             </div>
           </div>
         </div>
@@ -2716,7 +2540,7 @@ export default function Studio({ photoUrl, videoUrl = null, initialLabels, initi
                 className="ar-btn-sub"
                 onClick={exitToBoard}
                 disabled={exiting}
-                title={videoUrl ? "写真一覧へ戻る（動画の書き出しは「書き出す」から）" : "この時点の見た目を保存して写真一覧へ戻る"}
+                title="この時点の見た目を保存して写真一覧へ戻る"
               >
                 {exiting ? "保存中…" : "一覧へ"}
               </button>

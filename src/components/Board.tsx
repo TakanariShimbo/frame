@@ -1,23 +1,20 @@
 import { useRef, useState } from "react";
 import { IconImage, IconDownload } from "./icons";
 import { buildZip } from "../lib/zip";
-import { filesToMedia, isVideoFile, videoExtension, type PickedMedia } from "../lib/video";
 import type { WorkItem } from "../App";
 
 type Props = {
   items: WorkItem[];
   // タイルをタップ: 山未選択なら山選びへ、選択済みなら仕上げへ（App側で振り分け）。
   onOpen: (id: number) => void;
-  // 写真・動画を追加（末尾に足す）。
-  onAdd: (media: PickedMedia[]) => void;
+  // 写真を追加（末尾に足す）。
+  onAdd: (photoUrls: string[]) => void;
   // すべて破棄してホームへ。
   onHome: () => void;
 };
 
 // ファイル名に使えない文字を除いて短くする。
 const safeName = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, "").slice(0, 24) || "frame";
-// 書き出し成果物の拡張子（画像はJPEG、動画は録画時のコンテナに合わせる）。
-const blobExt = (b: Blob) => (b.type.startsWith("video/") ? videoExtension(b.type) : "jpg");
 
 // 写真一覧（ハブ画面）: 進み方は自由。好きな写真から仕上げ、まとめて保存もここから。
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
@@ -26,13 +23,11 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
 
   const exported = items.filter((it) => it.exportBlob);
 
-  const onPickMore = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/") || isVideoFile(f));
+  const onPickMore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/"));
     e.target.value = "";
     if (files.length === 0) return;
-    const media = await filesToMedia(files);
-    if (media.length < files.length) alert("一部の動画を読み込めなかったため、読み込めた分だけ追加します。");
-    if (media.length > 0) onAdd(media);
+    onAdd(files.map((f) => URL.createObjectURL(f)));
   };
 
   // 書き出し済みの全作品をZIPでまとめて保存。
@@ -42,7 +37,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
     try {
       const zip = await buildZip(
         exported.map((it, i) => ({
-          name: `${String(i + 1).padStart(2, "0")}-${safeName(it.labels?.[0]?.name ?? "frame")}.${blobExt(it.exportBlob!)}`,
+          name: `${String(i + 1).padStart(2, "0")}-${safeName(it.labels?.[0]?.name ?? "frame")}.jpg`,
           blob: it.exportBlob!,
         })),
       );
@@ -69,7 +64,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
 
   return (
     <div className="pick-screen">
-      <input ref={fileRef} type="file" accept="image/*,video/*" multiple hidden onChange={onPickMore} />
+      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPickMore} />
       <div className="board-head">
         <header className="pick-next-head">
           <p className="kicker">Works</p>
@@ -89,7 +84,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
               <img src={it.photoUrl} alt={`${i + 1}枚目`} loading="lazy" />
               <span className="board-tile-veil" aria-hidden="true" />
               <span className="board-tile-meta">
-                <span className="board-tile-no">{String(i + 1).padStart(2, "0")}{it.videoUrl ? " ・動画" : ""}</span>
+                <span className="board-tile-no">{String(i + 1).padStart(2, "0")}</span>
                 {it.labels && <span className="board-tile-name">{it.labels[0]?.name}</span>}
                 <span className={`board-tile-status is-${st}`}>{st === "done" ? "✓ " : ""}{STATUS_LABEL[st]}</span>
               </span>
