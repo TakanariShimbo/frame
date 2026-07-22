@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconImage } from "./icons";
+import { filesToMedia, isVideoFile, type PickedMedia } from "../lib/video";
 
 type Props = {
-  // 選んだ写真URL列（先頭から順に仕上げる）を渡す。山選び・テーマ選びは次の画面で行う。
-  onPick: (photoUrls: string[]) => void;
+  // 選んだ写真・動画列（先頭から順に仕上げる）を渡す。山選び・テーマ選びは次の画面で行う。
+  onPick: (media: PickedMedia[]) => void;
 };
 
 // 作例（public/home/works/{name}.jpg）。すべてこのアプリで書き出した完成品。
@@ -100,22 +101,31 @@ export default function Picker({ onPick }: Props) {
   }, []);
   const mosaic = useMemo(() => bestMosaic(mosaicCols), [mosaicCols]);
 
-  // 写真を選んだら即、1枚目の山選びへ進む。
-  const onPickPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/"));
+  // 写真・動画を選んだら即、1枚目の山選びへ進む（動画は先頭フレームで編集する）。
+  const [preparing, setPreparing] = useState(false);
+  const onPickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/") || isVideoFile(f));
     e.target.value = ""; // 同じファイルを連続で選べるようリセット
     if (files.length === 0) {
-      if (e.target.files?.length) alert("画像ファイルを選んでください（JPEG / PNG など）。");
+      if (e.target.files?.length) alert("画像または動画ファイルを選んでください（JPEG / PNG / MP4 など）。");
       return;
     }
-    onPick(files.map((f) => URL.createObjectURL(f)));
+    setPreparing(true);
+    const media = await filesToMedia(files);
+    setPreparing(false);
+    if (media.length === 0) {
+      alert("選んだ動画を読み込めませんでした。別のファイルをお試しください。");
+      return;
+    }
+    if (media.length < files.length) alert("一部の動画を読み込めなかったため、読み込めた分だけで進みます。");
+    onPick(media);
   };
 
   const base = import.meta.env.BASE_URL;
 
   return (
     <div className="pick-screen">
-      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPickPhoto} />
+      <input ref={fileRef} type="file" accept="image/*,video/*" multiple hidden onChange={onPickPhoto} />
 
       {/* ヒーロー: 作例を敷き詰めた「動く写真の壁」。列ごとに逆方向へゆっくり流れる */}
       <section className="pick-hero">
@@ -139,11 +149,11 @@ export default function Picker({ onPick }: Props) {
             山の写真に山名・標高・解説を美しく重ねて、ポスターのような一枚に。
             約27,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。
           </p>
-          <button type="button" className="pick-hero-cta" onClick={() => fileRef.current?.click()}>
+          <button type="button" className="pick-hero-cta" onClick={() => fileRef.current?.click()} disabled={preparing}>
             <IconImage size={18} />
-            写真を選んではじめる
+            {preparing ? "読み込み中…" : "写真を選んではじめる"}
           </button>
-          <p className="pick-hero-note">複数選ぶと、1枚ずつ順に仕上げられます。</p>
+          <p className="pick-hero-note">複数選ぶと、1枚ずつ順に仕上げられます。動画も選べます（全フレームに同じ内容を焼き込みます）。</p>
         </div>
         <div className="pick-hero-scroll" aria-hidden="true" />
       </section>

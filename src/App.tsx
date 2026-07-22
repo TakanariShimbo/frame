@@ -4,6 +4,7 @@ import MountainPicker from "./components/MountainPicker";
 import Board from "./components/Board";
 import Studio, { type StudioSnapshot } from "./components/Studio";
 import type { ArLabel } from "./lib/labels";
+import type { PickedMedia } from "./lib/video";
 
 // frame のフロー（一覧をハブにした自由な進行）:
 //   home     … 写真を選ぶ（複数可）→ 1枚目の山選びへ
@@ -12,10 +13,11 @@ import type { ArLabel } from "./lib/labels";
 //   studio   … テーマを選び、文字・解説を仕上げて書き出す（編集状態は item に保存）
 export type WorkItem = {
   id: number;
-  photoUrl: string;
+  photoUrl: string; // 編集に使う静止画（動画の場合は先頭フレームのポスター）
+  videoUrl: string | null; // 動画入力ならその動画URL（書き出しは全フレームへ同じ内容を焼き込む）
   labels: ArLabel[] | null; // 山選び済みなら non-null
   snapshot: StudioSnapshot | null; // 仕上げ画面の編集状態（再編集で復元）
-  exportBlob: Blob | null; // 最後に書き出した成果物（まとめて保存に使う）
+  exportBlob: Blob | null; // 最後に書き出した成果物。画像はJPEG、動画は mp4/webm（まとめて保存に使う）
 };
 
 type View = { kind: "home" } | { kind: "board" } | { kind: "mountain"; id: number } | { kind: "studio"; id: number };
@@ -25,14 +27,14 @@ export default function App() {
   const [view, setView] = useState<View>({ kind: "home" });
   const nextId = useRef(1);
 
-  const makeItems = useCallback((photoUrls: string[]): WorkItem[] => {
-    return photoUrls.map((u) => ({ id: nextId.current++, photoUrl: u, labels: null, snapshot: null, exportBlob: null }));
+  const makeItems = useCallback((media: PickedMedia[]): WorkItem[] => {
+    return media.map((m) => ({ id: nextId.current++, photoUrl: m.photoUrl, videoUrl: m.videoUrl, labels: null, snapshot: null, exportBlob: null }));
   }, []);
 
   // ホームで写真を選んだら、1枚目の山選びへ直行（一覧はいつでも戻れるハブ）。
   const onPick = useCallback(
-    (photoUrls: string[]) => {
-      const created = makeItems(photoUrls);
+    (media: PickedMedia[]) => {
+      const created = makeItems(media);
       setItems(created);
       setView({ kind: "mountain", id: created[0].id });
     },
@@ -41,8 +43,8 @@ export default function App() {
 
   // 一覧から写真を追加（末尾へ）。
   const onAdd = useCallback(
-    (photoUrls: string[]) => {
-      setItems((prev) => [...prev, ...makeItems(photoUrls)]);
+    (media: PickedMedia[]) => {
+      setItems((prev) => [...prev, ...makeItems(media)]);
     },
     [makeItems],
   );
@@ -102,10 +104,13 @@ export default function App() {
   // 山選びへ戻る（仕上げ画面から）。
   const onReselect = useCallback((id: number) => () => setView({ kind: "mountain", id }), []);
 
-  // ホームへ: すべての写真URLを解放して破棄。
+  // ホームへ: すべての写真・動画URLを解放して破棄。
   const onHome = useCallback(() => {
     setItems((prev) => {
-      prev.forEach((x) => URL.revokeObjectURL(x.photoUrl));
+      prev.forEach((x) => {
+        URL.revokeObjectURL(x.photoUrl);
+        if (x.videoUrl) URL.revokeObjectURL(x.videoUrl);
+      });
       return [];
     });
     setView({ kind: "home" });
@@ -135,6 +140,7 @@ export default function App() {
         <Studio
           key={it.id}
           photoUrl={it.photoUrl}
+          videoUrl={it.videoUrl}
           initialLabels={it.labels ?? []}
           initialSnapshot={it.snapshot}
           onExit={onStudioExit(it.id)}
