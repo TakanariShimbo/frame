@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
 import type { ArLabel } from "../lib/labels";
+import { loadImage, canvasToJpegBlob, saveBlob } from "../lib/exportImage";
 
 // ============================================================================
 // 仕上げ（Studio）。元 trace「山を写す(AR)」の書き出し工程を、3D・撮影地点・向き合わせ
@@ -38,10 +39,9 @@ const samplePhotoEdgeColor = async (
   crop: { l: number; t: number; r: number; b: number },
   margin: { t: number; r: number; b: number; l: number },
 ): Promise<string | null> => {
-  const img = new Image();
-  img.src = url;
+  let img: HTMLImageElement;
   try {
-    await img.decode();
+    img = await loadImage(url);
   } catch {
     return null;
   }
@@ -555,6 +555,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
+  // 書き出し・保存の失敗をユーザーに知らせるメッセージ（null=非表示）。
+  const [exportError, setExportError] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
@@ -860,10 +862,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   }, [exportView]);
 
   // ============================ 焼き込み（Canvas 2D） ============================ //
-  const bakeComposite = async (): Promise<{ url: string; blob: Blob | null } | null> => {
-    const img = new Image();
-    img.src = photoUrl;
-    await img.decode();
+  // outCap: 出力長辺の上限(px)。端末のCanvas上限を超えると書き出しが失敗・真っ白になる
+  // ため、bakeExport が失敗時により小さい上限で再試行する。
+  const bakeComposite = async (outCap: number): Promise<Blob | null> => {
+    const img = await loadImage(photoUrl);
     const W = img.naturalWidth;
     const H = img.naturalHeight;
     const cl = cropInset.l * W, ct = cropInset.t * H;
@@ -877,9 +879,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const pfy = (pv: number) => mT + ((pv - cropInset.t) / fChF) * chR;
     const L = Math.max(OW, OH);
     // iOS(WebKit)は Canvas の最大ピクセル面積に上限があり、高解像度写真＋大きな余白で
-    // 上限を超えると書き出しが真っ白になる。出力長辺を OUT_CAP に収めるよう自動縮小する。
-    const OUT_CAP = 4096;
-    const outScale = Math.min(1, OUT_CAP / Math.max(OW, OH));
+    // 上限を超えると書き出しが真っ白になる。出力長辺を outCap に収めるよう自動縮小する。
+    const outScale = Math.min(1, outCap / Math.max(OW, OH));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(OW * outScale));
     canvas.height = Math.max(1, Math.round(OH * outScale));
@@ -1271,9 +1272,22 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.restore();
       }
     }
-    const url = canvas.toDataURL("image/jpeg", 0.92);
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.92));
-    return { url, blob };
+    return canvasToJpegBlob(canvas, 0.92);
+  };
+
+  // 書き出しの入口。失敗（例外・空Blob）したら出力上限を段階的に下げて再試行する。
+  // どのサイズでも失敗したときだけ null（呼び出し側でエラー表示）。
+  const EXPORT_CAPS = [4096, 2560, 1600];
+  const bakeExport = async (): Promise<Blob | null> => {
+    for (const cap of EXPORT_CAPS) {
+      try {
+        const blob = await bakeComposite(cap);
+        if (blob) return blob;
+      } catch {
+        /* 次のサイズで再試行 */
+      }
+    }
+    return null;
   };
 
   // テンプレートの値束を各 state に一括反映し、編集画面へ。
@@ -1418,16 +1432,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       ? { style: currentStyle(), templateId: activeTemplateId, labels: arLabels, captionIdx }
       : null;
 
+  // プレビューは Blob の objectURL で表示（巨大な dataURL を state に持つとスマホで
+  // メモリを圧迫しクラッシュの原因になる）。差し替え・クローズ・離脱時に revoke する。
+  useEffect(() => {
+    const url = previewUrl;
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [previewUrl]);
+
   const openExportPreview = async () => {
     if (previewBaking) return;
     setPreviewBaking(true);
-    const r = await bakeComposite();
-    setPreviewBaking(false);
-    if (r) {
-      setPreviewUrl(r.url);
-      setPreviewBlob(r.blob);
+    setExportError(null);
+    try {
+      const blob = await bakeExport();
+      if (blob) {
+        setPreviewBlob(blob);
+        setPreviewUrl(URL.createObjectURL(blob));
+      } else {
+        setExportError("画像の書き出しに失敗しました。時間をおいてもう一度お試しください。");
+      }
+    } finally {
+      setPreviewBaking(false);
     }
   };
+  const closePreview = () => setPreviewUrl(null);
 
   // 一覧へ戻る。編集に入っている写真は、その時点の見た目を自動で書き出してから戻る
   // （一覧で「仕上げ済み」になり、まとめて保存にも含まれる。手動の「書き出す」は不要）。
@@ -1437,37 +1467,22 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     let blob = previewBlob;
     if (exportView === "edit") {
       setExiting(true);
-      const r = await bakeComposite();
-      setExiting(false);
-      if (r) blob = r.blob;
+      try {
+        // 書き出しに失敗しても一覧へは戻す（ボタンが固まったままにしない）。
+        blob = (await bakeExport()) ?? previewBlob;
+      } finally {
+        setExiting(false);
+      }
     }
     onExit(makeSnapshot(), blob);
   };
-  // 保存。iOS(WebKit)は <a download> が効かないことが多いので、モバイル端末では
-  // まず Web Share API（「"写真"に保存」/共有が出せる）を試す。PCでは共有シートを
-  // 出してもファイル保存に繋がらない（キャンセルすると保存自体が中断される）ため、
-  // 共有は使わず直接ダウンロードする。
+  // 保存。モバイルは Web Share API（「"写真"に保存」）優先、PC は直接ダウンロード。
+  // ブラウザ差異の吸収は lib/exportImage.ts の saveBlob に集約。
   const saveExportImage = async () => {
-    const isMobileLike =
-      /iPhone|iPad|iPod|Android/.test(navigator.userAgent) ||
-      (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1); // iPadOSはMac名乗り
-    const file = previewBlob ? new File([previewBlob], "frame.jpg", { type: "image/jpeg" }) : null;
-    if (isMobileLike && file && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: "frame" });
-        return;
-      } catch (e) {
-        if ((e as Error)?.name === "AbortError") return; // ユーザーがキャンセル
-        // それ以外（共有失敗）はダウンロードへフォールバック
-      }
-    }
-    const href = previewBlob ? URL.createObjectURL(previewBlob) : previewUrl;
-    if (!href) return;
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = "frame.jpg";
-    a.click();
-    if (previewBlob) window.setTimeout(() => URL.revokeObjectURL(href), 1000);
+    if (!previewBlob) return;
+    const outcome = await saveBlob(previewBlob, "frame.jpg");
+    if (outcome === "failed")
+      setExportError("保存に失敗しました。プレビューの画像を長押しして「\"写真\"に保存」をお試しください。");
   };
 
   // ============================ ドラッグ（編集） ============================ //
@@ -1806,9 +1821,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         </div>
       )}
 
+      {/* 書き出し・保存の失敗通知（タップで閉じる） */}
+      {exportError && (
+        <div className="ar-export-toast" role="alert" onClick={() => setExportError(null)}>
+          {exportError}
+        </div>
+      )}
+
       {/* 書き出しプレビュー */}
       {previewUrl !== null && (
-        <div className="ar-preview" onClick={() => setPreviewUrl(null)}>
+        <div className="ar-preview" onClick={closePreview}>
           <div className="ar-preview-card" onClick={(e) => e.stopPropagation()}>
             <div className="ar-preview-head">
               <span>できあがり</span>
@@ -1819,7 +1841,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             </div>
             <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
             <div className="ar-preview-actions">
-              <button className="ar-btn-sub" onClick={() => setPreviewUrl(null)}>もどる</button>
+              <button className="ar-btn-sub" onClick={closePreview}>もどる</button>
               {onNext ? (
                 <button
                   className="ar-btn-sub"
