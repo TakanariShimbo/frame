@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
-import { IconImage, IconDownload } from "./icons";
-import { buildZip } from "../lib/zip";
+import { useRef } from "react";
+import { IconImage } from "./icons";
 import type { WorkItem } from "../App";
 
 type Props = {
@@ -13,13 +12,9 @@ type Props = {
   onHome: () => void;
 };
 
-// ファイル名に使えない文字を除いて短くする。
-const safeName = (s: string) => s.replace(/[\\/:*?"<>|\s]+/g, "").slice(0, 24) || "frame";
-
-// 写真一覧（ハブ画面）: 進み方は自由。好きな写真から仕上げ、まとめて保存もここから。
+// 写真一覧（ハブ画面）: 進み方は自由。好きな写真から順に仕上げる。保存は各写真の仕上げ画面から。
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const [zipping, setZipping] = useState(false);
 
   const exported = items.filter((it) => it.exportBlob);
 
@@ -28,28 +23,6 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
     e.target.value = "";
     if (files.length === 0) return;
     onAdd(files.map((f) => URL.createObjectURL(f)));
-  };
-
-  // 書き出し済みの全作品をZIPでまとめて保存。
-  const onSaveAll = async () => {
-    if (exported.length === 0 || zipping) return;
-    setZipping(true);
-    try {
-      const zip = await buildZip(
-        exported.map((it, i) => ({
-          name: `${String(i + 1).padStart(2, "0")}-${safeName(it.labels?.[0]?.name ?? "frame")}.jpg`,
-          blob: it.exportBlob!,
-        })),
-      );
-      const href = URL.createObjectURL(zip);
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = "frame-works.zip";
-      a.click();
-      window.setTimeout(() => URL.revokeObjectURL(href), 1000);
-    } finally {
-      setZipping(false);
-    }
   };
 
   const status = (it: WorkItem) =>
@@ -99,22 +72,6 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
       </div>
 
       <div className="board-foot">
-        <div className="board-actions">
-          <button
-            type="button"
-            className="ar-btn-main"
-            onClick={onSaveAll}
-            disabled={exported.length === 0 || zipping}
-            title={exported.length === 0 ? "テーマを選んで仕上げ画面に入ると、まとめて保存できるようになります" : undefined}
-          >
-            <IconDownload size={15} />
-            {zipping ? "作成中…" : `まとめて保存（${exported.length}枚）`}
-          </button>
-          {exported.length < items.length && (
-            <p className="pick-hint">まとめて保存に含まれるのは、テーマを選んで仕上げまで進んだ写真です。</p>
-          )}
-        </div>
-
         <div className="pick-home-row">
           <button type="button" className="pick-photo-change" onClick={onHome}>
             ホームへ戻る（すべて破棄）
