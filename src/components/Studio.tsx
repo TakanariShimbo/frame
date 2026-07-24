@@ -601,7 +601,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 指定言語のチップ文字列（高さ→場所→選択タグの順）。
   const capChips = (lb: ArLabel, lang: "ja" | "en"): string[] => {
     const chips: string[] = [];
-    if (capShowElev) chips.push(`${Math.round(lb.elevM).toLocaleString()}m`);
+    if (capShowElev && lb.elevM != null) chips.push(`${Math.round(lb.elevM).toLocaleString()}m`);
     if (capShowLoc && lb.prefecture)
       chips.push(lang === "en" ? prefEn(lb.prefecture) : lb.prefecture.replace(/\//g, "・"));
     const tj = lb.tagsJa ?? [];
@@ -629,6 +629,37 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         return { ...l, [field]: text || undefined };
       }),
     );
+  // 山の基本データ（名前・英語名・標高）の編集。名札・解説見出し・タイトルすべてに反映される。
+  const setLabelName = (i: number, value: string) =>
+    setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, name: value } : l)));
+  const setLabelNameEn = (i: number, value: string) =>
+    setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, nameEn: value.trim() || undefined } : l)));
+  const setLabelElev = (i: number, raw: string) => {
+    const v = raw.trim() === "" ? undefined : Number(raw);
+    setArLabels((p) =>
+      p.map((l, idx) => (idx === i ? { ...l, elevM: v != null && Number.isFinite(v) ? v : undefined } : l)),
+    );
+  };
+
+  // 自由タグの追加。取り上げる山の tagsJa/tagsEn 末尾に足し（日英同じ文字列）、表示ONにする。
+  const [newTag, setNewTag] = useState("");
+  const addCapTag = () => {
+    const t = newTag.trim();
+    if (!t || !capItem) return;
+    setArLabels((p) =>
+      p.map((l, i) => {
+        if (i !== captionIdx) return l;
+        const tj = l.tagsJa ?? [];
+        if (tj.includes(t)) return l;
+        // tagsEn は tagsJa と同じ並びが前提なので、欠けていれば日本語で埋めてから足す。
+        const te = tj.map((x, k) => l.tagsEn?.[k] ?? x);
+        return { ...l, tagsJa: [...tj, t], tagsEn: [...te, t] };
+      }),
+    );
+    setCapSelectedTags((p) => (p.includes(t) ? p : [...p, t]));
+    setNewTag("");
+  };
+
   const capOrig = capItem ? initialLabels.find((l) => l.id === capItem.id) : undefined;
   const capEdited =
     !!capItem &&
@@ -690,15 +721,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       titleShowOver && it.prefecture
         ? up(en ? prefEn(it.prefecture) : it.prefecture.replace(/\//g, "・"))
         : "";
-    const num = titleShowNum ? `${Math.round(it.elevM).toLocaleString()} ${en ? "M" : "m"}` : "";
+    const num = titleShowNum && it.elevM != null ? `${Math.round(it.elevM).toLocaleString()} ${en ? "M" : "m"}` : "";
     return { over, main, num };
   };
 
   // ラベルの1段目(name)と2段目(sub)の文字列を labelMode から決める。
-  const labelContent = (lb: { name: string; nameEn?: string; elevM: number }) => {
+  const labelContent = (lb: { name: string; nameEn?: string; elevM?: number }) => {
     const ja = lb.name;
     const en = lb.nameEn || lb.name;
-    const elev = `${Math.round(lb.elevM).toLocaleString()}m`;
+    // 標高なし（自由入力）の場合は標高部分だけ省いて表示する。
+    const elev = lb.elevM != null ? `${Math.round(lb.elevM).toLocaleString()}m` : "";
     switch (labelMode) {
       case "jaOnly":
         return { name: ja, sub: "" };
@@ -711,7 +743,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       case "jaSubEn":
         return { name: ja, sub: en };
       default:
-        return { name: ja, sub: `${lb.nameEn ? lb.nameEn + " | " : ""}${elev}` };
+        return { name: ja, sub: [lb.nameEn, elev].filter(Boolean).join(" | ") };
     }
   };
 
@@ -1669,6 +1701,49 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       if (!simple.includes(panelTab)) setPanelTab(simple[0] ?? "label");
     }
   };
+  // 山の情報（名前・英語名・標高）の編集ブロック。名前は名札・解説見出し・タイトルの
+  // すべてに効くため、山名・解説・タイトルの各タブ先頭に共通で出す（テンプレによって
+  // シンプルモードで見えるタブが違っても、必ずどこかから編集できるように）。
+  const dataEdit = (
+    <div className="studio-data-edit">
+      <span className="studio-data-head">山の情報（タップで編集できます）</span>
+      {arLabels.map((lb, i) => (
+        <div key={lb.id} className="studio-data-row">
+          <input
+            type="text"
+            className="studio-data-input studio-data-input--name"
+            value={lb.name}
+            onChange={(e) => setLabelName(i, e.target.value)}
+            placeholder="名前"
+            aria-label={`${i + 1}番目の名前`}
+            autoComplete="off"
+          />
+          <input
+            type="text"
+            className="studio-data-input studio-data-input--en"
+            value={lb.nameEn ?? ""}
+            onChange={(e) => setLabelNameEn(i, e.target.value)}
+            placeholder="英語名(任意)"
+            aria-label={`${lb.name}の英語名（任意）`}
+            autoComplete="off"
+          />
+          <span className="studio-data-elev">
+            <input
+              type="number"
+              inputMode="numeric"
+              className="studio-data-input studio-data-input--elev"
+              value={lb.elevM ?? ""}
+              onChange={(e) => setLabelElev(i, e.target.value)}
+              placeholder="標高"
+              aria-label={`${lb.name}の標高（任意）`}
+            />
+            m
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+
   // 「取り上げる山」セレクト（解説・タイトルの両タブ先頭に出す）。
   const subjectRow =
     arLabels.length > 1 ? (
@@ -2219,6 +2294,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 {/* 山名 */}
                 {panelTab === "label" && (
                 <section className="studio-sec">
+                  {dataEdit}
                   <label className="switch-row">
                     <span>写真に山名を入れる</span>
                     <input type="checkbox" className="switch" checked={bakeLabels} onChange={(e) => setBakeLabels(e.target.checked)} />
@@ -2301,6 +2377,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 {/* 解説 */}
                 {panelTab === "caption" && (
                 <section className="studio-sec">
+                  {dataEdit}
                   {subjectRow}
                   <div className="ar-fs-row">
                     <span>言語</span>
@@ -2435,6 +2512,24 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           ))}
                         </div>
                       )}
+                      {/* 自由タグの追加（辞書に無いタグも書ける。追加すると表示ONになる） */}
+                      <div className="studio-tag-add">
+                        <input
+                          type="text"
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addCapTag();
+                            }
+                          }}
+                          placeholder="タグを追加（例: 百名山）"
+                          aria-label="タグを追加"
+                          autoComplete="off"
+                        />
+                        <button type="button" onClick={addCapTag} disabled={!newTag.trim()}>追加</button>
+                      </div>
                       <div className="ar-fs-row">
                         <span>タグの色</span>
                         <input type="color" className="ar-color-input" value={tagColor} onChange={(e) => setTagColor(e.target.value)} aria-label="タグの色" />
@@ -2455,6 +2550,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 {/* センタータイトル */}
                 {panelTab === "title" && (
                 <section className="studio-sec">
+                  {dataEdit}
                   {subjectRow}
                   <label className="switch-row">
                     <span>中央に大きな山名</span>

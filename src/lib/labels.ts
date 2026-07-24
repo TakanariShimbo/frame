@@ -1,12 +1,24 @@
 // 写真に焼き込む山ラベル。元 trace では 3D 投影で山頂位置(dot)を求めていたが、
 // frame では「山名を辞書から選ぶ」ので、位置は写真上に既定配置し、あとはドラッグで合わせる。
-import type { MountainHit, MountainDescription } from "./mountains";
+import type { MountainDescription } from "./mountains";
+
+// 山選びで確定した1件。辞書ヒットのほか、自由入力（山小屋・池・地名・通称など）も
+// 同じ形で扱う。自由入力は id が負・elevationM 任意・custom=true で、辞書解説は付かない
+// （解説は Studio の編集機能でユーザーが書ける）。
+export type PickedPlace = {
+  id: number;
+  name: string;
+  nameEn?: string;
+  elevationM?: number;
+  prefecture?: string;
+  custom?: boolean;
+};
 
 // 出力(仕上げ)で編集する山ラベル。座標は写真フレーム内の正規化値(0..1)。
 export type ArLabel = {
   id: number;
   name: string;
-  elevM: number;
+  elevM?: number; // 標高。自由入力（山小屋・池・地名など）では未設定になり、標高表示は全箇所で自動非表示
   dotU: number;
   dotV: number;
   labelU: number;
@@ -26,7 +38,7 @@ export type ArLabel = {
 // 選んだ山＋辞書解説から、写真に焼き込む編集用ラベル列を作る。
 // 位置は写真上に横へ等間隔で並べた既定値（撮影内容に依らないので編集画面でドラッグ調整）。
 export function buildLabels(
-  mountains: MountainHit[],
+  mountains: PickedPlace[],
   descMap: Map<number, MountainDescription>,
 ): ArLabel[] {
   const n = mountains.length;

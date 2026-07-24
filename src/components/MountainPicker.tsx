@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconSearch, IconMountain, IconPlus } from "./icons";
 import { searchMountains, loadDescriptionsFor, type MountainHit } from "../lib/mountains";
-import { buildLabels, type ArLabel } from "../lib/labels";
+import { buildLabels, type ArLabel, type PickedPlace } from "../lib/labels";
 
 type Props = {
   // いま仕上げる写真。山を選んだらラベル列を返して仕上げ画面へ。
@@ -18,8 +18,10 @@ type Props = {
 export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onStart, onBoard }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MountainHit[]>([]);
-  const [selected, setSelected] = useState<MountainHit[]>([]);
+  const [selected, setSelected] = useState<PickedPlace[]>([]);
   const [loading, setLoading] = useState(false);
+  // 自由入力の採番。辞書idと衝突しないよう負の値を使う。
+  const customIdRef = useRef(-1);
 
   // 入力に対して山名を部分一致検索（デバウンス）。空クリアは onChange 側で行う。
   useEffect(() => {
@@ -39,15 +41,36 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
 
   const isSelected = (id: number) => selected.some((m) => m.id === id);
   const addMountain = (m: MountainHit) => {
-    if (!isSelected(m.id)) setSelected((p) => [...p, m]);
+    if (!isSelected(m.id))
+      setSelected((p) => [...p, { id: m.id, name: m.name, nameEn: m.nameEn, elevationM: m.elevationM, prefecture: m.prefecture }]);
+  };
+  // 自由入力（山小屋・池・地名・通称など）。検索欄の文字列をそのまま名前として追加する。
+  const addCustom = () => {
+    const name = query.trim();
+    if (!name) return;
+    setSelected((p) => [...p, { id: customIdRef.current--, name, custom: true }]);
+    setQuery("");
+    setResults([]);
+  };
+  // 自由入力チップの英語名（任意）。空なら未設定＝英語表示の場面では日本語名で代用される。
+  const setCustomNameEn = (id: number, raw: string) => {
+    const v = raw.trim() === "" ? undefined : raw;
+    setSelected((p) => p.map((m) => (m.id === id ? { ...m, nameEn: v } : m)));
+  };
+  // 自由入力チップの標高（任意）。空にすれば未設定＝標高表示なしに戻る。
+  const setCustomElev = (id: number, raw: string) => {
+    const v = raw.trim() === "" ? undefined : Number(raw);
+    setSelected((p) =>
+      p.map((m) => (m.id === id ? { ...m, elevationM: v != null && Number.isFinite(v) ? v : undefined } : m)),
+    );
   };
   const removeMountain = (id: number) => setSelected((p) => p.filter((m) => m.id !== id));
 
-  // 選び終えたら辞書解説を引いてラベルを組み立て、仕上げ画面へ。
+  // 選び終えたら辞書解説を引いてラベルを組み立て、仕上げ画面へ（自由入力に辞書解説は無い）。
   const onProceed = async () => {
     if (selected.length === 0 || loading) return;
     setLoading(true);
-    const descMap = await loadDescriptionsFor(selected.map((m) => m.id));
+    const descMap = await loadDescriptionsFor(selected.filter((m) => !m.custom).map((m) => m.id));
     const labels = buildLabels(selected, descMap);
     setLoading(false);
     onStart(labels);
@@ -111,6 +134,16 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
           </ul>
         )}
 
+        {/* 自由入力: 検索中はいつでも、入力した文字列をそのまま名前として使える
+            （山小屋・池・地名・通称など、辞書に無い名前のための逃げ道）。 */}
+        {query.trim() && (
+          <button type="button" className="pick-result pick-result--custom" onClick={addCustom}>
+            <IconPlus size={16} className="pick-result-ico" />
+            <span className="pick-result-name">「{query.trim()}」をそのまま使う</span>
+            <span className="pick-result-meta">自由入力 ・ 山小屋・池・地名などもOK</span>
+          </button>
+        )}
+
         {/* 選んだ山（複数可。写真に載せる順＝既定の並び順） */}
         <div className="pick-selected">
           <div className="pick-selected-head">
@@ -122,9 +155,39 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
           ) : (
             <ul className="pick-chips">
               {selected.map((m) => (
-                <li key={m.id} className="pick-chip">
+                <li key={m.id} className={`pick-chip${m.custom ? " pick-chip--custom" : ""}`}>
                   <span className="pick-chip-name">{m.name}</span>
-                  <span className="pick-chip-elev">{Math.round(m.elevationM).toLocaleString()}m</span>
+                  {m.custom ? (
+                    // 自由入力は英語名と標高を任意で入れられる
+                    // （空のままなら英語表示は日本語名で代用・標高表示なしで仕上がる）。
+                    <span className="pick-chip-custom-fields">
+                      <input
+                        type="text"
+                        className="pick-chip-input pick-chip-input--en"
+                        placeholder="英語名(任意)"
+                        value={m.nameEn ?? ""}
+                        onChange={(e) => setCustomNameEn(m.id, e.target.value)}
+                        aria-label={`${m.name}の英語名（任意）`}
+                        autoComplete="off"
+                      />
+                      <span className="pick-chip-elev pick-chip-elev--input">
+                        <input
+                          type="number"
+                          className="pick-chip-input"
+                          inputMode="numeric"
+                          placeholder="標高(任意)"
+                          value={m.elevationM ?? ""}
+                          onChange={(e) => setCustomElev(m.id, e.target.value)}
+                          aria-label={`${m.name}の標高（任意）`}
+                        />
+                        m
+                      </span>
+                    </span>
+                  ) : (
+                    m.elevationM != null && (
+                      <span className="pick-chip-elev">{Math.round(m.elevationM).toLocaleString()}m</span>
+                    )
+                  )}
                   <button
                     type="button"
                     className="pick-chip-x"
