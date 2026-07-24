@@ -172,6 +172,8 @@ type ExportStyle = {
   labelLineColor: string;
   labelNameScale: number;
   labelSubScale: number;
+  labelLetterSpace: number; // 字間（em。0=標準）
+  labelLineHeight: number; // 山名と補足の行間（倍率。1=標準）
   captionLang: "ja" | "en" | "both" | "none";
   captionLayout: "horizontal" | "vertical";
   captionTitleMode: "each" | "groupV" | "groupH" | "ja" | "en";
@@ -183,6 +185,8 @@ type ExportStyle = {
   captionShadow: boolean;
   captionTitleScale: number;
   captionBodyScale: number;
+  captionLetterSpace: number; // 字間（em。0=標準）
+  captionLineHeight: number; // 本文の行間（倍率。1=標準）
   captionPos: { u: number; v: number };
   captionW: number;
   captionSplit: number;
@@ -199,6 +203,8 @@ type ExportStyle = {
   titleColor: string;
   titleShadow: boolean;
   titleFont: FontPairId;
+  titleLetterSpace: number; // 字間（既定スペーシングへの倍率。1=標準）
+  titleLineHeight: number; // 3段（場所/山名/標高）の行間（倍率。1=標準）
   titlePos: { u: number; v: number };
   roleFonts: RoleFonts;
   frameMargin: { t: number; r: number; b: number; l: number };
@@ -224,6 +230,8 @@ const BASE_STYLE: ExportStyle = {
   labelLineColor: "#ffffff",
   labelNameScale: 1,
   labelSubScale: 1,
+  labelLetterSpace: 0,
+  labelLineHeight: 1,
   captionLang: "none",
   captionLayout: "horizontal",
   captionTitleMode: "each",
@@ -235,6 +243,8 @@ const BASE_STYLE: ExportStyle = {
   captionShadow: true,
   captionTitleScale: 1,
   captionBodyScale: 1,
+  captionLetterSpace: 0,
+  captionLineHeight: 1,
   captionPos: { u: 0.05, v: 0.62 },
   captionW: 0.55,
   captionSplit: 0.5,
@@ -251,6 +261,8 @@ const BASE_STYLE: ExportStyle = {
   titleColor: "#ffffff",
   titleShadow: true,
   titleFont: "posterMincho",
+  titleLetterSpace: 1,
+  titleLineHeight: 1,
   titlePos: { u: 0.5, v: 0.44 },
   roleFonts: DEFAULT_ROLE_FONTS,
   frameMargin: NO_MARGIN,
@@ -501,6 +513,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [labelLineColor, setLabelLineColor] = useState(initStyle?.labelLineColor ?? "#ffffff");
   const [labelNameScale, setLabelNameScale] = useState(initStyle?.labelNameScale ?? 1);
   const [labelSubScale, setLabelSubScale] = useState(initStyle?.labelSubScale ?? 1);
+  const [labelLetterSpace, setLabelLetterSpace] = useState(initStyle?.labelLetterSpace ?? 0);
+  const [labelLineHeight, setLabelLineHeight] = useState(initStyle?.labelLineHeight ?? 1);
   const labelHasSub = labelMode !== "jaOnly" && labelMode !== "enOnly";
 
   // --- 解説（キャプション） --- //
@@ -515,6 +529,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [captionShadow, setCaptionShadow] = useState(initStyle?.captionShadow ?? true);
   const [captionTitleScale, setCaptionTitleScale] = useState(initStyle?.captionTitleScale ?? 1);
   const [captionBodyScale, setCaptionBodyScale] = useState(initStyle?.captionBodyScale ?? 1);
+  const [captionLetterSpace, setCaptionLetterSpace] = useState(initStyle?.captionLetterSpace ?? 0);
+  const [captionLineHeight, setCaptionLineHeight] = useState(initStyle?.captionLineHeight ?? 1);
   const [captionPos, setCaptionPos] = useState(initStyle?.captionPos ?? ({ u: 0.05, v: 0.62 }));
   const [captionW, setCaptionW] = useState(initStyle?.captionW ?? 0.55);
   const [captionSplit, setCaptionSplit] = useState(initStyle?.captionSplit ?? 0.5);
@@ -537,6 +553,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleColor, setTitleColor] = useState(initStyle?.titleColor ?? "#ffffff");
   const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
   const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
+  const [titleLetterSpace, setTitleLetterSpace] = useState(initStyle?.titleLetterSpace ?? 1);
+  const [titleLineHeight, setTitleLineHeight] = useState(initStyle?.titleLineHeight ?? 1);
   const [titlePos, setTitlePos] = useState(initStyle?.titlePos ?? ({ u: 0.5, v: 0.44 }));
   const titleDragRef = useRef<{ offU: number; offV: number; w: number; h: number } | null>(null);
 
@@ -969,6 +987,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     }
     await Promise.all(fontLoads);
     ctx.textBaseline = "alphabetic";
+    // 字間（letter-spacing）。Canvas 未対応ブラウザでは無視される（＝標準字間で描かれる）。
+    // measureText も letterSpacing を反映するので、必ず計測の前に設定すること。
+    const setLS = (px: number) => {
+      (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${px}px`;
+    };
     if (bakeLabels) {
       for (const lb of arLabels) {
         const dotX = pfx(lb.dotU);
@@ -977,12 +1000,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const cy = pfy(lb.labelV);
         const { name, sub } = labelContent(lb);
         const subBaseline = cy;
-        const nameBaseline = sub ? cy - Math.round(subFs * 1.35) : cy;
+        const nameBaseline = sub ? cy - Math.round(subFs * 1.35 * labelLineHeight) : cy;
         ctx.font = `700 ${nameFs}px ${ffName}`;
+        setLS(nameFs * labelLetterSpace);
         const nameW = ctx.measureText(name).width;
         let subW = 0;
         if (sub) {
           ctx.font = `500 ${subFs}px ${ffSub}`;
+          setLS(subFs * labelLetterSpace);
           subW = ctx.measureText(sub).width;
         }
         const boxW = Math.max(nameW, subW);
@@ -1016,13 +1041,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.textAlign = "center";
         ctx.fillStyle = labelColor;
         ctx.font = `700 ${nameFs}px ${ffName}`;
+        setLS(nameFs * labelLetterSpace);
         ctx.fillText(name, cx, nameBaseline);
         if (sub) {
           ctx.font = `500 ${subFs}px ${ffSub}`;
+          setLS(subFs * labelLetterSpace);
           ctx.fillText(sub, cx, subBaseline);
         }
         ctx.restore();
       }
+      setLS(0);
     }
 
     // 解説（可動ブロック）。
@@ -1039,7 +1067,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const titleFs = Math.round(L * 0.026 * captionTitleScale);
         const bodyFs = Math.round(L * 0.02 * captionBodyScale);
         const titleLineH = Math.round(titleFs * 1.3);
-        const lineH = Math.round(bodyFs * 1.5);
+        const lineH = Math.round(bodyFs * 1.5 * captionLineHeight);
         const blockW = Math.round(OW * captionW);
         const colGap = Math.round(OW * 0.035);
         const vertical = captionLayout === "vertical" && cols.length > 1;
@@ -1086,6 +1114,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         };
         const wrapped = cols.map((c, ci) => {
           ctx.font = `400 ${bodyFs}px ${ffBody}`;
+          setLS(bodyFs * captionLetterSpace); // 折り返し計測にも字間を反映
           return { title: c.title, lines: wrapBody(c.body, colWidths[ci]) };
         });
         const both = cols.length > 1;
@@ -1113,6 +1142,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         type PillRow = { t: string; w: number }[];
         const layoutPills = (chips: string[], maxW: number): PillRow[] => {
           ctx.font = tagFont;
+          setLS(0); // タグ（ピル）は字間調整の対象外
           const rows: PillRow[] = [];
           let cur: PillRow = [];
           let curW = 0;
@@ -1131,6 +1161,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           if (!rows.length) return;
           ctx.save();
           ctx.shadowColor = "transparent";
+          setLS(0);
           const { bg, fg } = pillColors();
           let yy = top;
           for (const row of rows) {
@@ -1186,6 +1217,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.fillStyle = captionColor;
           if (colHasTitle) {
             ctx.font = `700 ${titleFs}px ${ffTitle}`;
+            setLS(titleFs * captionLetterSpace);
             ctx.fillText(w.title, cxp, ty2 + titleFs);
             ty2 += titleLineH;
           }
@@ -1196,6 +1228,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           }
           ctx.fillStyle = captionColor;
           ctx.font = `400 ${bodyFs}px ${ffBody}`;
+          setLS(bodyFs * captionLetterSpace);
           for (const ln of w.lines) { ctx.fillText(ln, cxp, ty2 + bodyFs); ty2 += lineH; }
         };
         let ty = by;
@@ -1209,6 +1242,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             sharedParts.forEach((p, pi) => {
               if (pi > 0) {
                 ctx.font = `700 ${baseFs}px ${ffTitle}`;
+                setLS(baseFs * captionLetterSpace);
                 cxp += gap;
                 ctx.globalAlpha = 0.7;
                 ctx.fillText("/", cxp, baseline);
@@ -1216,6 +1250,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 cxp += ctx.measureText("/").width + gap;
               }
               ctx.font = `700 ${p.fs}px ${ffTitle}`;
+              setLS(p.fs * captionLetterSpace);
               ctx.fillText(p.text, cxp, baseline);
               cxp += ctx.measureText(p.text).width;
             });
@@ -1223,6 +1258,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           } else {
             for (const p of sharedParts) {
               ctx.font = `700 ${p.fs}px ${ffTitle}`;
+              setLS(p.fs * captionLetterSpace);
               ctx.fillText(p.text, bx, ty + p.fs);
               ty += lineHFor(p.fs);
             }
@@ -1268,8 +1304,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const mainFs = Math.round(L * 0.075 * titleScale);
         const overFs = Math.max(1, Math.round(mainFs * 0.26));
         const numFs = Math.max(1, Math.round(mainFs * 0.3));
-        const overGap = Math.round(mainFs * 0.42);
-        const numGap = Math.round(mainFs * 0.34);
+        const overGap = Math.round(mainFs * 0.42 * titleLineHeight);
+        const numGap = Math.round(mainFs * 0.34 * titleLineHeight);
         const totalH = (tp.over ? overFs + overGap : 0) + mainFs + (tp.num ? numGap + numFs : 0);
         let y = cy - totalH / 2;
         ctx.save();
@@ -1281,23 +1317,20 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.shadowBlur = Math.round(L * 0.006);
           ctx.shadowOffsetY = Math.max(1, Math.round(L * 0.0015));
         }
-        const setLS = (px: number) => {
-          (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${px}px`;
-        };
         if (tp.over) {
           ctx.font = `500 ${overFs}px ${ffTitle}`;
-          setLS(overFs * 0.35);
+          setLS(overFs * 0.35 * titleLetterSpace);
           ctx.fillText(tp.over, cx, y);
           y += overFs + overGap;
         }
         ctx.font = `700 ${mainFs}px ${ffTitle}`;
-        setLS(mainFs * 0.04);
+        setLS(mainFs * 0.04 * titleLetterSpace);
         ctx.fillText(tp.main, cx, y);
         y += mainFs;
         if (tp.num) {
           y += numGap;
           ctx.font = `500 ${numFs}px ${ffTitle}`;
-          setLS(numFs * 0.3);
+          setLS(numFs * 0.3 * titleLetterSpace);
           ctx.fillText(tp.num, cx, y);
         }
         setLS(0);
@@ -1337,6 +1370,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setLabelLineColor(s.labelLineColor);
     setLabelNameScale(s.labelNameScale);
     setLabelSubScale(s.labelSubScale);
+    setLabelLetterSpace(s.labelLetterSpace);
+    setLabelLineHeight(s.labelLineHeight);
     setCaptionLang(s.captionLang);
     setCaptionLayout(s.captionLayout);
     setCaptionTitleMode(s.captionTitleMode);
@@ -1348,6 +1383,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setCaptionShadow(s.captionShadow);
     setCaptionTitleScale(s.captionTitleScale);
     setCaptionBodyScale(s.captionBodyScale);
+    setCaptionLetterSpace(s.captionLetterSpace);
+    setCaptionLineHeight(s.captionLineHeight);
     setCaptionPos(s.captionPos);
     setCaptionW(s.captionW);
     setCaptionSplit(s.captionSplit);
@@ -1364,6 +1401,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleColor(s.titleColor);
     setTitleShadow(s.titleShadow);
     setTitleFont(s.titleFont);
+    setTitleLetterSpace(s.titleLetterSpace);
+    setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
     setRoleFonts(s.roleFonts);
     setFrameMargin(s.frameMargin);
@@ -1449,11 +1488,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 現在の仕上げ設定（ExportStyle）。設定の書き出しと一覧へ戻るときの状態保存に使う。
   const currentStyle = (): ExportStyle => ({
     bakeLabels, labelMode, labelBg, labelPanelColor, labelPanelOpacity, labelColor, labelShadow, labelLineOn, labelLineColor,
-    labelNameScale, labelSubScale,
+    labelNameScale, labelSubScale, labelLetterSpace, labelLineHeight,
     captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
-    captionTitleScale, captionBodyScale, captionPos, captionW, captionSplit,
+    captionTitleScale, captionBodyScale, captionLetterSpace, captionLineHeight, captionPos, captionW, captionSplit,
     tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titlePos,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos,
     roleFonts, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
   });
 
@@ -1953,8 +1992,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               {
                 "--label-name-fs": labelNameScale, // ラベル1段目（山名）のサイズ倍率
                 "--label-sub-fs": labelSubScale, // ラベル2段目（補足）のサイズ倍率
+                "--label-ls": `${labelLetterSpace}em`, // ラベルの字間
+                "--label-lh": labelLineHeight, // ラベルの行間（山名と補足の間隔）
                 "--cap-title-fs": captionTitleScale, // 解説見出しのサイズ倍率
                 "--cap-body-fs": captionBodyScale, // 解説本文のサイズ倍率
+                "--cap-ls": `${captionLetterSpace}em`, // 解説の字間
+                "--cap-lh": captionLineHeight, // 解説本文の行間倍率
                 "--label-name-ff": roleFontStack(roleFonts.labelName), // 山名フォント
                 "--label-sub-ff": roleFontStack(roleFonts.labelSub), // 補足フォント
                 "--cap-title-ff": roleFontStack(roleFonts.captionTitle), // 見出しフォント
@@ -2194,6 +2237,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         color: titleColor,
                         "--title-ff": roleFontStack(titleFont),
                         "--title-fs": titleScale,
+                        "--title-ls": titleLetterSpace,
+                        "--title-gap": titleLineHeight,
                         "--title-sh": titleShadow ? contrastShadow(titleColor) : "transparent",
                       } as React.CSSProperties
                     }
@@ -2359,6 +2404,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       </div>
                       <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={labelNameScale} onChange={(e) => setLabelNameScale(Number(e.target.value))} aria-label="山名サイズ" />
                       {fontRow("labelName", "山名フォント")}
+                      <div className="ar-fs-slider-row">
+                        <span>字間</span>
+                        <span className="ar-fs-val">{labelLetterSpace.toFixed(2)}em</span>
+                      </div>
+                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={labelLetterSpace} onChange={(e) => setLabelLetterSpace(Number(e.target.value))} aria-label="山名の字間" />
                       {labelHasSub && (
                         <>
                           <div className="ar-fs-slider-row">
@@ -2367,6 +2417,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           </div>
                           <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={labelSubScale} onChange={(e) => setLabelSubScale(Number(e.target.value))} aria-label="補足サイズ" />
                           {fontRow("labelSub", "補足フォント")}
+                          <div className="ar-fs-slider-row">
+                            <span>行間（山名と補足）</span>
+                            <span className="ar-fs-val">{Math.round(labelLineHeight * 100)}%</span>
+                          </div>
+                          <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={labelLineHeight} onChange={(e) => setLabelLineHeight(Number(e.target.value))} aria-label="山名と補足の行間" />
                         </>
                       )}
                     </>
@@ -2489,6 +2544,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={captionBodyScale} onChange={(e) => setCaptionBodyScale(Number(e.target.value))} aria-label="本文サイズ" />
                       {fontRow("captionTitle", "見出しフォント")}
                       {fontRow("captionBody", "本文フォント")}
+                      <div className="ar-fs-slider-row">
+                        <span>字間</span>
+                        <span className="ar-fs-val">{captionLetterSpace.toFixed(2)}em</span>
+                      </div>
+                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={captionLetterSpace} onChange={(e) => setCaptionLetterSpace(Number(e.target.value))} aria-label="解説の字間" />
+                      <div className="ar-fs-slider-row">
+                        <span>行間</span>
+                        <span className="ar-fs-val">{Math.round(captionLineHeight * 100)}%</span>
+                      </div>
+                      <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={captionLineHeight} onChange={(e) => setCaptionLineHeight(Number(e.target.value))} aria-label="解説の行間" />
                       {/* タグ */}
                       <label className="switch-row">
                         <span>タグに標高</span>
@@ -2597,6 +2662,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           </select>
                         </div>
                       </div>
+                      <div className="ar-fs-slider-row">
+                        <span>字間</span>
+                        <span className="ar-fs-val">{Math.round(titleLetterSpace * 100)}%</span>
+                      </div>
+                      <input type="range" className="ar-fs-slider" min={0} max={3} step={0.05} value={titleLetterSpace} onChange={(e) => setTitleLetterSpace(Number(e.target.value))} aria-label="タイトルの字間" />
+                      <div className="ar-fs-slider-row">
+                        <span>行間（3段の間隔）</span>
+                        <span className="ar-fs-val">{Math.round(titleLineHeight * 100)}%</span>
+                      </div>
+                      <input type="range" className="ar-fs-slider" min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={(e) => setTitleLineHeight(Number(e.target.value))} aria-label="タイトルの行間" />
                     </>
                   )}
                 </section>
