@@ -447,6 +447,17 @@ button {
   display: flex;
   align-items: center;
 }
+/* 自由入力の行（検索ヒットの下に常設。破線で「辞書外」の逃げ道であることを示す） */
+.pick-result--custom {
+  border: 1px dashed var(--gold-line);
+  background: transparent;
+}
+.pick-result--custom:hover {
+  background: var(--gold-soft);
+}
+.pick-result--custom .pick-result-meta {
+  margin-left: auto;
+}
 
 /* 選んだ山 */
 .pick-selected {
@@ -505,6 +516,39 @@ button {
   font-size: 11px;
   font-family: var(--font-mono);
   color: var(--ink-sub);
+}
+/* 自由入力チップの追加フィールド（英語名・標高。どちらも任意） */
+.pick-chip-custom-fields {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pick-chip-elev--input {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.pick-chip-input {
+  width: 72px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.pick-chip-input--en {
+  width: 110px;
+  font-family: inherit;
+}
+.pick-chip-input::-webkit-outer-spin-button,
+.pick-chip-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .pick-chip-x {
   width: 20px;
@@ -1658,6 +1702,105 @@ button {
   color: var(--ink-sub);
 }
 /* 解説本文の編集エリア（解説タブ） */
+/* 山の情報（名前・英語名・標高）の編集欄（山名タブ先頭） */
+.studio-data-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.studio-data-head {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-sub);
+}
+.studio-data-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.studio-data-input {
+  min-width: 0;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.studio-data-input:focus {
+  outline: none;
+  border-color: var(--gold-line);
+}
+.studio-data-input::placeholder {
+  color: var(--ink-sub);
+  opacity: 0.7;
+}
+.studio-data-input::-webkit-outer-spin-button,
+.studio-data-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.studio-data-input--name {
+  flex: 1.2 1 0;
+}
+.studio-data-input--en {
+  flex: 1 1 0;
+}
+.studio-data-elev {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--ink-sub);
+  font-size: 12px;
+}
+.studio-data-input--elev {
+  width: 58px;
+  font-family: var(--font-mono);
+}
+
+/* 自由タグの追加（解説タブ） */
+.studio-tag-add {
+  display: flex;
+  gap: 6px;
+}
+.studio-tag-add input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.studio-tag-add input:focus {
+  outline: none;
+  border-color: var(--gold-line);
+}
+.studio-tag-add input::placeholder {
+  color: var(--ink-sub);
+  opacity: 0.7;
+}
+.studio-tag-add button {
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gold-line);
+  background: var(--gold-soft);
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+.studio-tag-add button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .ar-cap-editor {
   width: 100%;
   resize: vertical;
