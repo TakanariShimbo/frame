@@ -35,6 +35,15 @@ export type ArLabel = {
   source?: string; // 参考URL
 };
 
+const DAISAN_RANDOM_DESCRIPTIONS = [
+  "大きい山の意味。",
+  "とてもとても大きな山。",
+  "山が大きいので、大山といいます。",
+  "大山とは、大きい山のことである。",
+  "小さくない、大きい山です。",
+  "山です。しかも大きいです。",
+];
+
 // 選んだ山＋辞書解説から、写真に焼き込む編集用ラベル列を作る。
 // 位置は写真上に横へ等間隔で並べた既定値（撮影内容に依らないので編集画面でドラッグ調整）。
 export function buildLabels(
@@ -47,6 +56,15 @@ export function buildLabels(
     // 横方向に等間隔で配置（端に寄りすぎないよう 0.18〜0.82 に収める）。
     const t = n <= 1 ? 0.5 : 0.18 + (0.82 - 0.18) * (i / (n - 1));
     const dotV = 0.52;
+
+    let descriptionJaLong = d?.description_ja_long;
+    let descriptionJaShort = d?.description_ja_short;
+    if (m.name === "大山" && Math.random() < 0.5) {
+      const override = DAISAN_RANDOM_DESCRIPTIONS[Math.floor(Math.random() * DAISAN_RANDOM_DESCRIPTIONS.length)];
+      descriptionJaLong = override;
+      descriptionJaShort = override;
+    }
+
     return {
       id: m.id,
       name: m.name,
@@ -55,8 +73,8 @@ export function buildLabels(
       dotV,
       labelU: t,
       labelV: Math.max(0.06, dotV - 0.16), // 名札は点の少し上を初期位置に
-      description: d?.description_ja_long,
-      descriptionShort: d?.description_ja_short,
+      description: descriptionJaLong,
+      descriptionShort: descriptionJaShort,
       descriptionEn: d?.description_en_long,
       descriptionEnShort: d?.description_en_short,
       nameEn: d?.title_en ?? m.nameEn, // 解説DBの英名を優先、無ければ機械生成ローマ字
