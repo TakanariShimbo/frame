@@ -621,11 +621,24 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       live = false;
     };
   }, [photoUrl]);
-  // 表示先は下の余白。ON にしたとき余白が無ければ liit 風の広めの余白を自動で確保する。
+  // 表示先は下の余白。ON のときは liit の見本比率で四辺の余白を確保する:
+  // 上・左・右は細い縁（写真の高さの約3.5%。左右は縦横比で換算してピクセル等幅に）、
+  // 下は帯（写真の高さの約18%）。ユーザーがすでに広げている辺は上書きしない。
   const EXIF_MIN_MB = 0.1;
+  const NOTE_EDGE = 0.035;
+  const withNoteMargins = (m: { t: number; r: number; b: number; l: number }) => {
+    const ar = photoNat ? photoNat.w / photoNat.h : 1.5;
+    const side = NOTE_EDGE / ar; // l/r は幅基準なので高さ基準の縁幅を換算
+    return {
+      t: m.t > 0 ? m.t : NOTE_EDGE,
+      l: m.l > 0 ? m.l : side,
+      r: m.r > 0 ? m.r : side,
+      b: m.b < EXIF_MIN_MB ? 0.18 : m.b,
+    };
+  };
   const toggleExif = (on: boolean) => {
     setExifOn(on);
-    if (on && frameMargin.b < EXIF_MIN_MB) setFrameMargin((p) => ({ ...p, b: 0.18 }));
+    if (on) setFrameMargin(withNoteMargins);
   };
 
   // --- 書き出し --- //
@@ -1556,8 +1569,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
     setRoleFonts(s.roleFonts);
-    // 撮影情報フレームが ON のときは、テンプレを切り替えても下の余白を維持する。
-    setFrameMargin(exifOn && s.frameMargin.b < EXIF_MIN_MB ? { ...s.frameMargin, b: 0.18 } : s.frameMargin);
+    // 記録の帯が ON のときは、テンプレを切り替えても liit 比率の余白を維持する。
+    setFrameMargin(exifOn ? withNoteMargins(s.frameMargin) : s.frameMargin);
     setFrameMarginColor(s.frameMarginColor);
     setFrameMarginAuto(s.frameMarginAuto);
     setCropInset(s.cropInset);
