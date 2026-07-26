@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IconSearch, IconMountain, IconPlus } from "./icons";
 import { searchMountains, loadDescriptionsFor, type MountainHit } from "../lib/mountains";
 import { buildLabels, type ArLabel, type PickedPlace } from "../lib/labels";
@@ -16,6 +17,7 @@ type Props = {
 
 // 山選び画面: 写真1枚ごとに通る。ホーム（写真選択）とは独立した専用ステップ。
 export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onStart, onBoard }: Props) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MountainHit[]>([]);
   const [selected, setSelected] = useState<PickedPlace[]>([]);
@@ -83,14 +85,14 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
       {/* 写真は画面幅いっぱいのヒーローに。ぼかした同じ写真を下敷きにして全体を見せる */}
       <div className="mtn-hero">
         <img className="mtn-hero-back" src={photoUrl} alt="" aria-hidden="true" />
-        <img className="mtn-hero-img" src={photoUrl} alt="仕上げる写真" />
+        <img className="mtn-hero-img" src={photoUrl} alt={t("mountainPicker.finishingPhotoAlt")} />
         <div className="mtn-hero-veil" aria-hidden="true" />
         <header className="mtn-hero-head">
           <p className="kicker">Select</p>
-          <h1>山を選ぶ</h1>
+          <h1>{t("mountainPicker.heading")}</h1>
           <p>
-            {photoTotal > 1 ? `${photoIndex} / ${photoTotal}枚目。` : ""}
-            この写真にのせる山を選んでください（複数選べます）。
+            {photoTotal > 1 ? t("mountainPicker.photoCounter", { index: photoIndex, total: photoTotal }) : ""}
+            {t("mountainPicker.instruction")}
           </p>
         </header>
       </div>
@@ -105,8 +107,8 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
               setQuery(e.target.value);
               if (!e.target.value.trim()) setResults([]);
             }}
-            placeholder="山名・読みで検索（例: 富士山 / ふじ）"
-            aria-label="山名で検索"
+            placeholder={t("mountainPicker.searchPlaceholder")}
+            aria-label={t("mountainPicker.searchLabel")}
             autoComplete="off"
           />
         </div>
@@ -127,7 +129,7 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                     {Math.round(m.elevationM).toLocaleString()}m
                     {m.prefecture ? ` ・ ${m.prefecture.replace(/\//g, "・")}` : ""}
                   </span>
-                  <span className="pick-result-add">{isSelected(m.id) ? "追加済み" : <IconPlus size={16} />}</span>
+                  <span className="pick-result-add">{isSelected(m.id) ? t("mountainPicker.added") : <IconPlus size={16} />}</span>
                 </button>
               </li>
             ))}
@@ -139,19 +141,19 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
         {query.trim() && (
           <button type="button" className="pick-result pick-result--custom" onClick={addCustom}>
             <IconPlus size={16} className="pick-result-ico" />
-            <span className="pick-result-name">「{query.trim()}」をそのまま使う</span>
-            <span className="pick-result-meta">自由入力 ・ 山小屋・池・地名などもOK</span>
+            <span className="pick-result-name">{t("mountainPicker.useAsIs", { query: query.trim() })}</span>
+            <span className="pick-result-meta">{t("mountainPicker.freeInputHint")}</span>
           </button>
         )}
 
         {/* 選んだ山（複数可。写真に載せる順＝既定の並び順） */}
         <div className="pick-selected">
           <div className="pick-selected-head">
-            <span>のせる山</span>
-            <span className="pick-selected-count">{selected.length}座</span>
+            <span>{t("mountainPicker.selectedHeading")}</span>
+            <span className="pick-selected-count">{t("mountainPicker.selectedCount", { count: selected.length })}</span>
           </div>
           {selected.length === 0 ? (
-            <p className="pick-selected-empty">まだ選ばれていません。上の検索から山を追加してください。</p>
+            <p className="pick-selected-empty">{t("mountainPicker.selectedEmpty")}</p>
           ) : (
             <ul className="pick-chips">
               {selected.map((m) => (
@@ -164,10 +166,10 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                       <input
                         type="text"
                         className="pick-chip-input pick-chip-input--en"
-                        placeholder="英語名(任意)"
+                        placeholder={t("mountainPicker.nameEnPlaceholder")}
                         value={m.nameEn ?? ""}
                         onChange={(e) => setCustomNameEn(m.id, e.target.value)}
-                        aria-label={`${m.name}の英語名（任意）`}
+                        aria-label={t("mountainPicker.nameEnLabel", { name: m.name })}
                         autoComplete="off"
                       />
                       <span className="pick-chip-elev pick-chip-elev--input">
@@ -175,10 +177,10 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                           type="number"
                           className="pick-chip-input"
                           inputMode="numeric"
-                          placeholder="標高(任意)"
+                          placeholder={t("mountainPicker.elevationPlaceholder")}
                           value={m.elevationM ?? ""}
                           onChange={(e) => setCustomElev(m.id, e.target.value)}
-                          aria-label={`${m.name}の標高（任意）`}
+                          aria-label={t("mountainPicker.elevationLabel", { name: m.name })}
                         />
                         m
                       </span>
@@ -192,7 +194,7 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                     type="button"
                     className="pick-chip-x"
                     onClick={() => removeMountain(m.id)}
-                    aria-label={`${m.name}を外す`}
+                    aria-label={t("mountainPicker.removeLabel", { name: m.name })}
                   >
                     ×
                   </button>
@@ -203,13 +205,13 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
         </div>
 
         <button type="button" className="pick-pick-btn" disabled={!canProceed || loading} onClick={onProceed}>
-          {loading ? "読み込み中…" : "テーマを選んで仕上げへ"}
+          {loading ? t("mountainPicker.loading") : t("mountainPicker.proceed")}
         </button>
-        {!canProceed && <p className="pick-hint">山を1座以上選んでください。</p>}
+        {!canProceed && <p className="pick-hint">{t("mountainPicker.proceedHint")}</p>}
 
         <div className="pick-home-row">
           <button type="button" className="pick-photo-change" onClick={onBoard}>
-            写真一覧へ
+            {t("mountainPicker.backToBoard")}
           </button>
         </div>
       </div>
