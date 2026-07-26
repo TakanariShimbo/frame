@@ -37,7 +37,10 @@ const hexToRgb = (hex: string): string => {
 };
 // 記録の帯の文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
 const EXIF_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
-const NOTE_SERIF = 'Georgia, "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif';
+// 自由入力の書体は山名・題字と同じアプリの Webフォントに揃える（撮影情報モードだけは
+// liit らしさを保つため端末標準のサンセリフ EXIF_FONT のまま）。
+const NOTE_MINCHO = '"Shippori Mincho", Georgia, "Hiragino Mincho ProN", "Yu Mincho", serif';
+const NOTE_GOTHIC = '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif';
 const exifInk = (marginColor: string): { main: string; sub: string } => {
   const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -497,6 +500,8 @@ export type StudioSnapshot = {
     bold?: boolean; // 旧: 同上
     l1?: { bold: boolean; italic: boolean; dim: boolean };
     l2?: { bold: boolean; italic: boolean; dim: boolean };
+    inkAuto?: boolean;
+    ink?: string;
   };
 };
 
@@ -632,6 +637,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 上・左・右 = 写真の高さの3.5%（ピクセル等幅）、下 = 18%（帯）。色も独立（noteBg）。
   const NOTE_EDGE = 0.035;
   const [noteBg, setNoteBg] = useState(initExif?.bg ?? "#ffffff");
+  // 文字色。auto=フレーム色の明るさから2トーンを自動決定 / 手動=好きな色（淡い側は半透明で作る）。
+  const [noteInkAuto, setNoteInkAuto] = useState(initExif?.inkAuto ?? true);
+  const [noteInk, setNoteInk] = useState(initExif?.ink ?? "#3c3c3c");
+  const noteInkColors = (): { main: string; sub: string } =>
+    noteInkAuto ? exifInk(noteBg) : { main: noteInk, sub: `rgba(${hexToRgb(noteInk)},0.55)` };
   // 下の帯の高さ（写真の高さ比）。文字を入れないときは細くする等、下だけ調整できる。
   const [noteBand, setNoteBand] = useState(initExif?.band ?? 0.18);
   // 自由入力の文字スタイル。行ごとに 太字/斜体/淡色 を指定できる（見本の「1行目=主役・
@@ -1119,6 +1129,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       fontLoads.push(document.fonts.load(`${w} 16px "${p.jp}"`).catch(() => {}));
       fontLoads.push(document.fonts.load(`${w} 16px "${p.en}"`).catch(() => {}));
     }
+    // 記録の帯（自由入力）はアプリの Webフォントで描くため、未ロードだと代替書体で
+    // 焼かれてプレビューとずれる。使う書体だけ待ってから描画する。
+    if (exifOn && noteMode === "free") {
+      const jp = noteSerif ? "Shippori Mincho" : "Zen Kaku Gothic New";
+      for (const w of [400, 600, 700]) fontLoads.push(document.fonts.load(`${w} 16px "${jp}"`).catch(() => {}));
+    }
     await Promise.all(fontLoads);
     ctx.textBaseline = "alphabetic";
     // 字間（letter-spacing）。Canvas 未対応ブラウザでは無視される（＝標準字間で描かれる）。
@@ -1473,7 +1489,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     }
     // 記録の帯（外側フレーム下部の中央に2行。camera=Shot on 表記 / free=自由入力）。
     if (exifOn && nBand > 0) {
-      const ink = exifInk(noteBg);
+      const ink = noteInkColors();
       const mainFs = Math.round(L * 0.019);
       const subFs = Math.round(L * 0.014);
       const cy = OH + nBand / 2; // translate 済み座標: 内側コンテンツの直下が帯
@@ -1511,7 +1527,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
         }
       } else {
-        const ff = noteSerif ? NOTE_SERIF : EXIF_FONT;
+        const ff = noteSerif ? NOTE_MINCHO : NOTE_GOTHIC;
         const both = !!noteLine1 && !!noteLine2;
         ctx.textAlign = "center";
         if (noteLine1) {
@@ -1716,6 +1732,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             band: noteBand,
             l1: noteL1,
             l2: noteL2,
+            inkAuto: noteInkAuto,
+            ink: noteInk,
           },
         }
       : null;
@@ -2495,7 +2513,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             </div>
               {/* 記録の帯（外側フレーム下部の中央。書き出しと同じ2トーン配色） */}
               {exifOn && (() => {
-                const ink = exifInk(noteBg);
+                const ink = noteInkColors();
                 const ch = (photoNat?.h ?? 1000) * fChF;
                 const totalH = ch * (1 + fMtb) + NOTE_EDGE * ch + noteBand * ch;
                 return (
@@ -2521,7 +2539,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
                       </>
                     ) : (
-                      <span className="ar-exif-free" style={{ fontFamily: noteSerif ? NOTE_SERIF : EXIF_FONT }}>
+                      <span className="ar-exif-free" style={{ fontFamily: noteSerif ? NOTE_MINCHO : NOTE_GOTHIC }}>
                         {noteLine1 && (
                           <span
                             className="ar-exif-l1"
@@ -3033,6 +3051,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>フレームの色</span>
                         <input type="color" className="ar-color-input" value={noteBg} onChange={(e) => setNoteBg(e.target.value)} aria-label="記録フレームの色" />
                       </div>
+                      <label className="switch-row">
+                        <span>文字の色をフレームに合わせる</span>
+                        <input type="checkbox" className="switch" checked={noteInkAuto} onChange={(e) => setNoteInkAuto(e.target.checked)} />
+                      </label>
+                      {!noteInkAuto && (
+                        <div className="ar-fs-row">
+                          <span>文字の色</span>
+                          <input type="color" className="ar-color-input" value={noteInk} onChange={(e) => setNoteInk(e.target.value)} aria-label="記録の文字の色" />
+                        </div>
+                      )}
                       {/* 下の帯の高さは「上の縁より何%広げるか」で指定。+0% = 上下の縁が同じ幅。 */}
                       <div className="ar-fs-slider-row">
                         <span>下の広さ（+0%で上下同じ）</span>
