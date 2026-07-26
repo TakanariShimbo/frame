@@ -92,6 +92,8 @@ export default {
       nameEnLabel: "English name for {{name}} (optional)",
       elevationPlaceholder: "Elevation",
       elevationLabel: "Elevation for {{name}} (optional)",
+      showOnPhoto: "Show the name on the photo (still usable for captions and titles when off)",
+      showOnPhotoLabel: "Show {{name}} on the photo",
       subject: "Featured mountain",
     },
     stage: {

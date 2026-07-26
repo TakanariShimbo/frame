@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { IconDownload, IconCaret, IconChevron } from "./icons";
+import { IconDownload, IconCaret, IconChevron, IconEye, IconEyeOff } from "./icons";
 import type { ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
 import { readShootingInfo } from "../lib/exif";
@@ -755,6 +755,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     );
   };
 
+  // 写真上の名札・引き出し線の表示/非表示。非表示でも解説・題字の題材候補には残る
+  // （例: 自分が立っている山頂を解説したいが、写真上に名札は要らない場合）。
+  const setLabelHidden = (i: number, hidden: boolean) =>
+    setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, hidden: hidden || undefined } : l)));
+
   // 自由タグの追加。取り上げる山の tagsJa/tagsEn 末尾に足し（日英同じ文字列）、表示ONにする。
   const [newTag, setNewTag] = useState("");
   const addCapTag = () => {
@@ -1154,6 +1159,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     };
     if (bakeLabels) {
       for (const lb of arLabels) {
+        if (lb.hidden) continue; // 非表示ラベル（題材専用）は焼き込まない
         const dotX = pfx(lb.dotU);
         const dotY = pfy(lb.dotV);
         const cx = pfx(lb.labelU);
@@ -2036,6 +2042,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             />
             m
           </span>
+          <button
+            type="button"
+            className={`studio-data-eye${lb.hidden ? " is-off" : ""}`}
+            onClick={() => setLabelHidden(i, !lb.hidden)}
+            title={t("studio.data.showOnPhoto")}
+            aria-label={t("studio.data.showOnPhotoLabel", { name: lb.name })}
+            aria-pressed={!lb.hidden}
+          >
+            {lb.hidden ? <IconEyeOff size={15} /> : <IconEye size={15} />}
+          </button>
         </div>
       ))}
     </div>
@@ -2308,6 +2324,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {labelLineOn && (
                   <svg className="ar-edit-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                       const sp = labelSidePoint(i);
                       const dp = photoToFrame(lb.dotU, lb.dotV);
                       const ax = sp.x * 100, ay = sp.y * 100;
@@ -2332,6 +2349,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <div className="ar-edit-chrome">
                     <svg className="ar-edit-guides" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                         const sp = labelSidePoint(i);
                         const dp = photoToFrame(lb.dotU, lb.dotV);
                         return (
@@ -2349,6 +2367,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       })}
                     </svg>
                     {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                       const sp = labelSidePoint(i);
                       const dp = photoToFrame(lb.dotU, lb.dotV);
                       return (
@@ -2375,6 +2394,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </div>
                   )}
                   {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                     const lc = labelContent(lb);
                     const lp = photoToFrame(lb.labelU, lb.labelV);
                     return (

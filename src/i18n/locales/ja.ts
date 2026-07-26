@@ -91,6 +91,8 @@ export default {
       nameEnLabel: "{{name}}の英語名（任意）",
       elevationPlaceholder: "標高",
       elevationLabel: "{{name}}の標高（任意）",
+      showOnPhoto: "写真に山名を表示（OFFでも解説・題字には使えます）",
+      showOnPhotoLabel: "{{name}}を写真に表示する",
       subject: "取り上げる山",
     },
     stage: {

@@ -33,6 +33,7 @@ export type ArLabel = {
   tagsJa?: string[]; // タグ（日本語）
   tagsEn?: string[]; // タグ（英語。tagsJa と同じ並び）
   source?: string; // 参考URL
+  hidden?: boolean; // 写真上に名札・引き出し線を描かない（解説・題字の題材候補には残る）
 };
 
 // 選んだ山＋辞書解説から、写真に焼き込む編集用ラベル列を作る。
