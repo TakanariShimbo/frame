@@ -49,6 +49,9 @@ body,
   height: 100%;
   overflow: hidden;
   background: var(--bg);
+  /* 横方向のオーバースクロールによる「戻る/進む」ジェスチャを無効化
+     （Android Chrome。スライダー操作が画面端でナビゲーションに化けるのを防ぐ） */
+  overscroll-behavior-x: none;
 }
 
 button {
@@ -2128,6 +2131,13 @@ button {
   }
   .studio-panel.is-closed {
     max-height: none;
+  }
+  /* スマホでは左右の余白を広げ、スライダーのつまみが画面端のスワイプバック
+     判定ゾーン（端から約27px）に入らないようにする。iOS のエッジスワイプは
+     Web 側から無効化できないため、届かない位置に置くのが唯一の対策。 */
+  .studio-panel-body {
+    padding-left: max(30px, env(safe-area-inset-left, 0px) + 16px);
+    padding-right: max(30px, env(safe-area-inset-right, 0px) + 16px);
   }
   .studio-panel-head {
     padding: 10px 14px;
