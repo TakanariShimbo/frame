@@ -2534,7 +2534,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   [
                     ["label", "山名"],
                     ["caption", "解説"],
-                    ["title", "タイトル"],
+                    ["title", "題字"],
                     ["frame", "余白"],
                     ["note", "記録"],
                   ] as [PanelTab, string][]
@@ -2837,14 +2837,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {dataEdit}
                   {subjectRow}
                   <label className="switch-row">
-                    <span>中央に大きな山名</span>
+                    <span>中央に大きく題字を入れる</span>
                     <input type="checkbox" className="switch" checked={titleOn} onChange={(e) => setTitleOn(e.target.checked)} />
                   </label>
                   {titleOn && (
                     <>
                       <div className="ar-fs-row">
                         <span>言語</span>
-                        <div className="seg" role="group" aria-label="タイトルの言語">
+                        <div className="seg" role="group" aria-label="題字の言語">
                           {([["英語", "en"], ["日本語", "ja"]] as [string, "en" | "ja"][]).map(([lab, v]) => (
                             <button key={v} className={titleLang === v ? "is-active" : ""} onClick={() => setTitleLang(v)}>{lab}</button>
                           ))}
@@ -2862,10 +2862,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>サイズ</span>
                         <span className="ar-fs-val">{Math.round(titleScale * 100)}%</span>
                       </div>
-                      <FsSlider min={0.7} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel="タイトルサイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel="題字サイズ" />
                       <div className="ar-fs-row">
                         <span>文字の色</span>
-                        <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label="タイトルの色" />
+                        <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label="題字の色" />
                       </div>
                       <label className="switch-row">
                         <span>文字の影</span>
@@ -2874,7 +2874,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       <div className="ar-fs-row">
                         <span>フォント</span>
                         <div className="ar-font-sel">
-                          <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label="タイトルフォント">
+                          <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label="題字フォント">
                             {FONT_PAIR_IDS.map((id) => (
                               <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
                             ))}
@@ -2885,12 +2885,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>字間</span>
                         <span className="ar-fs-val">{Math.round(titleLetterSpace * 100)}%</span>
                       </div>
-                      <FsSlider min={0} max={3} step={0.05} value={titleLetterSpace} onChange={setTitleLetterSpace} ariaLabel="タイトルの字間" />
+                      <FsSlider min={0} max={3} step={0.05} value={titleLetterSpace} onChange={setTitleLetterSpace} ariaLabel="題字の字間" />
                       <div className="ar-fs-slider-row">
                         <span>行間（3段の間隔）</span>
                         <span className="ar-fs-val">{Math.round(titleLineHeight * 100)}%</span>
                       </div>
-                      <FsSlider min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={setTitleLineHeight} ariaLabel="タイトルの行間" />
+                      <FsSlider min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={setTitleLineHeight} ariaLabel="題字の行間" />
                     </>
                   )}
                 </section>
