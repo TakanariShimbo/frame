@@ -1938,6 +1938,24 @@ button {
   color: var(--exif-sub, #969696);
   letter-spacing: 0.04em;
 }
+/* 自由入力モード（山行記録など。書体は inline style で明朝/ゴシック切替） */
+.ar-exif-free {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55cqmax;
+  color: var(--exif-main, #3c3c3c);
+}
+.ar-exif-l1 {
+  font-size: 1.9cqmax;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.ar-exif-l2 {
+  font-size: 1.6cqmax;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
 /* パネル内の注意書き */
 .ar-exif-note {
   margin: 0;
