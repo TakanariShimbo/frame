@@ -937,7 +937,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   useLayoutEffect(() => {
     const stageEl = arEditStageRef.current, frame = arFrameRef.current, wrap = noteWrapRef.current;
     if (!stageEl || !frame || !wrap) return;
-    const sw = stageEl.clientWidth, sh = stageEl.clientHeight;
+    // clientWidth/Height はパディング込み。実際に置ける内容量を使わないと、flex に
+    // 横だけ縮められて右の縁が痩せる（帯の高さ変更時に見切れる）。
+    const cs = getComputedStyle(stageEl);
+    const sw = stageEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const sh = stageEl.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
     if (!sw || !sh || !frameAR) return;
     // 論理サイズ（切り抜き後の写真高さ ch を基準に、縁・帯の論理量を出す）
     const ch = (photoNat?.h ?? 1000) * fChF;
