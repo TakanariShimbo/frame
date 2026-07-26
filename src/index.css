@@ -2220,3 +2220,8 @@ input[type="range"].ar-fs-slider {
   box-shadow: var(--shadow-pop);
   cursor: pointer;
 }
+
+/* 警告（処理は成功したが注意あり。低解像度フォールバック等） */
+.ar-export-toast.is-warn {
+  background: rgba(146, 104, 30, 0.95);
+}

@@ -576,7 +576,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
   // 書き出し・保存の失敗をユーザーに知らせるメッセージ（null=非表示）。
-  const [exportError, setExportError] = useState<string | null>(null);
+  // 書き出し関連の通知。error=失敗（赤）、warn=成功したが注意あり（黄。低解像度フォールバック等）。
+  const [exportNotice, setExportNotice] = useState<{ kind: "error" | "warn"; text: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
@@ -916,8 +917,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // ============================ 焼き込み（Canvas 2D） ============================ //
   // outCap: 出力長辺の上限(px)。端末のCanvas上限を超えると書き出しが失敗・真っ白になる
   // ため、bakeExport が失敗時により小さい上限で再試行する。
-  const bakeComposite = async (outCap: number): Promise<Blob | null> => {
-    const img = await loadImage(photoUrl);
+  const bakeComposite = async (img: HTMLImageElement, outCap: number): Promise<Blob | null> => {
     const W = img.naturalWidth;
     const H = img.naturalHeight;
     const cl = cropInset.l * W, ct = cropInset.t * H;
@@ -945,6 +945,34 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       ctx.fillRect(0, 0, OW, OH);
     }
     ctx.drawImage(img, cl, ct, cw, ch, mL, mT, cwR, chR);
+    // drawImage はメモリ上限超過時にエラーを出さず「何も描かない」ことがある
+    // （文字と余白だけの白抜け画像の原因）。写真領域を9点サンプリングして、
+    // 1点も描けていなければこの解像度は失敗として扱い、縮小リトライへ回す。
+    try {
+      const hasMargin = !!(mT || mB || mL || mR);
+      const [mr, mg, mb] = hexToRgb(frameMarginColor).split(",").map(Number);
+      let drawn = false;
+      for (const fy of [0.1, 0.5, 0.9]) {
+        for (const fx of [0.1, 0.5, 0.9]) {
+          const px = Math.min(canvas.width - 1, Math.round((mL + fx * cwR) * outScale));
+          const py = Math.min(canvas.height - 1, Math.round((mT + fy * chR) * outScale));
+          const d = ctx.getImageData(px, py, 1, 1).data;
+          // 余白ありなら「全点が余白色のまま」、なしなら「全点が透明のまま」を未描画とみなす。
+          if (hasMargin ? d[0] !== mr || d[1] !== mg || d[2] !== mb : d[3] !== 0) {
+            drawn = true;
+            break;
+          }
+        }
+        if (drawn) break;
+      }
+      if (!drawn) {
+        releaseCanvas(canvas);
+        throw new Error("photo-not-drawn");
+      }
+    } catch (e) {
+      if ((e as Error)?.message === "photo-not-drawn") throw e;
+      // getImageData 自体の失敗（検証不能）は描画成功とみなして続行する。
+    }
     if (frameFade > 0 && (mT || mB || mL || mR)) {
       const fh = Math.round(frameFade * chR), fw = Math.round(frameFade * cwR);
       const rgba = (a: number) => `rgba(${hexToRgb(frameMarginColor)},${a})`;
@@ -1342,19 +1370,27 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     return canvasToJpegBlob(canvas, 0.92);
   };
 
-  // 書き出しの入口。失敗（例外・空Blob）したら出力上限を段階的に下げて再試行する。
-  // どのサイズでも失敗したときだけ null（呼び出し側でエラー表示）。
+  // 書き出しの入口。失敗（例外・空Blob・写真の未描画）したら出力上限を段階的に下げて
+  // 再試行する。結果は「成功（どの上限で焼けたか）」か「失敗（原因の種類）」で返し、
+  // 呼び出し側がユーザーへの案内文を出し分ける。
   const EXPORT_CAPS = [4096, 2560, 1600];
-  const bakeExport = async (): Promise<Blob | null> => {
+  type BakeResult = { blob: Blob; cap: number } | { blob: null; error: "load" | "memory" };
+  const bakeExport = async (): Promise<BakeResult> => {
+    let img: HTMLImageElement;
+    try {
+      img = await loadImage(photoUrl);
+    } catch {
+      return { blob: null, error: "load" };
+    }
     for (const cap of EXPORT_CAPS) {
       try {
-        const blob = await bakeComposite(cap);
-        if (blob) return blob;
+        const blob = await bakeComposite(img, cap);
+        if (blob) return { blob, cap };
       } catch {
         /* 次のサイズで再試行 */
       }
     }
-    return null;
+    return { blob: null, error: "memory" };
   };
 
   // テンプレートの値束を各 state に一括反映し、編集画面へ。
@@ -1517,14 +1553,29 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const openExportPreview = async () => {
     if (previewBaking) return;
     setPreviewBaking(true);
-    setExportError(null);
+    setExportNotice(null);
     try {
-      const blob = await bakeExport();
-      if (blob) {
-        setPreviewBlob(blob);
-        setPreviewUrl(URL.createObjectURL(blob));
+      const r = await bakeExport();
+      if (r.blob) {
+        setPreviewBlob(r.blob);
+        setPreviewUrl(URL.createObjectURL(r.blob));
+        // 最大解像度で焼けなかったときは、黙って出さずに理由と対処を知らせる。
+        if (r.cap < EXPORT_CAPS[0]) {
+          setExportNotice({
+            kind: "warn",
+            text: `メモリが不足しているため、通常より低い解像度（長辺${r.cap}px）で書き出しました。最高画質で保存したいときは、他のアプリやタブを閉じてブラウザを再起動してから、もう一度お試しください。`,
+          });
+        }
+      } else if (r.error === "load") {
+        setExportNotice({
+          kind: "error",
+          text: "写真の読み込みに失敗しました。端末のメモリが不足している可能性があります。お手数ですが、ページを再読み込みして写真を選び直してください。",
+        });
       } else {
-        setExportError("画像の書き出しに失敗しました。時間をおいてもう一度お試しください。");
+        setExportNotice({
+          kind: "error",
+          text: "画像の書き出しに失敗しました。端末のメモリが不足しています。他のアプリやタブを閉じる、ブラウザを再起動する、読み込む写真の枚数を減らす、のいずれかをお試しください。",
+        });
       }
     } finally {
       setPreviewBaking(false);
@@ -1549,7 +1600,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const outcome = await saveBlob(previewBlob, "frame.jpg");
     if (outcome === "shared" || outcome === "downloaded") setSavedOnce(true);
     if (outcome === "failed")
-      setExportError("保存に失敗しました。プレビューの画像を長押しして「\"写真\"に保存」をお試しください。");
+      setExportNotice({ kind: "error", text: "保存に失敗しました。プレビューの画像を長押しして「\"写真\"に保存」をお試しください。" });
   };
 
   // ============================ ドラッグ（編集） ============================ //
@@ -1931,10 +1982,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         </div>
       )}
 
-      {/* 書き出し・保存の失敗通知（タップで閉じる） */}
-      {exportError && (
-        <div className="ar-export-toast" role="alert" onClick={() => setExportError(null)}>
-          {exportError}
+      {/* 書き出し・保存の通知（error=失敗 / warn=低解像度フォールバック等。タップで閉じる） */}
+      {exportNotice && (
+        <div
+          className={`ar-export-toast${exportNotice.kind === "warn" ? " is-warn" : ""}`}
+          role="alert"
+          onClick={() => setExportNotice(null)}
+        >
+          {exportNotice.text}
         </div>
       )}
 
