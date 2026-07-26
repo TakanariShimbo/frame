@@ -493,8 +493,10 @@ export type StudioSnapshot = {
     serif?: boolean;
     bg?: string;
     band?: number;
-    italic?: boolean;
-    bold?: boolean;
+    italic?: boolean; // 旧: 全体指定（l1/l2 が無いスナップショットの引き継ぎ用）
+    bold?: boolean; // 旧: 同上
+    l1?: { bold: boolean; italic: boolean; dim: boolean };
+    l2?: { bold: boolean; italic: boolean; dim: boolean };
   };
 };
 
@@ -632,9 +634,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [noteBg, setNoteBg] = useState(initExif?.bg ?? "#ffffff");
   // 下の帯の高さ（写真の高さ比）。文字を入れないときは細くする等、下だけ調整できる。
   const [noteBand, setNoteBand] = useState(initExif?.band ?? 0.18);
-  // 自由入力の文字スタイル（斜体・太字）。
-  const [noteItalic, setNoteItalic] = useState(initExif?.italic ?? false);
-  const [noteBold, setNoteBold] = useState(initExif?.bold ?? false);
+  // 自由入力の文字スタイル。行ごとに 太字/斜体/淡色 を指定できる（見本の「1行目=主役・
+  // 2行目=補足」の作り分け用）。旧スナップショットの全体指定 italic/bold から引き継ぐ。
+  type NoteLineStyle = { bold: boolean; italic: boolean; dim: boolean };
+  const initLineStyle = (v: NoteLineStyle | undefined): NoteLineStyle => ({
+    bold: v?.bold ?? initExif?.bold ?? false,
+    italic: v?.italic ?? initExif?.italic ?? false,
+    dim: v?.dim ?? false,
+  });
+  const [noteL1, setNoteL1] = useState<NoteLineStyle>(initLineStyle(initExif?.l1));
+  const [noteL2, setNoteL2] = useState<NoteLineStyle>(initLineStyle(initExif?.l2));
   const toggleExif = (on: boolean) => setExifOn(on);
 
   // --- 書き出し --- //
@@ -1503,19 +1512,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         }
       } else {
         const ff = noteSerif ? NOTE_SERIF : EXIF_FONT;
-        const styl = noteItalic ? "italic " : "";
-        const w1 = noteBold ? 700 : 600;
-        const w2 = noteBold ? 600 : 400;
         const both = !!noteLine1 && !!noteLine2;
         ctx.textAlign = "center";
         if (noteLine1) {
-          ctx.font = `${styl}${w1} ${mainFs}px ${ff}`;
-          ctx.fillStyle = ink.main;
+          ctx.font = `${noteL1.italic ? "italic " : ""}${noteL1.bold ? 700 : 600} ${mainFs}px ${ff}`;
+          ctx.fillStyle = noteL1.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
         }
         if (noteLine2) {
-          ctx.font = `${styl}${w2} ${Math.round(L * 0.016)}px ${ff}`;
-          ctx.fillStyle = ink.main;
+          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${Math.round(L * 0.016)}px ${ff}`;
+          ctx.fillStyle = noteL2.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
         }
       }
@@ -1708,8 +1714,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             serif: noteSerif,
             bg: noteBg,
             band: noteBand,
-            italic: noteItalic,
-            bold: noteBold,
+            l1: noteL1,
+            l2: noteL2,
           },
         }
       : null;
@@ -2515,12 +2521,31 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
                       </>
                     ) : (
-                      <span
-                        className="ar-exif-free"
-                        style={{ fontFamily: noteSerif ? NOTE_SERIF : EXIF_FONT, fontStyle: noteItalic ? "italic" : "normal" }}
-                      >
-                        {noteLine1 && <span className="ar-exif-l1" style={{ fontWeight: noteBold ? 700 : 600 }}>{noteLine1}</span>}
-                        {noteLine2 && <span className="ar-exif-l2" style={{ fontWeight: noteBold ? 600 : 400 }}>{noteLine2}</span>}
+                      <span className="ar-exif-free" style={{ fontFamily: noteSerif ? NOTE_SERIF : EXIF_FONT }}>
+                        {noteLine1 && (
+                          <span
+                            className="ar-exif-l1"
+                            style={{
+                              fontWeight: noteL1.bold ? 700 : 600,
+                              fontStyle: noteL1.italic ? "italic" : "normal",
+                              color: noteL1.dim ? "var(--exif-sub)" : "var(--exif-main)",
+                            }}
+                          >
+                            {noteLine1}
+                          </span>
+                        )}
+                        {noteLine2 && (
+                          <span
+                            className="ar-exif-l2"
+                            style={{
+                              fontWeight: noteL2.bold ? 600 : 400,
+                              fontStyle: noteL2.italic ? "italic" : "normal",
+                              color: noteL2.dim ? "var(--exif-sub)" : "var(--exif-main)",
+                            }}
+                          >
+                            {noteLine2}
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>
@@ -3008,11 +3033,19 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>フレームの色</span>
                         <input type="color" className="ar-color-input" value={noteBg} onChange={(e) => setNoteBg(e.target.value)} aria-label="記録フレームの色" />
                       </div>
+                      {/* 下の帯の高さは「上の縁より何%広げるか」で指定。+0% = 上下の縁が同じ幅。 */}
                       <div className="ar-fs-slider-row">
-                        <span>下の高さ</span>
-                        <span className="ar-fs-val">{Math.round(noteBand * 100)}%</span>
+                        <span>下の広さ（+0%で上下同じ）</span>
+                        <span className="ar-fs-val">+{Math.round(Math.max(0, noteBand - NOTE_EDGE) * 100)}%</span>
                       </div>
-                      <FsSlider min={0.05} max={0.4} step={0.01} value={noteBand} onChange={setNoteBand} ariaLabel="記録フレームの下の高さ" />
+                      <FsSlider
+                        min={0}
+                        max={0.35}
+                        step={0.005}
+                        value={Math.max(0, noteBand - NOTE_EDGE)}
+                        onChange={(v) => setNoteBand(NOTE_EDGE + v)}
+                        ariaLabel="記録フレームの下の広さ"
+                      />
                       <div className="ar-fs-row">
                         <span>内容</span>
                         <div className="seg" role="group" aria-label="帯の内容">
@@ -3055,25 +3088,30 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       ) : (
                         <>
                           <div className="studio-data-edit">
-                            <span className="studio-data-head">2行まで自由に書けます</span>
-                            <input
-                              type="text"
-                              className="studio-data-input"
-                              value={noteLine1}
-                              onChange={(e) => setNoteLine1(e.target.value)}
-                              placeholder="1行目（名前や日付など。例: Yama Taro ｜ 2026.07.26）"
-                              aria-label="帯の1行目"
-                              autoComplete="off"
-                            />
-                            <input
-                              type="text"
-                              className="studio-data-input"
-                              value={noteLine2}
-                              onChange={(e) => setNoteLine2(e.target.value)}
-                              placeholder="2行目（ルートやひとことなど自由に）"
-                              aria-label="帯の2行目"
-                              autoComplete="off"
-                            />
+                            <span className="studio-data-head">2行まで自由に書けます（見た目は行ごとに変えられます）</span>
+                            {(
+                              [
+                                ["1行目（名前や日付など。例: Yama Taro ｜ 2026.07.26）", "帯の1行目", noteLine1, setNoteLine1, noteL1, setNoteL1],
+                                ["2行目（ルートやひとことなど自由に）", "帯の2行目", noteLine2, setNoteLine2, noteL2, setNoteL2],
+                              ] as [string, string, string, (v: string) => void, NoteLineStyle, (v: NoteLineStyle) => void][]
+                            ).map(([ph, aria, text, setText, st, setSt]) => (
+                              <div key={aria}>
+                                <input
+                                  type="text"
+                                  className="studio-data-input"
+                                  value={text}
+                                  onChange={(e) => setText(e.target.value)}
+                                  placeholder={ph}
+                                  aria-label={aria}
+                                  autoComplete="off"
+                                />
+                                <div className="seg ar-note-line-style" role="group" aria-label={`${aria}の見た目`}>
+                                  <button className={st.bold ? "is-active" : ""} onClick={() => setSt({ ...st, bold: !st.bold })}>太字</button>
+                                  <button className={st.italic ? "is-active" : ""} onClick={() => setSt({ ...st, italic: !st.italic })}>斜体</button>
+                                  <button className={st.dim ? "is-active" : ""} onClick={() => setSt({ ...st, dim: !st.dim })}>淡色</button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                           <div className="ar-fs-row">
                             <span>書体</span>
@@ -3083,14 +3121,6 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                               ))}
                             </div>
                           </div>
-                          <label className="switch-row">
-                            <span>斜体</span>
-                            <input type="checkbox" className="switch" checked={noteItalic} onChange={(e) => setNoteItalic(e.target.checked)} />
-                          </label>
-                          <label className="switch-row">
-                            <span>太字</span>
-                            <input type="checkbox" className="switch" checked={noteBold} onChange={(e) => setNoteBold(e.target.checked)} />
-                          </label>
                         </>
                       )}
                     </>

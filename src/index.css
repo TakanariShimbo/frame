@@ -1973,6 +1973,11 @@ button {
   font-weight: 400;
   letter-spacing: 0.03em;
 }
+/* 自由入力の行ごとスタイル切替（太字・斜体・淡色のトグル） */
+.ar-note-line-style {
+  margin-top: 4px;
+}
+
 /* パネル内の注意書き */
 .ar-exif-note {
   margin: 0;
