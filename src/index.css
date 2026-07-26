@@ -1752,6 +1752,25 @@ button {
   align-items: center;
   gap: 6px;
 }
+/* ラベルの写真上表示ON/OFF（目のアイコン）。OFFでも解説・題字の題材には使える */
+.studio-data-eye {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.studio-data-eye.is-off {
+  color: var(--ink-sub);
+  opacity: 0.55;
+}
 .studio-data-input {
   min-width: 0;
   font: inherit;
