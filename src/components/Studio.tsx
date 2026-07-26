@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
 import type { ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
+import { readShootingInfo } from "../lib/exif";
 import FsSlider from "./FsSlider";
 
 // ============================================================================
@@ -33,6 +34,13 @@ const hexToRgb = (hex: string): string => {
   const g = parseInt(m.slice(2, 4), 16) || 0;
   const b = parseInt(m.slice(4, 6), 16) || 0;
   return `${r},${g},${b}`;
+};
+// 撮影情報フレームの文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
+const EXIF_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const exifInk = (marginColor: string): { main: string; sub: string } => {
+  const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 140 ? { main: "#3c3c3c", sub: "#969696" } : { main: "#f2efe8", sub: "#909090" };
 };
 // 余白の色を写真の縁から動的に決める（夕焼け＝橙寄り・青空＝水色寄り。「空」「間」テンプレ向け）。
 const samplePhotoEdgeColor = async (
@@ -467,6 +475,9 @@ export type StudioSnapshot = {
   templateId: string | null;
   labels: ArLabel[];
   captionIdx: number;
+  // 撮影情報フレーム（liit 風）。テンプレとは独立の設定なので style ではなくここに持つ
+  // （テンプレを切り替えても消えない）。
+  exif?: { on: boolean; model: string; maker: string; spec: string };
 };
 
 type StudioProps = {
@@ -571,6 +582,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [frameMarginColor, setFrameMarginColor] = useState(initStyle?.frameMarginColor ?? "#ffffff");
   const [frameMarginAuto, setFrameMarginAuto] = useState(initStyle?.frameMarginAuto ?? false);
   const [frameFade, setFrameFade] = useState(initStyle?.frameFade ?? 0);
+
+  // --- 撮影情報フレーム（liit 風。テンプレと独立で、下の余白に描く） --- //
+  const initExif = initialSnapshot?.exif;
+  const [exifOn, setExifOn] = useState(initExif?.on ?? false);
+  const [exifModel, setExifModel] = useState(initExif?.model ?? "");
+  const [exifMaker, setExifMaker] = useState(initExif?.maker ?? "");
+  const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
+  // 元写真の EXIF から初期値を補完する（手で入力済みの欄は上書きしない）。
+  useEffect(() => {
+    let live = true;
+    readShootingInfo(photoUrl).then((si) => {
+      if (!live || !si) return;
+      setExifModel((v) => v || si.model);
+      setExifMaker((v) => v || si.maker);
+      setExifSpec((v) => v || si.spec);
+    });
+    return () => {
+      live = false;
+    };
+  }, [photoUrl]);
+  // 表示先は下の余白。ON にしたとき余白が無ければ liit 風の広めの余白を自動で確保する。
+  const EXIF_MIN_MB = 0.1;
+  const toggleExif = (on: boolean) => {
+    setExifOn(on);
+    if (on && frameMargin.b < EXIF_MIN_MB) setFrameMargin((p) => ({ ...p, b: 0.18 }));
+  };
 
   // --- 書き出し --- //
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -1368,6 +1405,46 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.restore();
       }
     }
+    // 撮影情報フレーム（下の余白の中央に「Shot on <モデル> <メーカー>」＋設定行）。
+    if (exifOn && mB > 0) {
+      const ink = exifInk(frameMarginColor);
+      const mainFs = Math.round(L * 0.019);
+      const subFs = Math.round(L * 0.014);
+      const cy = mT + chR + mB / 2;
+      const segs: Array<{ text: string; font: string; color: string }> = [];
+      if (exifModel || exifMaker) {
+        segs.push({ text: "Shot on ", font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
+        if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${EXIF_FONT}`, color: ink.main });
+        if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
+      }
+      const both = segs.length > 0 && !!exifSpec;
+      const gap = Math.round(mainFs * 0.8);
+      ctx.save();
+      ctx.textBaseline = "middle";
+      if (segs.length > 0) {
+        // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
+        let total = 0;
+        for (const s of segs) {
+          ctx.font = s.font;
+          total += ctx.measureText(s.text).width;
+        }
+        let x = OW / 2 - total / 2;
+        ctx.textAlign = "left";
+        for (const s of segs) {
+          ctx.font = s.font;
+          ctx.fillStyle = s.color;
+          ctx.fillText(s.text, x, both ? cy - gap : cy);
+          x += ctx.measureText(s.text).width;
+        }
+      }
+      if (exifSpec) {
+        ctx.textAlign = "center";
+        ctx.font = `500 ${subFs}px ${EXIF_FONT}`;
+        ctx.fillStyle = ink.sub;
+        ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
+      }
+      ctx.restore();
+    }
     return canvasToJpegBlob(canvas, 0.92);
   };
 
@@ -1444,7 +1521,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
     setRoleFonts(s.roleFonts);
-    setFrameMargin(s.frameMargin);
+    // 撮影情報フレームが ON のときは、テンプレを切り替えても下の余白を維持する。
+    setFrameMargin(exifOn && s.frameMargin.b < EXIF_MIN_MB ? { ...s.frameMargin, b: 0.18 } : s.frameMargin);
     setFrameMarginColor(s.frameMarginColor);
     setFrameMarginAuto(s.frameMarginAuto);
     setCropInset(s.cropInset);
@@ -1539,7 +1617,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // テーマ選択へ「戻った」だけの状態でも、編集済みの内容は保存する。
   const makeSnapshot = (): StudioSnapshot | null =>
     everEdited
-      ? { style: currentStyle(), templateId: activeTemplateId, labels: arLabels, captionIdx }
+      ? {
+          style: currentStyle(),
+          templateId: activeTemplateId,
+          labels: arLabels,
+          captionIdx,
+          exif: { on: exifOn, model: exifModel, maker: exifMaker, spec: exifSpec },
+        }
       : null;
 
   // プレビューは Blob の objectURL で表示（巨大な dataURL を state に持つとスマホで
@@ -2305,6 +2389,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </div>
                 );
               })()}
+              {/* 撮影情報フレーム（下の余白の中央。書き出しと同じ2トーン配色） */}
+              {exifOn && frameMargin.b > 0 && (() => {
+                const ink = exifInk(frameMarginColor);
+                return (
+                  <div
+                    className="ar-exif"
+                    style={
+                      {
+                        top: `${(1 - frameMargin.b / (1 + fMtb)) * 100}%`,
+                        height: `${(frameMargin.b / (1 + fMtb)) * 100}%`,
+                        "--exif-main": ink.main,
+                        "--exif-sub": ink.sub,
+                      } as React.CSSProperties
+                    }
+                    aria-hidden="true"
+                  >
+                    {(exifModel || exifMaker) && (
+                      <span className="ar-exif-model">
+                        <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
+                        {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                      </span>
+                    )}
+                    {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
+                  </div>
+                );
+              })()}
             </div>
             <p className="studio-stage-hint">文字は写真の上でドラッグして動かせます</p>
           </div>
@@ -2756,6 +2866,48 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     <span className="ar-fs-val">{Math.round(frameFade * 100)}%</span>
                   </div>
                   <FsSlider min={0} max={0.5} step={0.01} value={frameFade} onChange={setFrameFade} ariaLabel="ふち" />
+                </section>
+                <section className="studio-sec">
+                  <h3>撮影情報</h3>
+                  <label className="switch-row">
+                    <span>カメラ・設定を余白に載せる</span>
+                    <input type="checkbox" className="switch" checked={exifOn} onChange={(e) => toggleExif(e.target.checked)} />
+                  </label>
+                  {exifOn && (
+                    <>
+                      {frameMargin.b <= 0 && <p className="ar-exif-note">下の余白を広げると表示されます</p>}
+                      <div className="studio-data-edit">
+                        <span className="studio-data-head">写真から読み取った情報（タップで編集できます）</span>
+                        <input
+                          type="text"
+                          className="studio-data-input"
+                          value={exifModel}
+                          onChange={(e) => setExifModel(e.target.value)}
+                          placeholder="カメラ（例: ILCE-7CR）"
+                          aria-label="カメラのモデル名"
+                          autoComplete="off"
+                        />
+                        <input
+                          type="text"
+                          className="studio-data-input"
+                          value={exifMaker}
+                          onChange={(e) => setExifMaker(e.target.value)}
+                          placeholder="メーカー（例: SONY）"
+                          aria-label="カメラのメーカー"
+                          autoComplete="off"
+                        />
+                        <input
+                          type="text"
+                          className="studio-data-input"
+                          value={exifSpec}
+                          onChange={(e) => setExifSpec(e.target.value)}
+                          placeholder="撮影設定（例: 26mm  f/5.0  1/60s  ISO1600）"
+                          aria-label="撮影設定"
+                          autoComplete="off"
+                        />
+                      </div>
+                    </>
+                  )}
                 </section>
                 <section className="studio-sec">
                   <h3>切り抜き</h3>

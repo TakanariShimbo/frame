@@ -1907,6 +1907,44 @@ button {
     0 0 0 2px rgba(245, 242, 234, 0.45);
 }
 
+/* 撮影情報フレーム（liit 風）。下の余白の中央に配置し、配色は書き出しと同じ2トーン。
+   フォントサイズは書き出し比率（長辺の 1.9% / 1.4%）に合わせて cqmax で指定。 */
+.ar-exif {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55cqmax;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  white-space: nowrap;
+}
+.ar-exif-model {
+  font-size: 1.9cqmax;
+  font-weight: 700;
+  color: var(--exif-main, #3c3c3c);
+  letter-spacing: 0.01em;
+}
+.ar-exif-model .ar-exif-dim {
+  font-weight: 500;
+  color: var(--exif-sub, #969696);
+}
+.ar-exif-spec {
+  font-size: 1.4cqmax;
+  font-weight: 500;
+  color: var(--exif-sub, #969696);
+  letter-spacing: 0.04em;
+}
+/* パネル内の注意書き */
+.ar-exif-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ink-sub);
+}
+
 /* セグメント選択（言語・並べ方など）。 */
 .seg {
   display: inline-flex;
