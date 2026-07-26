@@ -3,7 +3,7 @@ export default {
     langToggle: "日本語",
   },
   picker: {
-    heroTitle: "Turn a mountain into a keepsake.",
+    heroTitle: "Turn a mountain into a keepsake.",
     heroLead: "Overlay a mountain's name, elevation, and description onto your photo for a poster-like finish. Just pick from a dictionary of about 27,000 peaks — English names and descriptions are added automatically.",
     heroCta: "Choose a photo to start",
     heroNote: "Pick several, and you'll finish them one at a time.",
