@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
 import type { ArLabel } from "../lib/labels";
-import { loadImage, canvasToJpegBlob, saveBlob } from "../lib/exportImage";
+import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
 
 // ============================================================================
 // 仕上げ（Studio）。元 trace「山を写す(AR)」の書き出し工程を、3D・撮影地点・向き合わせ
@@ -64,6 +64,8 @@ const samplePhotoEdgeColor = async (
     data = ctx.getImageData(0, 0, sw, sh).data;
   } catch {
     return null;
+  } finally {
+    releaseCanvas(cv);
   }
   const band = (n: number) => Math.max(1, Math.round(n * 0.08));
   let r = 0, g = 0, b = 0, n = 0;
@@ -1528,7 +1530,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       setPreviewBaking(false);
     }
   };
-  const closePreview = () => setPreviewUrl(null);
+  // プレビューを閉じたら Blob も破棄する（「保存」で使うのは表示中だけ。閉じた後まで
+  // フル解像度JPEGを持ち続けない。次回のプレビューで焼き直す）。
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewBlob(null);
+  };
 
   // 一覧へ戻る。編集状態は snapshot（JSONデータ）だけで保存し、画像の焼き込みは
   // 行わない。Canvas の生成はプレビュー・保存の時だけに絞る（スマホのメモリ対策）。
