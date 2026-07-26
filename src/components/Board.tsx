@@ -16,7 +16,7 @@ type Props = {
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const exported = items.filter((it) => it.exportBlob);
+  const saved = items.filter((it) => it.saved);
 
   const onPickMore = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/"));
@@ -26,14 +26,14 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
   };
 
   const status = (it: WorkItem) =>
-    it.exportBlob
+    it.saved
       ? ("done" as const)
       : it.snapshot
         ? ("editing" as const)
         : it.labels
           ? ("noTheme" as const)
           : ("todo" as const);
-  const STATUS_LABEL = { todo: "山を選ぶ", noTheme: "テーマ未選択", editing: "編集中", done: "仕上げ済み" };
+  const STATUS_LABEL = { todo: "山を選ぶ", noTheme: "テーマ未選択", editing: "編集中", done: "保存済み" };
 
   return (
     <div className="pick-screen">
@@ -43,7 +43,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
           <p className="kicker">Works</p>
           <h1>写真一覧</h1>
           <p>
-            {items.length}枚中 {exported.length}枚が仕上げ済み。写真をタップして、好きな順に仕上げてください。
+            {items.length}枚中 {saved.length}枚が保存済み。写真をタップして、好きな順に仕上げてください。
           </p>
         </header>
       </div>

@@ -471,13 +471,13 @@ type StudioProps = {
   initialLabels: ArLabel[];
   // 一覧から再編集で入るときの復元データ。あれば initialLabels より優先。
   initialSnapshot?: StudioSnapshot | null;
-  // 一覧へ戻る。編集状態（テンプレ選択前なら null）と最新の書き出しを渡す。
-  onExit: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
+  // 一覧へ戻る。編集状態（テンプレ選択前なら null）と、この画面で保存に成功したかを渡す。
+  onExit: (snapshot: StudioSnapshot | null, saved: boolean) => void;
   // この写真の山選びへ戻る（編集は破棄）。
   onReselect: () => void;
-  // 次の未仕上げ写真へ。残りがあるときだけ渡される。
+  // 次のまだ保存していない写真へ。残りがあるときだけ渡される。
   nextCount?: number;
-  onNext?: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
+  onNext?: (snapshot: StudioSnapshot | null, saved: boolean) => void;
 };
 
 export default function Studio({ photoUrl, initialLabels, initialSnapshot = null, onExit, onReselect, nextCount = 0, onNext }: StudioProps) {
@@ -1530,28 +1530,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   };
   const closePreview = () => setPreviewUrl(null);
 
-  // 一覧へ戻る。編集に入っている写真は、その時点の見た目を自動で書き出してから戻る
-  // （一覧で「仕上げ済み」になり、まとめて保存にも含まれる。手動の「書き出す」は不要）。
-  const [exiting, setExiting] = useState(false);
-  const exitToBoard = async () => {
-    if (exiting) return;
-    let blob = previewBlob;
-    if (exportView === "edit") {
-      setExiting(true);
-      try {
-        // 書き出しに失敗しても一覧へは戻す（ボタンが固まったままにしない）。
-        blob = (await bakeExport()) ?? previewBlob;
-      } finally {
-        setExiting(false);
-      }
-    }
-    onExit(makeSnapshot(), blob);
-  };
+  // 一覧へ戻る。編集状態は snapshot（JSONデータ）だけで保存し、画像の焼き込みは
+  // 行わない。Canvas の生成はプレビュー・保存の時だけに絞る（スマホのメモリ対策）。
+  const exitToBoard = () => onExit(makeSnapshot(), savedOnce);
   // 保存。モバイルは Web Share API（「"写真"に保存」）優先、PC は直接ダウンロード。
   // ブラウザ差異の吸収は lib/exportImage.ts の saveBlob に集約。
+  // 成功したら「保存済み」として記録し、一覧の状態表示に使う。
+  const [savedOnce, setSavedOnce] = useState(false);
   const saveExportImage = async () => {
     if (!previewBlob) return;
     const outcome = await saveBlob(previewBlob, "frame.jpg");
+    if (outcome === "shared" || outcome === "downloaded") setSavedOnce(true);
     if (outcome === "failed")
       setExportError("保存に失敗しました。プレビューの画像を長押しして「\"写真\"に保存」をお試しください。");
   };
@@ -1928,7 +1917,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             )}
 
             <div className="ar-tpl-foot">
-              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), previewBlob)}>一覧へ</button>
+              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), savedOnce)}>一覧へ</button>
               <button className="ar-btn-sub" onClick={onReselect}>山を選び直す</button>
             </div>
           </div>
@@ -1959,15 +1948,15 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               {onNext ? (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onNext(makeSnapshot(), previewBlob)}
-                  title="この写真を終えて、次のまだ仕上げていない写真へ"
+                  onClick={() => onNext(makeSnapshot(), savedOnce)}
+                  title="この写真を終えて、次のまだ保存していない写真へ"
                 >
                   次の写真へ（あと{nextCount}枚）
                 </button>
               ) : (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onExit(makeSnapshot(), previewBlob)}
+                  onClick={() => onExit(makeSnapshot(), savedOnce)}
                   title="仕上げを終えて一覧へ"
                 >
                   一覧へ
@@ -2729,13 +2718,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 <IconChevron dir="left" size={14} />
                 テーマ
               </button>
-              <button
-                className="ar-btn-sub"
-                onClick={exitToBoard}
-                disabled={exiting}
-                title="この時点の見た目を保存して写真一覧へ戻る"
-              >
-                {exiting ? "保存中…" : "一覧へ"}
+              <button className="ar-btn-sub" onClick={exitToBoard} title="編集状態を保持して写真一覧へ戻る">
+                一覧へ
               </button>
               <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
                 <IconDownload size={15} />

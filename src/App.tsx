@@ -7,7 +7,7 @@ import type { ArLabel } from "./lib/labels";
 
 // frame のフロー（一覧をハブにした自由な進行）:
 //   home     … 写真を選ぶ（複数可）→ 1枚目の山選びへ
-//   board    … 写真一覧。好きな写真から仕上げ・再編集。まとめて保存もここ
+//   board    … 写真一覧。好きな写真から仕上げ・再編集
 //   mountain … 写真1枚ぶんの山選び
 //   studio   … テーマを選び、文字・解説を仕上げて書き出す（編集状態は item に保存）
 export type WorkItem = {
@@ -15,7 +15,7 @@ export type WorkItem = {
   photoUrl: string;
   labels: ArLabel[] | null; // 山選び済みなら non-null
   snapshot: StudioSnapshot | null; // 仕上げ画面の編集状態（再編集で復元）
-  exportBlob: Blob | null; // 最後に書き出した成果物（まとめて保存に使う）
+  saved: boolean; // 保存（共有 or ダウンロード）に成功したか。成果物のBlobは保持しない
 };
 
 type View = { kind: "home" } | { kind: "board" } | { kind: "mountain"; id: number } | { kind: "studio"; id: number };
@@ -26,7 +26,7 @@ export default function App() {
   const nextId = useRef(1);
 
   const makeItems = useCallback((photoUrls: string[]): WorkItem[] => {
-    return photoUrls.map((u) => ({ id: nextId.current++, photoUrl: u, labels: null, snapshot: null, exportBlob: null }));
+    return photoUrls.map((u) => ({ id: nextId.current++, photoUrl: u, labels: null, snapshot: null, saved: false }));
   }, []);
 
   // ホームで写真を選んだら、1枚目の山選びへ直行（一覧はいつでも戻れるハブ）。
@@ -64,11 +64,12 @@ export default function App() {
   }, []);
 
   // 仕上げ画面の状態を item に保存する（一覧へ戻る・次へ進む時）。
-  const saveStudioState = useCallback((id: number, snapshot: StudioSnapshot | null, exportBlob: Blob | null) => {
+  // saved は一度 true になったら維持する（再編集で戻っても保存済み表示のまま）。
+  const saveStudioState = useCallback((id: number, snapshot: StudioSnapshot | null, saved: boolean) => {
     setItems((prev) =>
       prev.map((x) =>
         x.id === id
-          ? { ...x, snapshot: snapshot ?? x.snapshot, exportBlob: exportBlob ?? x.exportBlob }
+          ? { ...x, snapshot: snapshot ?? x.snapshot, saved: x.saved || saved }
           : x,
       ),
     );
@@ -76,20 +77,20 @@ export default function App() {
 
   // 仕上げ → 一覧へ。
   const onStudioExit = useCallback(
-    (id: number) => (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => {
-      saveStudioState(id, snapshot, exportBlob);
+    (id: number) => (snapshot: StudioSnapshot | null, saved: boolean) => {
+      saveStudioState(id, snapshot, saved);
       setView({ kind: "board" });
     },
     [saveStudioState],
   );
 
-  // 仕上げ → 次のまだ書き出していない写真へ（現在の次から探して一巡）。無ければ一覧へ。
+  // 仕上げ → 次のまだ保存していない写真へ（現在の次から探して一巡）。無ければ一覧へ。
   const onStudioNext = useCallback(
-    (id: number) => (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => {
-      saveStudioState(id, snapshot, exportBlob);
+    (id: number) => (snapshot: StudioSnapshot | null, saved: boolean) => {
+      saveStudioState(id, snapshot, saved);
       const idx = items.findIndex((x) => x.id === id);
       const rest = [...items.slice(idx + 1), ...items.slice(0, idx)];
-      const next = rest.find((x) => !x.exportBlob);
+      const next = rest.find((x) => !x.saved);
       if (next) {
         setView(next.labels ? { kind: "studio", id: next.id } : { kind: "mountain", id: next.id });
       } else {
@@ -130,7 +131,7 @@ export default function App() {
           />
         );
       }
-      const restCount = items.filter((x) => x.id !== it.id && !x.exportBlob).length;
+      const restCount = items.filter((x) => x.id !== it.id && !x.saved).length;
       return (
         <Studio
           key={it.id}
