@@ -1855,44 +1855,53 @@ button {
   font-size: 11px;
   color: var(--gold);
 }
-input[type="range"].ar-fs-slider {
-  -webkit-appearance: none;
-  appearance: none;
+/* カスタムスライダー（FsSlider）。値を変えられるのはつまみのドラッグのみで、
+   トラックへのタッチはスクロールに流す（誤操作防止。詳細は FsSlider.tsx）。 */
+.fs-slider {
+  position: relative;
   width: 100%;
   height: 24px;
-  margin: 0;
-  background: transparent;
-  cursor: pointer;
-  /* パネルの縦スクロールにジェスチャを奪われてスライダーが反応しなくなるのを防ぐ */
-  touch-action: none;
 }
-.ar-fs-slider::-webkit-slider-runnable-track {
+.fs-slider-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
   height: 2px;
+  margin-top: -1px;
   border-radius: 1px;
   background: rgba(255, 255, 255, 0.16);
 }
-.ar-fs-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
+/* つまみ本体。当たり判定は 32×32px、見た目の丸は ::before の 14px。 */
+.fs-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  /* 縦スワイプはスクロールとしてブラウザに引き取らせる（FsSlider が開始値へ戻す） */
+  touch-action: pan-y;
+}
+.fs-slider-thumb::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 14px;
   height: 14px;
-  margin-top: -6px;
-  border: none;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: #f5f2ea;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
-.ar-fs-slider::-moz-range-track {
-  height: 2px;
-  border-radius: 1px;
-  background: rgba(255, 255, 255, 0.16);
+.fs-slider-thumb:focus-visible {
+  outline: none;
 }
-.ar-fs-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border: none;
-  border-radius: 50%;
-  background: #f5f2ea;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+.fs-slider-thumb:focus-visible::before {
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(245, 242, 234, 0.45);
 }
 
 /* セグメント選択（言語・並べ方など）。 */
