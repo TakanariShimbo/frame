@@ -1907,11 +1907,26 @@ button {
     0 0 0 2px rgba(245, 242, 234, 0.45);
 }
 
-/* 撮影情報フレーム（liit 風）。下の余白の中央に配置し、配色は書き出しと同じ2トーン。
+/* 記録の帯の外側フレーム。「余白」タブとは独立で、内側の合成結果を一周包む。
+   サイズ・パディングは JSX の layout effect が px で入れる。 */
+.ar-note-wrap {
+  position: relative;
+  box-sizing: border-box;
+  container-type: size;
+}
+.ar-note-wrap.is-on {
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.ar-note-wrap.is-on .ar-frame {
+  box-shadow: none;
+}
+
+/* 記録の帯（liit 風）。外側フレーム下部の中央に配置し、配色は書き出しと同じ2トーン。
    フォントサイズは書き出し比率（長辺の 1.9% / 1.4%）に合わせて cqmax で指定。 */
 .ar-exif {
   position: absolute;
   left: 0;
+  bottom: 0;
   width: 100%;
   display: flex;
   flex-direction: column;

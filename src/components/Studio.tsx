@@ -486,11 +486,12 @@ export type StudioSnapshot = {
     model: string;
     maker: string;
     spec: string;
-    // 追加分（旧スナップショットには無いので optional）: 帯のモード・自由入力・書体
+    // 追加分（旧スナップショットには無いので optional）: 帯のモード・自由入力・書体・地色
     mode?: "camera" | "free";
     line1?: string;
     line2?: string;
     serif?: boolean;
+    bg?: string;
   };
 };
 
@@ -621,12 +622,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       live = false;
     };
   }, [photoUrl]);
-  // 表示先は下の余白。ON にしたとき余白が無ければ liit 風の広めの余白を自動で確保する。
-  const EXIF_MIN_MB = 0.1;
-  const toggleExif = (on: boolean) => {
-    setExifOn(on);
-    if (on && frameMargin.b < EXIF_MIN_MB) setFrameMargin((p) => ({ ...p, b: 0.18 }));
-  };
+  // 記録の帯は「余白」タブとは完全に独立した外側のフレーム。今の見た目（余白・色・
+  // 切り抜き込み）の外側に、liit の見本比率で縁を一周巻いてそこに文字を描く:
+  // 上・左・右 = 写真の高さの3.5%（ピクセル等幅）、下 = 18%（帯）。色も独立（noteBg）。
+  const NOTE_EDGE = 0.035;
+  const NOTE_BAND = 0.18;
+  const [noteBg, setNoteBg] = useState(initExif?.bg ?? "#ffffff");
+  const toggleExif = (on: boolean) => setExifOn(on);
 
   // --- 書き出し --- //
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -664,6 +666,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [measureTick, setMeasureTick] = useState(0);
   const arEditStageRef = useRef<HTMLDivElement | null>(null);
   const arFrameRef = useRef<HTMLDivElement | null>(null);
+  const noteWrapRef = useRef<HTMLDivElement | null>(null);
   const captionDragRef = useRef<{ offU: number; offV: number; h: number } | null>(null);
   // ドラッグ中にスナップした基準線（フレーム正規化座標）。ガイド線の描画用。
   const [snapGuide, setSnapGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
@@ -923,19 +926,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   }, [frameMarginAuto, photoUrl, cropInset.l, cropInset.t, cropInset.r, cropInset.b, frameMargin.t, frameMargin.b, frameMargin.l, frameMargin.r]);
 
   // 出力枠(フレーム)を、外枠(ステージ)内に「contain」で収める px サイズに設定。
+  // 記録の帯 ON のときは外側フレーム（縁＋下の帯）込みで収め、内側をその分小さくする。
   useLayoutEffect(() => {
-    const stageEl = arEditStageRef.current, frame = arFrameRef.current;
-    if (!stageEl || !frame) return;
+    const stageEl = arEditStageRef.current, frame = arFrameRef.current, wrap = noteWrapRef.current;
+    if (!stageEl || !frame || !wrap) return;
     const sw = stageEl.clientWidth, sh = stageEl.clientHeight;
     if (!sw || !sh || !frameAR) return;
-    let w = sw, h = sw / frameAR;
+    // 論理サイズ（切り抜き後の写真高さ ch を基準に、縁・帯の論理量を出す）
+    const ch = (photoNat?.h ?? 1000) * fChF;
+    const cw = (photoNat?.w ?? 1500) * fCwF;
+    const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
+    const edge = exifOn ? NOTE_EDGE * ch : 0;
+    const band = exifOn ? NOTE_BAND * ch : 0;
+    const outerAR = (innerW + edge * 2) / (innerH + edge + band);
+    let w = sw, h = sw / outerAR;
     if (h > sh) {
       h = sh;
-      w = sh * frameAR;
+      w = sh * outerAR;
     }
-    frame.style.width = `${Math.round(w)}px`;
-    frame.style.height = `${Math.round(h)}px`;
-  }, [frameAR, measureTick, exportView]);
+    const scale = h / (innerH + edge + band);
+    const edgePx = Math.round(edge * scale), bandPx = Math.round(band * scale);
+    wrap.style.width = `${Math.round(w)}px`;
+    wrap.style.height = `${Math.round(h)}px`;
+    wrap.style.padding = `${edgePx}px ${edgePx}px ${bandPx}px`;
+    frame.style.width = `${Math.round(w) - edgePx * 2}px`;
+    frame.style.height = `${Math.round(h) - edgePx - bandPx}px`;
+  }, [frameAR, measureTick, exportView, exifOn, photoNat, fChF, fCwF, fMlr, fMtb]);
 
   // ラベル実寸を測って正規化で保持（引き出し線の辺アンカー計算に使う）。
   useLayoutEffect(() => {
@@ -987,16 +1003,26 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const pfx = (pu: number) => mL + ((pu - cropInset.l) / fCwF) * cwR;
     const pfy = (pv: number) => mT + ((pv - cropInset.t) / fChF) * chR;
     const L = Math.max(OW, OH);
+    // 記録の帯（外側フレーム）。「余白」とは独立に、合成結果の外へさらに一周巻く。
+    const nEdge = exifOn ? Math.round(NOTE_EDGE * chR) : 0;
+    const nBand = exifOn ? Math.round(NOTE_BAND * chR) : 0;
+    const TW = OW + nEdge * 2, TH = OH + nEdge + nBand;
     // iOS(WebKit)は Canvas の最大ピクセル面積に上限があり、高解像度写真＋大きな余白で
     // 上限を超えると書き出しが真っ白になる。出力長辺を outCap に収めるよう自動縮小する。
-    const outScale = Math.min(1, outCap / Math.max(OW, OH));
+    const outScale = Math.min(1, outCap / Math.max(TW, TH));
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(OW * outScale));
-    canvas.height = Math.max(1, Math.round(OH * outScale));
+    canvas.width = Math.max(1, Math.round(TW * outScale));
+    canvas.height = Math.max(1, Math.round(TH * outScale));
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    // 以降の描画は論理座標(OW×OH)のまま行い、物理キャンバスへ一括縮小して載せる。
+    // 以降の描画は論理座標のまま行い、物理キャンバスへ一括縮小して載せる。
+    // 外側フレームを塗ってから原点を内側へずらし、既存の描画はそのまま OW×OH 座標で行う。
     ctx.scale(outScale, outScale);
+    if (exifOn) {
+      ctx.fillStyle = noteBg;
+      ctx.fillRect(0, 0, TW, TH);
+      ctx.translate(nEdge, nEdge);
+    }
     if (mT || mB || mL || mR) {
       ctx.fillStyle = frameMarginColor;
       ctx.fillRect(0, 0, OW, OH);
@@ -1006,16 +1032,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     // （文字と余白だけの白抜け画像の原因）。写真領域を9点サンプリングして、
     // 1点も描けていなければこの解像度は失敗として扱い、縮小リトライへ回す。
     try {
-      const hasMargin = !!(mT || mB || mL || mR);
-      const [mr, mg, mb] = hexToRgb(frameMarginColor).split(",").map(Number);
+      // 写真の下に塗られている色（内側の余白色 > 外側フレーム色 > なし=透明）。
+      const bg = mT || mB || mL || mR ? frameMarginColor : exifOn ? noteBg : null;
+      const [mr, mg, mb] = bg ? hexToRgb(bg).split(",").map(Number) : [0, 0, 0];
       let drawn = false;
       for (const fy of [0.1, 0.5, 0.9]) {
         for (const fx of [0.1, 0.5, 0.9]) {
-          const px = Math.min(canvas.width - 1, Math.round((mL + fx * cwR) * outScale));
-          const py = Math.min(canvas.height - 1, Math.round((mT + fy * chR) * outScale));
+          const px = Math.min(canvas.width - 1, Math.round((nEdge + mL + fx * cwR) * outScale));
+          const py = Math.min(canvas.height - 1, Math.round((nEdge + mT + fy * chR) * outScale));
           const d = ctx.getImageData(px, py, 1, 1).data;
-          // 余白ありなら「全点が余白色のまま」、なしなら「全点が透明のまま」を未描画とみなす。
-          if (hasMargin ? d[0] !== mr || d[1] !== mg || d[2] !== mb : d[3] !== 0) {
+          // 下地ありなら「全点が下地色のまま」、なしなら「全点が透明のまま」を未描画とみなす。
+          if (bg ? d[0] !== mr || d[1] !== mg || d[2] !== mb : d[3] !== 0) {
             drawn = true;
             break;
           }
@@ -1424,12 +1451,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.restore();
       }
     }
-    // 記録の帯（下の余白の中央に2行。camera=Shot on 表記 / free=自由入力）。
-    if (exifOn && mB > 0) {
-      const ink = exifInk(frameMarginColor);
+    // 記録の帯（外側フレーム下部の中央に2行。camera=Shot on 表記 / free=自由入力）。
+    if (exifOn && nBand > 0) {
+      const ink = exifInk(noteBg);
       const mainFs = Math.round(L * 0.019);
       const subFs = Math.round(L * 0.014);
-      const cy = mT + chR + mB / 2;
+      const cy = OH + nBand / 2; // translate 済み座標: 内側コンテンツの直下が帯
       const gap = Math.round(mainFs * 0.8);
       ctx.save();
       ctx.textBaseline = "middle";
@@ -1556,8 +1583,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
     setRoleFonts(s.roleFonts);
-    // 撮影情報フレームが ON のときは、テンプレを切り替えても下の余白を維持する。
-    setFrameMargin(exifOn && s.frameMargin.b < EXIF_MIN_MB ? { ...s.frameMargin, b: 0.18 } : s.frameMargin);
+    setFrameMargin(s.frameMargin);
     setFrameMarginColor(s.frameMarginColor);
     setFrameMarginAuto(s.frameMarginAuto);
     setCropInset(s.cropInset);
@@ -1666,6 +1692,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             line1: noteLine1,
             line2: noteLine2,
             serif: noteSerif,
+            bg: noteBg,
           },
         }
       : null;
@@ -2188,6 +2215,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               } as React.CSSProperties
             }
           >
+            {/* 記録の帯 ON のとき、内側の合成結果を包む外側フレーム（余白タブとは独立） */}
+            <div
+              className={`ar-note-wrap${exifOn ? " is-on" : ""}`}
+              ref={noteWrapRef}
+              style={{ background: exifOn ? noteBg : "transparent" }}
+            >
             <div
               className="ar-frame"
               ref={arFrameRef}
@@ -2436,16 +2469,18 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </div>
                 );
               })()}
-              {/* 記録の帯（下の余白の中央。書き出しと同じ2トーン配色） */}
-              {exifOn && frameMargin.b > 0 && (() => {
-                const ink = exifInk(frameMarginColor);
+            </div>
+              {/* 記録の帯（外側フレーム下部の中央。書き出しと同じ2トーン配色） */}
+              {exifOn && (() => {
+                const ink = exifInk(noteBg);
+                const ch = (photoNat?.h ?? 1000) * fChF;
+                const totalH = ch * (1 + fMtb) + NOTE_EDGE * ch + NOTE_BAND * ch;
                 return (
                   <div
                     className="ar-exif"
                     style={
                       {
-                        top: `${(1 - frameMargin.b / (1 + fMtb)) * 100}%`,
-                        height: `${(frameMargin.b / (1 + fMtb)) * 100}%`,
+                        height: `${((NOTE_BAND * ch) / totalH) * 100}%`,
                         "--exif-main": ink.main,
                         "--exif-sub": ink.sub,
                       } as React.CSSProperties
@@ -2949,7 +2984,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </label>
                   {exifOn && (
                     <>
-                      {frameMargin.b <= 0 && <p className="ar-exif-note">下の余白を広げると表示されます（「余白」タブ）</p>}
+                      <div className="ar-fs-row">
+                        <span>フレームの色</span>
+                        <input type="color" className="ar-color-input" value={noteBg} onChange={(e) => setNoteBg(e.target.value)} aria-label="記録フレームの色" />
+                      </div>
                       <div className="ar-fs-row">
                         <span>内容</span>
                         <div className="seg" role="group" aria-label="帯の内容">
