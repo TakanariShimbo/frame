@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconDownload, IconCaret, IconChevron } from "./icons";
 import type { ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
+import FsSlider from "./FsSlider";
 
 // ============================================================================
 // 仕上げ（Studio）。元 trace「山を写す(AR)」の書き出し工程を、3D・撮影地点・向き合わせ
@@ -2428,7 +2429,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                             <span>背景の濃さ</span>
                             <span className="ar-fs-val">{Math.round(labelPanelOpacity * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={labelPanelOpacity} onChange={(e) => setLabelPanelOpacity(Number(e.target.value))} aria-label="文字背景の濃さ" />
+                          <FsSlider min={0.1} max={1} step={0.05} value={labelPanelOpacity} onChange={setLabelPanelOpacity} ariaLabel="文字背景の濃さ" />
                         </>
                       )}
                       <div className="ar-fs-row">
@@ -2453,26 +2454,26 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>山名サイズ</span>
                         <span className="ar-fs-val">{Math.round(labelNameScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={labelNameScale} onChange={(e) => setLabelNameScale(Number(e.target.value))} aria-label="山名サイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={labelNameScale} onChange={setLabelNameScale} ariaLabel="山名サイズ" />
                       {fontRow("labelName", "山名フォント")}
                       <div className="ar-fs-slider-row">
                         <span>字間</span>
                         <span className="ar-fs-val">{labelLetterSpace.toFixed(2)}em</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={labelLetterSpace} onChange={(e) => setLabelLetterSpace(Number(e.target.value))} aria-label="山名の字間" />
+                      <FsSlider min={0} max={0.3} step={0.01} value={labelLetterSpace} onChange={setLabelLetterSpace} ariaLabel="山名の字間" />
                       {labelHasSub && (
                         <>
                           <div className="ar-fs-slider-row">
                             <span>補足サイズ</span>
                             <span className="ar-fs-val">{Math.round(labelSubScale * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={labelSubScale} onChange={(e) => setLabelSubScale(Number(e.target.value))} aria-label="補足サイズ" />
+                          <FsSlider min={0.7} max={1.6} step={0.05} value={labelSubScale} onChange={setLabelSubScale} ariaLabel="補足サイズ" />
                           {fontRow("labelSub", "補足フォント")}
                           <div className="ar-fs-slider-row">
                             <span>行間（山名と補足）</span>
                             <span className="ar-fs-val">{Math.round(labelLineHeight * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={labelLineHeight} onChange={(e) => setLabelLineHeight(Number(e.target.value))} aria-label="山名と補足の行間" />
+                          <FsSlider min={0.6} max={2.0} step={0.05} value={labelLineHeight} onChange={setLabelLineHeight} ariaLabel="山名と補足の行間" />
                         </>
                       )}
                     </>
@@ -2572,7 +2573,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                             <span>背景の濃さ</span>
                             <span className="ar-fs-val">{Math.round(captionPanelOpacity * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={captionPanelOpacity} onChange={(e) => setCaptionPanelOpacity(Number(e.target.value))} aria-label="解説の文字背景の濃さ" />
+                          <FsSlider min={0.1} max={1} step={0.05} value={captionPanelOpacity} onChange={setCaptionPanelOpacity} ariaLabel="解説の文字背景の濃さ" />
                         </>
                       )}
                       <div className="ar-fs-row">
@@ -2587,24 +2588,24 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>見出しサイズ</span>
                         <span className="ar-fs-val">{Math.round(captionTitleScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={captionTitleScale} onChange={(e) => setCaptionTitleScale(Number(e.target.value))} aria-label="見出しサイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={captionTitleScale} onChange={setCaptionTitleScale} ariaLabel="見出しサイズ" />
                       <div className="ar-fs-slider-row">
                         <span>本文サイズ</span>
                         <span className="ar-fs-val">{Math.round(captionBodyScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={captionBodyScale} onChange={(e) => setCaptionBodyScale(Number(e.target.value))} aria-label="本文サイズ" />
+                      <FsSlider min={0.7} max={1.6} step={0.05} value={captionBodyScale} onChange={setCaptionBodyScale} ariaLabel="本文サイズ" />
                       {fontRow("captionTitle", "見出しフォント")}
                       {fontRow("captionBody", "本文フォント")}
                       <div className="ar-fs-slider-row">
                         <span>字間</span>
                         <span className="ar-fs-val">{captionLetterSpace.toFixed(2)}em</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={captionLetterSpace} onChange={(e) => setCaptionLetterSpace(Number(e.target.value))} aria-label="解説の字間" />
+                      <FsSlider min={0} max={0.3} step={0.01} value={captionLetterSpace} onChange={setCaptionLetterSpace} ariaLabel="解説の字間" />
                       <div className="ar-fs-slider-row">
                         <span>行間</span>
                         <span className="ar-fs-val">{Math.round(captionLineHeight * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={captionLineHeight} onChange={(e) => setCaptionLineHeight(Number(e.target.value))} aria-label="解説の行間" />
+                      <FsSlider min={0.6} max={2.0} step={0.05} value={captionLineHeight} onChange={setCaptionLineHeight} ariaLabel="解説の行間" />
                       {/* タグ */}
                       <label className="switch-row">
                         <span>タグに標高</span>
@@ -2694,7 +2695,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>サイズ</span>
                         <span className="ar-fs-val">{Math.round(titleScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={titleScale} onChange={(e) => setTitleScale(Number(e.target.value))} aria-label="タイトルサイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel="タイトルサイズ" />
                       <div className="ar-fs-row">
                         <span>文字の色</span>
                         <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label="タイトルの色" />
@@ -2717,12 +2718,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>字間</span>
                         <span className="ar-fs-val">{Math.round(titleLetterSpace * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={3} step={0.05} value={titleLetterSpace} onChange={(e) => setTitleLetterSpace(Number(e.target.value))} aria-label="タイトルの字間" />
+                      <FsSlider min={0} max={3} step={0.05} value={titleLetterSpace} onChange={setTitleLetterSpace} ariaLabel="タイトルの字間" />
                       <div className="ar-fs-slider-row">
                         <span>行間（3段の間隔）</span>
                         <span className="ar-fs-val">{Math.round(titleLineHeight * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={(e) => setTitleLineHeight(Number(e.target.value))} aria-label="タイトルの行間" />
+                      <FsSlider min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={setTitleLineHeight} ariaLabel="タイトルの行間" />
                     </>
                   )}
                 </section>
@@ -2739,7 +2740,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>余白 {d === "t" ? "上" : d === "b" ? "下" : d === "l" ? "左" : "右"}</span>
                         <span className="ar-fs-val">{Math.round(frameMargin[d] * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(e) => setFrameMargin((p) => ({ ...p, [d]: Number(e.target.value) }))} aria-label={`余白${d}`} />
+                      <FsSlider min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(v) => setFrameMargin((p) => ({ ...p, [d]: v }))} ariaLabel={`余白${d}`} />
                     </div>
                   ))}
                   <div className="ar-fs-row">
@@ -2754,7 +2755,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     <span>ふち（ぼかし）</span>
                     <span className="ar-fs-val">{Math.round(frameFade * 100)}%</span>
                   </div>
-                  <input type="range" className="ar-fs-slider" min={0} max={0.5} step={0.01} value={frameFade} onChange={(e) => setFrameFade(Number(e.target.value))} aria-label="ふち" />
+                  <FsSlider min={0} max={0.5} step={0.01} value={frameFade} onChange={setFrameFade} ariaLabel="ふち" />
                 </section>
                 <section className="studio-sec">
                   <h3>切り抜き</h3>
@@ -2764,7 +2765,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>切り抜き {d === "t" ? "上" : d === "b" ? "下" : d === "l" ? "左" : "右"}</span>
                         <span className="ar-fs-val">{Math.round(cropInset[d] * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(e) => setCropInset((p) => ({ ...p, [d]: Number(e.target.value) }))} aria-label={`切り抜き${d}`} />
+                      <FsSlider min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(v) => setCropInset((p) => ({ ...p, [d]: v }))} ariaLabel={`切り抜き${d}`} />
                     </div>
                   ))}
                 </section>
