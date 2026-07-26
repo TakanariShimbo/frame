@@ -262,8 +262,6 @@ export default {
       bold: "Bold",
       italic: "Italic",
       dim: "Muted",
-      typeface: "Typeface",
-      typefaceAria: "Band typeface",
     },
     export: {
       lowMemory: "Memory was limited, so this was exported at a lower resolution than usual (long edge {{cap}}px). To save at full quality, close other apps or tabs, restart your browser, and try again.",

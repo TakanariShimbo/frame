@@ -261,8 +261,6 @@ export default {
       bold: "太字",
       italic: "斜体",
       dim: "淡色",
-      typeface: "書体",
-      typefaceAria: "帯の書体",
     },
     export: {
       lowMemory: "メモリが不足しているため、通常より低い解像度（長辺{{cap}}px）で書き出しました。最高画質で保存したいときは、他のアプリやタブを閉じてブラウザを再起動してから、もう一度お試しください。",
