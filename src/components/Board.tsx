@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { IconImage } from "./icons";
 import type { WorkItem } from "../App";
 
@@ -14,6 +15,7 @@ type Props = {
 
 // 写真一覧（ハブ画面）: 進み方は自由。好きな写真から順に仕上げる。保存は各写真の仕上げ画面から。
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
+  const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const saved = items.filter((it) => it.saved);
@@ -33,7 +35,12 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
         : it.labels
           ? ("noTheme" as const)
           : ("todo" as const);
-  const STATUS_LABEL = { todo: "山を選ぶ", noTheme: "テーマ未選択", editing: "編集中", done: "保存済み" };
+  const STATUS_LABEL = {
+    todo: t("board.statusTodo"),
+    noTheme: t("board.statusNoTheme"),
+    editing: t("board.statusEditing"),
+    done: t("board.statusDone"),
+  };
 
   return (
     <div className="pick-screen">
@@ -41,10 +48,8 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
       <div className="board-head">
         <header className="pick-next-head">
           <p className="kicker">Works</p>
-          <h1>写真一覧</h1>
-          <p>
-            {items.length}枚中 {saved.length}枚が保存済み。写真をタップして、好きな順に仕上げてください。
-          </p>
+          <h1>{t("board.heading")}</h1>
+          <p>{t("board.summary", { total: items.length, saved: saved.length })}</p>
         </header>
       </div>
 
@@ -54,7 +59,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
           const st = status(it);
           return (
             <button key={it.id} type="button" className={`board-tile is-${st}`} onClick={() => onOpen(it.id)}>
-              <img src={it.photoUrl} alt={`${i + 1}枚目`} loading="lazy" />
+              <img src={it.photoUrl} alt={t("board.photoAlt", { n: i + 1 })} loading="lazy" />
               <span className="board-tile-veil" aria-hidden="true" />
               <span className="board-tile-meta">
                 <span className="board-tile-no">{String(i + 1).padStart(2, "0")}</span>
@@ -67,14 +72,14 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
         {/* 写真の追加タイル */}
         <button type="button" className="board-tile board-tile--add" onClick={() => fileRef.current?.click()}>
           <IconImage size={20} />
-          写真を追加
+          {t("board.addPhotos")}
         </button>
       </div>
 
       <div className="board-foot">
         <div className="pick-home-row">
           <button type="button" className="pick-photo-change" onClick={onHome}>
-            ホームへ戻る（すべて破棄）
+            {t("board.backToHome")}
           </button>
         </div>
       </div>

@@ -274,6 +274,30 @@ button {
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
 }
 
+/* UI言語切替。画面右上に常時固定（スクロールしても位置は動かない） */
+.lang-toggle {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 50;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(18, 18, 20, 0.55);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.lang-toggle:hover {
+  border-color: var(--gold-line);
+  color: var(--gold-strong);
+}
+
 /* 下端中央の小さなスクロール指標（縦線がすっと伸びる） */
 .pick-hero-scroll {
   position: absolute;

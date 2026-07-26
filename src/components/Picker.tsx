@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IconImage } from "./icons";
+import LanguageToggle from "./LanguageToggle";
 
 type Props = {
   // 選んだ写真URL列（先頭から順に仕上げる）を渡す。山選び・テーマ選びは次の画面で行う。
@@ -83,6 +85,7 @@ function bestMosaic(nCols: number): MosaicWork[][] {
 
 // 入口画面: 写真を選ぶだけ（複数可）。山選び・テーマ選びは写真1枚ごとに次の画面で行う。
 export default function Picker({ onPick }: Props) {
+  const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const mosaicRef = useRef<HTMLDivElement | null>(null);
 
@@ -105,7 +108,7 @@ export default function Picker({ onPick }: Props) {
     const files = Array.from(e.target.files ?? []).filter((f) => !f.type || f.type.startsWith("image/"));
     e.target.value = ""; // 同じファイルを連続で選べるようリセット
     if (files.length === 0) {
-      if (e.target.files?.length) alert("画像ファイルを選んでください（JPEG / PNG など）。");
+      if (e.target.files?.length) alert(t("picker.invalidFile"));
       return;
     }
     onPick(files.map((f) => URL.createObjectURL(f)));
@@ -115,6 +118,7 @@ export default function Picker({ onPick }: Props) {
 
   return (
     <div className="pick-screen">
+      <LanguageToggle />
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPickPhoto} />
 
       {/* ヒーロー: 作例を敷き詰めた「動く写真の壁」。列ごとに逆方向へゆっくり流れる */}
@@ -134,31 +138,28 @@ export default function Picker({ onPick }: Props) {
         <div className="pick-hero-veil" aria-hidden="true" />
         <div className="pick-hero-content">
           <p className="kicker">Frame</p>
-          <h1>山を、作品に。</h1>
-          <p className="pick-lead">
-            山の写真に山名・標高・解説を美しく重ねて、ポスターのような一枚に。
-            約27,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。
-          </p>
+          <h1>{t("picker.heroTitle")}</h1>
+          <p className="pick-lead">{t("picker.heroLead")}</p>
           <button type="button" className="pick-hero-cta" onClick={() => fileRef.current?.click()}>
             <IconImage size={18} />
-            写真を選んではじめる
+            {t("picker.heroCta")}
           </button>
-          <p className="pick-hero-note">複数選ぶと、1枚ずつ順に仕上げられます。</p>
+          <p className="pick-hero-note">{t("picker.heroNote")}</p>
         </div>
         <div className="pick-hero-scroll" aria-hidden="true" />
       </section>
 
       {/* 作例モザイク: 全作品をメーソンリーで大きく見せる */}
-      <section className="pick-mosaic" aria-label="作例">
+      <section className="pick-mosaic" aria-label={t("picker.worksLabel")}>
         <header className="pick-mosaic-head">
-          <h2>作例</h2>
-          <p>すべてこのアプリで仕上げた一枚。テーマ（テンプレート）は写真ごとに選べます。</p>
+          <h2>{t("picker.worksHeading")}</h2>
+          <p>{t("picker.worksLead")}</p>
         </header>
         <div className="pick-mosaic-grid" ref={mosaicRef}>
           {mosaic.map((col, i) => (
             <div key={i} className="pick-mosaic-col">
               {col.map((w) => (
-                <img key={w.id} src={`${base}home/works/${w.id}.jpg`} alt="作例" loading="lazy" />
+                <img key={w.id} src={`${base}home/works/${w.id}.jpg`} alt={t("picker.worksLabel")} loading="lazy" />
               ))}
             </div>
           ))}
