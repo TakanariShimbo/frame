@@ -40,3 +40,36 @@ export async function readPhotoExif(file: File): Promise<PhotoExif> {
     hFovDeg: f35 != null ? focal35ToHFov(f35) : null,
   };
 }
+
+// ============================================================================
+// 撮影情報（liit 風フレーム用）: カメラ名・メーカー・撮影設定を表示用文字列で返す。
+// EXIF が剥がれていることも多いので、取れた項目だけ埋めて返す（全滅なら null）。
+// ============================================================================
+export type ShootingInfo = { model: string; maker: string; spec: string };
+
+export async function readShootingInfo(url: string): Promise<ShootingInfo | null> {
+  let data: Record<string, unknown> | undefined;
+  try {
+    const blob = await (await fetch(url)).blob();
+    data = await exifr.parse(blob, { tiff: true, exif: true });
+  } catch {
+    data = undefined;
+  }
+  if (!data) return null;
+  const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
+  const num = (v: unknown): number | null => (typeof v === "number" && isFinite(v) ? v : null);
+  const model = str(data.Model);
+  const maker = str(data.Make).split(/\s+/)[0] ?? ""; // "SONY CORPORATION" → "SONY"
+  const parts: string[] = [];
+  const fl = num(data.FocalLength);
+  if (fl != null) parts.push(`${Math.round(fl)}mm`);
+  const fn = num(data.FNumber);
+  if (fn != null) parts.push(`f/${fn.toFixed(1)}`);
+  const et = num(data.ExposureTime);
+  if (et != null && et > 0) parts.push(et >= 1 ? `${et.toFixed(1)}s` : `1/${Math.round(1 / et)}s`);
+  const iso = num(data.ISO);
+  if (iso != null) parts.push(`ISO${Math.round(iso)}`);
+  const spec = parts.join("  ");
+  if (!model && !maker && !spec) return null;
+  return { model, maker, spec };
+}
