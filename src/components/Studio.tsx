@@ -35,8 +35,9 @@ const hexToRgb = (hex: string): string => {
   const b = parseInt(m.slice(4, 6), 16) || 0;
   return `${r},${g},${b}`;
 };
-// 撮影情報フレームの文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
+// 記録の帯の文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
 const EXIF_FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const NOTE_SERIF = 'Georgia, "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif';
 const exifInk = (marginColor: string): { main: string; sub: string } => {
   const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -451,8 +452,11 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
 };
 
 // 操作パネルのタブID（表示順もこの順）。
-type PanelTab = "label" | "caption" | "title" | "frame";
-const PANEL_TABS: PanelTab[] = ["label", "caption", "title", "frame"];
+// タブの役割分担: 「余白」(frame) は空・間などポスター的な見た目づくり（余白・切り抜き・
+// ふち）、「記録」(note) は下の帯に載せる情報（撮影情報や山行記録）。どちらも余白を使うが
+// 前者は「形の自由度」、後者は「内容」を編集する。
+type PanelTab = "label" | "caption" | "title" | "frame" | "note";
+const PANEL_TABS: PanelTab[] = ["label", "caption", "title", "frame", "note"];
 // テンプレが実際に使う機能からタブを導出する（シンプルモードの表示対象）。
 const templateTabs = (s: ExportStyle): PanelTab[] => {
   const tabs: PanelTab[] = [];
@@ -477,7 +481,17 @@ export type StudioSnapshot = {
   captionIdx: number;
   // 撮影情報フレーム（liit 風）。テンプレとは独立の設定なので style ではなくここに持つ
   // （テンプレを切り替えても消えない）。
-  exif?: { on: boolean; model: string; maker: string; spec: string };
+  exif?: {
+    on: boolean;
+    model: string;
+    maker: string;
+    spec: string;
+    // 追加分（旧スナップショットには無いので optional）: 帯のモード・自由入力・書体
+    mode?: "camera" | "free";
+    line1?: string;
+    line2?: string;
+    serif?: boolean;
+  };
 };
 
 type StudioProps = {
@@ -583,12 +597,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [frameMarginAuto, setFrameMarginAuto] = useState(initStyle?.frameMarginAuto ?? false);
   const [frameFade, setFrameFade] = useState(initStyle?.frameFade ?? 0);
 
-  // --- 撮影情報フレーム（liit 風。テンプレと独立で、下の余白に描く） --- //
+  // --- 記録の帯（liit 風。テンプレと独立で、下の余白に描く） --- //
+  // モードは2つ: camera=撮影情報（Shot on 表記）、free=自由入力（山行記録など）。
   const initExif = initialSnapshot?.exif;
   const [exifOn, setExifOn] = useState(initExif?.on ?? false);
+  const [noteMode, setNoteMode] = useState<"camera" | "free">(initExif?.mode ?? "camera");
   const [exifModel, setExifModel] = useState(initExif?.model ?? "");
   const [exifMaker, setExifMaker] = useState(initExif?.maker ?? "");
   const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
+  const [noteLine1, setNoteLine1] = useState(initExif?.line1 ?? "");
+  const [noteLine2, setNoteLine2] = useState(initExif?.line2 ?? "");
+  const [noteSerif, setNoteSerif] = useState(initExif?.serif ?? true);
   // 元写真の EXIF から初期値を補完する（手で入力済みの欄は上書きしない）。
   useEffect(() => {
     let live = true;
@@ -1405,43 +1424,59 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.restore();
       }
     }
-    // 撮影情報フレーム（下の余白の中央に「Shot on <モデル> <メーカー>」＋設定行）。
+    // 記録の帯（下の余白の中央に2行。camera=Shot on 表記 / free=自由入力）。
     if (exifOn && mB > 0) {
       const ink = exifInk(frameMarginColor);
       const mainFs = Math.round(L * 0.019);
       const subFs = Math.round(L * 0.014);
       const cy = mT + chR + mB / 2;
-      const segs: Array<{ text: string; font: string; color: string }> = [];
-      if (exifModel || exifMaker) {
-        segs.push({ text: "Shot on ", font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
-        if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${EXIF_FONT}`, color: ink.main });
-        if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
-      }
-      const both = segs.length > 0 && !!exifSpec;
       const gap = Math.round(mainFs * 0.8);
       ctx.save();
       ctx.textBaseline = "middle";
-      if (segs.length > 0) {
-        // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
-        let total = 0;
-        for (const s of segs) {
-          ctx.font = s.font;
-          total += ctx.measureText(s.text).width;
+      if (noteMode === "camera") {
+        const segs: Array<{ text: string; font: string; color: string }> = [];
+        if (exifModel || exifMaker) {
+          segs.push({ text: "Shot on ", font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
+          if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${EXIF_FONT}`, color: ink.main });
+          if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${EXIF_FONT}`, color: ink.sub });
         }
-        let x = OW / 2 - total / 2;
-        ctx.textAlign = "left";
-        for (const s of segs) {
-          ctx.font = s.font;
-          ctx.fillStyle = s.color;
-          ctx.fillText(s.text, x, both ? cy - gap : cy);
-          x += ctx.measureText(s.text).width;
+        const both = segs.length > 0 && !!exifSpec;
+        if (segs.length > 0) {
+          // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
+          let total = 0;
+          for (const s of segs) {
+            ctx.font = s.font;
+            total += ctx.measureText(s.text).width;
+          }
+          let x = OW / 2 - total / 2;
+          ctx.textAlign = "left";
+          for (const s of segs) {
+            ctx.font = s.font;
+            ctx.fillStyle = s.color;
+            ctx.fillText(s.text, x, both ? cy - gap : cy);
+            x += ctx.measureText(s.text).width;
+          }
         }
-      }
-      if (exifSpec) {
+        if (exifSpec) {
+          ctx.textAlign = "center";
+          ctx.font = `500 ${subFs}px ${EXIF_FONT}`;
+          ctx.fillStyle = ink.sub;
+          ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
+        }
+      } else {
+        const ff = noteSerif ? NOTE_SERIF : EXIF_FONT;
+        const both = !!noteLine1 && !!noteLine2;
         ctx.textAlign = "center";
-        ctx.font = `500 ${subFs}px ${EXIF_FONT}`;
-        ctx.fillStyle = ink.sub;
-        ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
+        if (noteLine1) {
+          ctx.font = `600 ${mainFs}px ${ff}`;
+          ctx.fillStyle = ink.main;
+          ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
+        }
+        if (noteLine2) {
+          ctx.font = `400 ${Math.round(L * 0.016)}px ${ff}`;
+          ctx.fillStyle = ink.main;
+          ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
+        }
       }
       ctx.restore();
     }
@@ -1622,7 +1657,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           templateId: activeTemplateId,
           labels: arLabels,
           captionIdx,
-          exif: { on: exifOn, model: exifModel, maker: exifMaker, spec: exifSpec },
+          exif: {
+            on: exifOn,
+            model: exifModel,
+            maker: exifMaker,
+            spec: exifSpec,
+            mode: noteMode,
+            line1: noteLine1,
+            line2: noteLine2,
+            serif: noteSerif,
+          },
         }
       : null;
 
@@ -1857,9 +1901,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     caption: captionLang !== "none",
     title: titleOn,
     frame: frameActive,
+    note: exifOn,
   };
   const relevantTabs = activeTemplate ? templateTabs(activeTemplate.style) : PANEL_TABS;
-  const visibleTabs = panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]) : PANEL_TABS;
+  // 「記録」はテンプレに依存しない機能なので、シンプルモードでも常に見せる。
+  const visibleTabs =
+    panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note") : PANEL_TABS;
   const changePanelMode = (m: "simple" | "full") => {
     setPanelMode(m);
     try {
@@ -1868,7 +1915,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       /* 保存できなくても動作に支障なし */
     }
     if (m === "simple") {
-      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]);
+      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note");
       if (!simple.includes(panelTab)) setPanelTab(simple[0] ?? "label");
     }
   };
@@ -2389,7 +2436,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </div>
                 );
               })()}
-              {/* 撮影情報フレーム（下の余白の中央。書き出しと同じ2トーン配色） */}
+              {/* 記録の帯（下の余白の中央。書き出しと同じ2トーン配色） */}
               {exifOn && frameMargin.b > 0 && (() => {
                 const ink = exifInk(frameMarginColor);
                 return (
@@ -2405,13 +2452,22 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     }
                     aria-hidden="true"
                   >
-                    {(exifModel || exifMaker) && (
-                      <span className="ar-exif-model">
-                        <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
-                        {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                    {noteMode === "camera" ? (
+                      <>
+                        {(exifModel || exifMaker) && (
+                          <span className="ar-exif-model">
+                            <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
+                            {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                          </span>
+                        )}
+                        {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
+                      </>
+                    ) : (
+                      <span className="ar-exif-free" style={{ fontFamily: noteSerif ? NOTE_SERIF : EXIF_FONT }}>
+                        {noteLine1 && <span className="ar-exif-l1">{noteLine1}</span>}
+                        {noteLine2 && <span className="ar-exif-l2">{noteLine2}</span>}
                       </span>
                     )}
-                    {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
                   </div>
                 );
               })()}
@@ -2479,7 +2535,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     ["label", "山名"],
                     ["caption", "解説"],
                     ["title", "タイトル"],
-                    ["frame", "フレーム"],
+                    ["frame", "余白"],
+                    ["note", "記録"],
                   ] as [PanelTab, string][]
                 )
                   .filter(([id]) => visibleTabs.includes(id))
@@ -2868,48 +2925,6 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <FsSlider min={0} max={0.5} step={0.01} value={frameFade} onChange={setFrameFade} ariaLabel="ふち" />
                 </section>
                 <section className="studio-sec">
-                  <h3>撮影情報</h3>
-                  <label className="switch-row">
-                    <span>カメラ・設定を余白に載せる</span>
-                    <input type="checkbox" className="switch" checked={exifOn} onChange={(e) => toggleExif(e.target.checked)} />
-                  </label>
-                  {exifOn && (
-                    <>
-                      {frameMargin.b <= 0 && <p className="ar-exif-note">下の余白を広げると表示されます</p>}
-                      <div className="studio-data-edit">
-                        <span className="studio-data-head">写真から読み取った情報（タップで編集できます）</span>
-                        <input
-                          type="text"
-                          className="studio-data-input"
-                          value={exifModel}
-                          onChange={(e) => setExifModel(e.target.value)}
-                          placeholder="カメラ（例: ILCE-7CR）"
-                          aria-label="カメラのモデル名"
-                          autoComplete="off"
-                        />
-                        <input
-                          type="text"
-                          className="studio-data-input"
-                          value={exifMaker}
-                          onChange={(e) => setExifMaker(e.target.value)}
-                          placeholder="メーカー（例: SONY）"
-                          aria-label="カメラのメーカー"
-                          autoComplete="off"
-                        />
-                        <input
-                          type="text"
-                          className="studio-data-input"
-                          value={exifSpec}
-                          onChange={(e) => setExifSpec(e.target.value)}
-                          placeholder="撮影設定（例: 26mm  f/5.0  1/60s  ISO1600）"
-                          aria-label="撮影設定"
-                          autoComplete="off"
-                        />
-                      </div>
-                    </>
-                  )}
-                </section>
-                <section className="studio-sec">
                   <h3>切り抜き</h3>
                   {(["l", "t", "r", "b"] as const).map((d) => (
                     <div key={`c${d}`}>
@@ -2922,6 +2937,94 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   ))}
                 </section>
                 </>
+                )}
+
+                {/* 記録（下の帯: 撮影情報 or 自由入力の山行記録） */}
+                {panelTab === "note" && (
+                <section className="studio-sec">
+                  <h3>記録</h3>
+                  <label className="switch-row">
+                    <span>写真の下の帯に記録を載せる</span>
+                    <input type="checkbox" className="switch" checked={exifOn} onChange={(e) => toggleExif(e.target.checked)} />
+                  </label>
+                  {exifOn && (
+                    <>
+                      {frameMargin.b <= 0 && <p className="ar-exif-note">下の余白を広げると表示されます（「余白」タブ）</p>}
+                      <div className="ar-fs-row">
+                        <span>内容</span>
+                        <div className="seg" role="group" aria-label="帯の内容">
+                          {([["撮影情報", "camera"], ["自由入力", "free"]] as [string, "camera" | "free"][]).map(([lab, v]) => (
+                            <button key={v} className={noteMode === v ? "is-active" : ""} onClick={() => setNoteMode(v)}>{lab}</button>
+                          ))}
+                        </div>
+                      </div>
+                      {noteMode === "camera" ? (
+                        <div className="studio-data-edit">
+                          <span className="studio-data-head">写真から読み取った情報（タップで編集できます）</span>
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifModel}
+                            onChange={(e) => setExifModel(e.target.value)}
+                            placeholder="カメラ（例: ILCE-7CR）"
+                            aria-label="カメラのモデル名"
+                            autoComplete="off"
+                          />
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifMaker}
+                            onChange={(e) => setExifMaker(e.target.value)}
+                            placeholder="メーカー（例: SONY）"
+                            aria-label="カメラのメーカー"
+                            autoComplete="off"
+                          />
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifSpec}
+                            onChange={(e) => setExifSpec(e.target.value)}
+                            placeholder="撮影設定（例: 26mm  f/5.0  1/60s  ISO1600）"
+                            aria-label="撮影設定"
+                            autoComplete="off"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="studio-data-edit">
+                            <span className="studio-data-head">2行まで自由に書けます</span>
+                            <input
+                              type="text"
+                              className="studio-data-input"
+                              value={noteLine1}
+                              onChange={(e) => setNoteLine1(e.target.value)}
+                              placeholder="1行目（例: Climber ｜ 2025.07.19-07.21）"
+                              aria-label="帯の1行目"
+                              autoComplete="off"
+                            />
+                            <input
+                              type="text"
+                              className="studio-data-input"
+                              value={noteLine2}
+                              onChange={(e) => setNoteLine2(e.target.value)}
+                              placeholder="2行目（例: 折立〜雲ノ平〜水晶岳〜新穂高）"
+                              aria-label="帯の2行目"
+                              autoComplete="off"
+                            />
+                          </div>
+                          <div className="ar-fs-row">
+                            <span>書体</span>
+                            <div className="seg" role="group" aria-label="帯の書体">
+                              {([["明朝", true], ["ゴシック", false]] as [string, boolean][]).map(([lab, v]) => (
+                                <button key={lab} className={noteSerif === v ? "is-active" : ""} onClick={() => setNoteSerif(v)}>{lab}</button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </section>
                 )}
               </div>
               </>
