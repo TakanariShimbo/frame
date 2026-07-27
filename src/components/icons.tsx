@@ -353,3 +353,14 @@ export function IconCompass({ size = 16, className }: Props) {
     </svg>
   );
 }
+
+/** 目に斜線（非表示）。ラベルの写真上表示OFF用。 */
+export function IconEyeOff({ size = 16, className }: Props) {
+  return (
+    <svg {...svgProps(size, className)}>
+      <path d="M2.5 12 C5.5 6.5, 18.5 6.5, 21.5 12 C18.5 17.5, 5.5 17.5, 2.5 12 Z" />
+      <circle cx="12" cy="12" r="2.6" />
+      <path d="M4 20 L20 4" />
+    </svg>
+  );
+}

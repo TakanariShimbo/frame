@@ -1,7 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { IconDownload, IconCaret, IconChevron } from "./icons";
+import { useTranslation } from "react-i18next";
+import { IconDownload, IconCaret, IconChevron, IconEye, IconEyeOff } from "./icons";
 import type { ArLabel } from "../lib/labels";
-import { loadImage, canvasToJpegBlob, saveBlob } from "../lib/exportImage";
+import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
+import { readShootingInfo } from "../lib/exif";
+import FsSlider from "./FsSlider";
 
 // ============================================================================
 // 仕上げ（Studio）。元 trace「山を写す(AR)」の書き出し工程を、3D・撮影地点・向き合わせ
@@ -32,6 +35,14 @@ const hexToRgb = (hex: string): string => {
   const g = parseInt(m.slice(2, 4), 16) || 0;
   const b = parseInt(m.slice(4, 6), 16) || 0;
   return `${r},${g},${b}`;
+};
+// 記録の帯の文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
+// 記録の帯の書体は山名・題字と同じ6種類のフォントペアから選ぶ。既定の「ゴシック」
+// (Inter + Noto Sans JP) は liit の端末標準サンセリフとほぼ同じ見た目で、端末差もない。
+const exifInk = (marginColor: string): { main: string; sub: string } => {
+  const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return lum > 140 ? { main: "#3c3c3c", sub: "#969696" } : { main: "#f2efe8", sub: "#909090" };
 };
 // 余白の色を写真の縁から動的に決める（夕焼け＝橙寄り・青空＝水色寄り。「空」「間」テンプレ向け）。
 const samplePhotoEdgeColor = async (
@@ -64,6 +75,8 @@ const samplePhotoEdgeColor = async (
     data = ctx.getImageData(0, 0, sw, sh).data;
   } catch {
     return null;
+  } finally {
+    releaseCanvas(cv);
   }
   const band = (n: number) => Math.max(1, Math.round(n * 0.08));
   let r = 0, g = 0, b = 0, n = 0;
@@ -138,13 +151,15 @@ type FontPair = { label: string; jp: string; en: string; description: string };
 type RoleFonts = Record<FontRole, FontPairId>;
 
 // 選べるフォントペア（和文＋欧文のセット。index.html で Google Fonts を読み込み）。
+// label はUI言語によらず常にこの表記のまま（山名同様、フォント名は翻訳しない）。
+// description はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
 const FONT_PAIRS: Record<FontPairId, FontPair> = {
-  gothic: { label: "ゴシック", jp: "Noto Sans JP", en: "Inter", description: "読みやすい標準フォント。本文・ラベル・注記向き。" },
-  roundedGothic: { label: "丸ゴシック", jp: "M PLUS Rounded 1c", en: "Nunito", description: "丸みがあり、やさしく親しみやすい雰囲気。" },
-  modernGothic: { label: "モダンゴシック", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "現代的で力強い。カードUIや大きめタイトル向き。" },
-  mincho: { label: "明朝", jp: "Noto Serif JP", en: "Noto Serif", description: "上品で落ち着いた雰囲気。観光ガイド風。" },
-  posterMincho: { label: "ポスター明朝", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "雑誌・ポスター風の高級感。共有画像のタイトル向き。" },
-  brush: { label: "筆文字", jp: "Yuji Syuku", en: "Great Vibes", description: "和風で印象的。タイトル専用向き。" },
+  gothic: { label: "ゴシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
+  roundedGothic: { label: "丸ゴシック", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
+  modernGothic: { label: "モダンゴシック", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
+  mincho: { label: "明朝", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
+  posterMincho: { label: "ポスター明朝", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
+  brush: { label: "筆文字", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
 };
 const FONT_PAIR_IDS = Object.keys(FONT_PAIRS) as FontPairId[];
 const DEFAULT_ROLE_FONTS: RoleFonts = {
@@ -272,12 +287,14 @@ const BASE_STYLE: ExportStyle = {
   frameFade: 0,
 };
 // テンプレートは「図(zu)」=3Dミニマップ入りを除いた5種（栞・双は「語」に統合）。
+// name は漢字のままUI言語によらず不変（山名同様、テーマ名は翻訳しない）。
+// sub/hint はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
 const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "miyabi",
     name: "雅",
-    sub: "山名を美しく",
-    hint: "明朝体の山名に英語名と標高を添える、まず選びたい王道の仕上がり。どんな写真にもなじむ。",
+    sub: "studio.theme.miyabi.sub",
+    hint: "studio.theme.miyabi.hint",
     style: {
       ...BASE_STYLE,
       labelMode: "jaSubEnElev",
@@ -289,8 +306,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "chou",
     name: "頂",
-    sub: "一座を主役に",
-    hint: "写真の真ん中に山名を大きく据えるポスター風。主役の一座を印象的に見せたいときに。",
+    sub: "studio.theme.chou.sub",
+    hint: "studio.theme.chou.hint",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -309,8 +326,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "katari",
     name: "語",
-    sub: "山の物語を添えて",
-    hint: "山の解説を日英併記で添える読み物風。言語は日本語のみ・英語のみにも切り替えられる。",
+    sub: "studio.theme.katari.sub",
+    hint: "studio.theme.katari.hint",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -331,8 +348,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "ma",
     name: "間",
-    sub: "余白と縦書きで",
-    hint: "大きな余白に縦書きの解説を組み、写真を掛け軸のように細く見せる。静けさを楽しむ作品風。",
+    sub: "studio.theme.ma.sub",
+    hint: "studio.theme.ma.hint",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -362,8 +379,8 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   {
     id: "sora",
     name: "空",
-    sub: "空へひらく",
-    hint: "上に空色の余白を広げ、写真の稜線へやわらかく溶かし込む縦構図。空の広さが主役になる。",
+    sub: "studio.theme.sora.sub",
+    hint: "studio.theme.sora.hint",
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
@@ -398,7 +415,7 @@ type TplItem = { id: string; name: string; sub: string; hint: string; tpl: Expor
 const TPL_PREVIEW_VER = "?v=4";
 const TPL_ITEMS: TplItem[] = [
   ...EXPORT_TEMPLATES.map((t) => ({ id: t.id, name: t.name, sub: t.sub, hint: t.hint, tpl: t as ExportTemplate | null })),
-  { id: "custom", name: "素", sub: "自分で設定", hint: "テーマを使わず、最初から自分で仕上げる。", tpl: null },
+  { id: "custom", name: "素", sub: "studio.theme.custom.sub", hint: "studio.theme.custom.hint", tpl: null },
 ];
 
 // スマホ判定（テーマ選択をスワイプ式に切り替える）。
@@ -440,8 +457,17 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
 };
 
 // 操作パネルのタブID（表示順もこの順）。
-type PanelTab = "label" | "caption" | "title" | "frame";
-const PANEL_TABS: PanelTab[] = ["label", "caption", "title", "frame"];
+// タブの役割分担: 「余白」(frame) は空・間などポスター的な見た目づくり（余白・切り抜き・
+// ふち）、「記録」(note) は下の帯に載せる情報（撮影情報や山行記録）。どちらも余白を使うが
+// 前者は「形の自由度」、後者は「内容」を編集する。
+type PanelTab = "label" | "caption" | "title" | "frame" | "note";
+// 「記録」はまだ本番未公開のフィーチャーフラグ付き。コード自体は本番にも入るが、
+// ビルド時に VITE_FEATURE_NOTE=1 を渡したとき（と開発サーバー）だけタブを見せる。
+// OFF のとき exifOn は常に false のままなので、書き出し・保存への影響もない。
+const NOTE_ENABLED = import.meta.env.VITE_FEATURE_NOTE === "1" || import.meta.env.DEV;
+const PANEL_TABS: PanelTab[] = NOTE_ENABLED
+  ? ["label", "caption", "title", "frame", "note"]
+  : ["label", "caption", "title", "frame"];
 // テンプレが実際に使う機能からタブを導出する（シンプルモードの表示対象）。
 const templateTabs = (s: ExportStyle): PanelTab[] => {
   const tabs: PanelTab[] = [];
@@ -464,6 +490,28 @@ export type StudioSnapshot = {
   templateId: string | null;
   labels: ArLabel[];
   captionIdx: number;
+  // 撮影情報フレーム（liit 風）。テンプレとは独立の設定なので style ではなくここに持つ
+  // （テンプレを切り替えても消えない）。
+  exif?: {
+    on: boolean;
+    model: string;
+    maker: string;
+    spec: string;
+    // 追加分（旧スナップショットには無いので optional）: 帯のモード・自由入力・書体・地色
+    mode?: "camera" | "free";
+    line1?: string;
+    line2?: string;
+    serif?: boolean; // 旧: 明朝/ゴシック2択（font が無いスナップショットの引き継ぎ用）
+    font?: FontPairId;
+    bg?: string;
+    band?: number;
+    italic?: boolean; // 旧: 全体指定（l1/l2 が無いスナップショットの引き継ぎ用）
+    bold?: boolean; // 旧: 同上
+    l1?: { bold: boolean; italic: boolean; dim: boolean };
+    l2?: { bold: boolean; italic: boolean; dim: boolean };
+    inkAuto?: boolean;
+    ink?: string;
+  };
 };
 
 type StudioProps = {
@@ -471,16 +519,17 @@ type StudioProps = {
   initialLabels: ArLabel[];
   // 一覧から再編集で入るときの復元データ。あれば initialLabels より優先。
   initialSnapshot?: StudioSnapshot | null;
-  // 一覧へ戻る。編集状態（テンプレ選択前なら null）と最新の書き出しを渡す。
-  onExit: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
+  // 一覧へ戻る。編集状態（テンプレ選択前なら null）と、この画面で保存に成功したかを渡す。
+  onExit: (snapshot: StudioSnapshot | null, saved: boolean) => void;
   // この写真の山選びへ戻る（編集は破棄）。
   onReselect: () => void;
-  // 次の未仕上げ写真へ。残りがあるときだけ渡される。
+  // 次のまだ保存していない写真へ。残りがあるときだけ渡される。
   nextCount?: number;
-  onNext?: (snapshot: StudioSnapshot | null, exportBlob: Blob | null) => void;
+  onNext?: (snapshot: StudioSnapshot | null, saved: boolean) => void;
 };
 
 export default function Studio({ photoUrl, initialLabels, initialSnapshot = null, onExit, onReselect, nextCount = 0, onNext }: StudioProps) {
+  const { t } = useTranslation();
   // 復元用スタイル（一覧からの再編集時のみ non-null）。各stateの初期値に使う。
   const initStyle = initialSnapshot?.style;
 
@@ -569,12 +618,64 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [frameMarginAuto, setFrameMarginAuto] = useState(initStyle?.frameMarginAuto ?? false);
   const [frameFade, setFrameFade] = useState(initStyle?.frameFade ?? 0);
 
+  // --- 記録の帯（liit 風。テンプレと独立で、下の余白に描く） --- //
+  // モードは2つ: camera=撮影情報（Shot on 表記）、free=自由入力（山行記録など）。
+  const initExif = initialSnapshot?.exif;
+  const [exifOn, setExifOn] = useState(initExif?.on ?? false);
+  const [noteMode, setNoteMode] = useState<"camera" | "free">(initExif?.mode ?? "camera");
+  const [exifModel, setExifModel] = useState(initExif?.model ?? "");
+  const [exifMaker, setExifMaker] = useState(initExif?.maker ?? "");
+  const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
+  const [noteLine1, setNoteLine1] = useState(initExif?.line1 ?? "");
+  const [noteLine2, setNoteLine2] = useState(initExif?.line2 ?? "");
+  // 書体（6種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
+  const [noteFont, setNoteFont] = useState<FontPairId>(
+    initExif?.font ?? (initExif?.serif === true ? "posterMincho" : initExif?.serif === false ? "modernGothic" : "gothic"),
+  );
+  // 元写真の EXIF から初期値を補完する（手で入力済みの欄は上書きしない）。
+  useEffect(() => {
+    let live = true;
+    readShootingInfo(photoUrl).then((si) => {
+      if (!live || !si) return;
+      setExifModel((v) => v || si.model);
+      setExifMaker((v) => v || si.maker);
+      setExifSpec((v) => v || si.spec);
+    });
+    return () => {
+      live = false;
+    };
+  }, [photoUrl]);
+  // 記録の帯は「余白」タブとは完全に独立した外側のフレーム。今の見た目（余白・色・
+  // 切り抜き込み）の外側に、liit の見本比率で縁を一周巻いてそこに文字を描く:
+  // 上・左・右 = 写真の高さの3.5%（ピクセル等幅）、下 = 18%（帯）。色も独立（noteBg）。
+  const NOTE_EDGE = 0.035;
+  const [noteBg, setNoteBg] = useState(initExif?.bg ?? "#ffffff");
+  // 文字色。auto=フレーム色の明るさから2トーンを自動決定 / 手動=好きな色（淡い側は半透明で作る）。
+  const [noteInkAuto, setNoteInkAuto] = useState(initExif?.inkAuto ?? true);
+  const [noteInk, setNoteInk] = useState(initExif?.ink ?? "#3c3c3c");
+  const noteInkColors = (): { main: string; sub: string } =>
+    noteInkAuto ? exifInk(noteBg) : { main: noteInk, sub: `rgba(${hexToRgb(noteInk)},0.55)` };
+  // 下の帯の高さ（写真の高さ比）。文字を入れないときは細くする等、下だけ調整できる。
+  const [noteBand, setNoteBand] = useState(initExif?.band ?? 0.18);
+  // 自由入力の文字スタイル。行ごとに 太字/斜体/淡色 を指定できる（見本の「1行目=主役・
+  // 2行目=補足」の作り分け用）。旧スナップショットの全体指定 italic/bold から引き継ぐ。
+  type NoteLineStyle = { bold: boolean; italic: boolean; dim: boolean };
+  const initLineStyle = (v: NoteLineStyle | undefined): NoteLineStyle => ({
+    bold: v?.bold ?? initExif?.bold ?? false,
+    italic: v?.italic ?? initExif?.italic ?? false,
+    dim: v?.dim ?? false,
+  });
+  const [noteL1, setNoteL1] = useState<NoteLineStyle>(initLineStyle(initExif?.l1));
+  const [noteL2, setNoteL2] = useState<NoteLineStyle>(initLineStyle(initExif?.l2));
+  const toggleExif = (on: boolean) => setExifOn(on);
+
   // --- 書き出し --- //
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
   const [previewBaking, setPreviewBaking] = useState(false);
   // 書き出し・保存の失敗をユーザーに知らせるメッセージ（null=非表示）。
-  const [exportError, setExportError] = useState<string | null>(null);
+  // 書き出し関連の通知。error=失敗（赤）、warn=成功したが注意あり（黄。低解像度フォールバック等）。
+  const [exportNotice, setExportNotice] = useState<{ kind: "error" | "warn"; text: string } | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
@@ -604,6 +705,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [measureTick, setMeasureTick] = useState(0);
   const arEditStageRef = useRef<HTMLDivElement | null>(null);
   const arFrameRef = useRef<HTMLDivElement | null>(null);
+  const noteWrapRef = useRef<HTMLDivElement | null>(null);
   const captionDragRef = useRef<{ offU: number; offV: number; h: number } | null>(null);
   // ドラッグ中にスナップした基準線（フレーム正規化座標）。ガイド線の描画用。
   const [snapGuide, setSnapGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
@@ -658,6 +760,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       p.map((l, idx) => (idx === i ? { ...l, elevM: v != null && Number.isFinite(v) ? v : undefined } : l)),
     );
   };
+
+  // 写真上の名札・引き出し線の表示/非表示。非表示でも解説・題字の題材候補には残る
+  // （例: 自分が立っている山頂を解説したいが、写真上に名札は要らない場合）。
+  const setLabelHidden = (i: number, hidden: boolean) =>
+    setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, hidden: hidden || undefined } : l)));
 
   // 自由タグの追加。取り上げる山の tagsJa/tagsEn 末尾に足し（日英同じ文字列）、表示ONにする。
   const [newTag, setNewTag] = useState("");
@@ -779,14 +886,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         <div className="ar-font-sel">
           <select value={roleFonts[role]} onChange={(e) => setRoleFont(role, e.target.value as FontPairId)} aria-label={label}>
             {FONT_PAIR_IDS.map((id) => (
-              <option key={id} value={id} title={FONT_PAIRS[id].description}>
+              <option key={id} value={id} title={t(FONT_PAIRS[id].description)}>
                 {FONT_PAIRS[id].label}
               </option>
             ))}
           </select>
         </div>
       </div>
-      <p className="ar-font-desc">{FONT_PAIRS[roleFonts[role]].description}</p>
+      <p className="ar-font-desc">{t(FONT_PAIRS[roleFonts[role]].description)}</p>
     </>
   );
 
@@ -863,19 +970,36 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   }, [frameMarginAuto, photoUrl, cropInset.l, cropInset.t, cropInset.r, cropInset.b, frameMargin.t, frameMargin.b, frameMargin.l, frameMargin.r]);
 
   // 出力枠(フレーム)を、外枠(ステージ)内に「contain」で収める px サイズに設定。
+  // 記録の帯 ON のときは外側フレーム（縁＋下の帯）込みで収め、内側をその分小さくする。
   useLayoutEffect(() => {
-    const stageEl = arEditStageRef.current, frame = arFrameRef.current;
-    if (!stageEl || !frame) return;
-    const sw = stageEl.clientWidth, sh = stageEl.clientHeight;
+    const stageEl = arEditStageRef.current, frame = arFrameRef.current, wrap = noteWrapRef.current;
+    if (!stageEl || !frame || !wrap) return;
+    // clientWidth/Height はパディング込み。実際に置ける内容量を使わないと、flex に
+    // 横だけ縮められて右の縁が痩せる（帯の高さ変更時に見切れる）。
+    const cs = getComputedStyle(stageEl);
+    const sw = stageEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const sh = stageEl.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
     if (!sw || !sh || !frameAR) return;
-    let w = sw, h = sw / frameAR;
+    // 論理サイズ（切り抜き後の写真高さ ch を基準に、縁・帯の論理量を出す）
+    const ch = (photoNat?.h ?? 1000) * fChF;
+    const cw = (photoNat?.w ?? 1500) * fCwF;
+    const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
+    const edge = exifOn ? NOTE_EDGE * ch : 0;
+    const band = exifOn ? noteBand * ch : 0;
+    const outerAR = (innerW + edge * 2) / (innerH + edge + band);
+    let w = sw, h = sw / outerAR;
     if (h > sh) {
       h = sh;
-      w = sh * frameAR;
+      w = sh * outerAR;
     }
-    frame.style.width = `${Math.round(w)}px`;
-    frame.style.height = `${Math.round(h)}px`;
-  }, [frameAR, measureTick, exportView]);
+    const scale = h / (innerH + edge + band);
+    const edgePx = Math.round(edge * scale), bandPx = Math.round(band * scale);
+    wrap.style.width = `${Math.round(w)}px`;
+    wrap.style.height = `${Math.round(h)}px`;
+    wrap.style.padding = `${edgePx}px ${edgePx}px ${bandPx}px`;
+    frame.style.width = `${Math.round(w) - edgePx * 2}px`;
+    frame.style.height = `${Math.round(h) - edgePx - bandPx}px`;
+  }, [frameAR, measureTick, exportView, exifOn, noteBand, photoNat, fChF, fCwF, fMlr, fMtb]);
 
   // ラベル実寸を測って正規化で保持（引き出し線の辺アンカー計算に使う）。
   useLayoutEffect(() => {
@@ -914,8 +1038,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // ============================ 焼き込み（Canvas 2D） ============================ //
   // outCap: 出力長辺の上限(px)。端末のCanvas上限を超えると書き出しが失敗・真っ白になる
   // ため、bakeExport が失敗時により小さい上限で再試行する。
-  const bakeComposite = async (outCap: number): Promise<Blob | null> => {
-    const img = await loadImage(photoUrl);
+  const bakeComposite = async (img: HTMLImageElement, outCap: number): Promise<Blob | null> => {
     const W = img.naturalWidth;
     const H = img.naturalHeight;
     const cl = cropInset.l * W, ct = cropInset.t * H;
@@ -928,21 +1051,60 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const pfx = (pu: number) => mL + ((pu - cropInset.l) / fCwF) * cwR;
     const pfy = (pv: number) => mT + ((pv - cropInset.t) / fChF) * chR;
     const L = Math.max(OW, OH);
+    // 記録の帯（外側フレーム）。「余白」とは独立に、合成結果の外へさらに一周巻く。
+    const nEdge = exifOn ? Math.round(NOTE_EDGE * chR) : 0;
+    const nBand = exifOn ? Math.round(noteBand * chR) : 0;
+    const TW = OW + nEdge * 2, TH = OH + nEdge + nBand;
     // iOS(WebKit)は Canvas の最大ピクセル面積に上限があり、高解像度写真＋大きな余白で
     // 上限を超えると書き出しが真っ白になる。出力長辺を outCap に収めるよう自動縮小する。
-    const outScale = Math.min(1, outCap / Math.max(OW, OH));
+    const outScale = Math.min(1, outCap / Math.max(TW, TH));
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(OW * outScale));
-    canvas.height = Math.max(1, Math.round(OH * outScale));
+    canvas.width = Math.max(1, Math.round(TW * outScale));
+    canvas.height = Math.max(1, Math.round(TH * outScale));
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
-    // 以降の描画は論理座標(OW×OH)のまま行い、物理キャンバスへ一括縮小して載せる。
+    // 以降の描画は論理座標のまま行い、物理キャンバスへ一括縮小して載せる。
+    // 外側フレームを塗ってから原点を内側へずらし、既存の描画はそのまま OW×OH 座標で行う。
     ctx.scale(outScale, outScale);
+    if (exifOn) {
+      ctx.fillStyle = noteBg;
+      ctx.fillRect(0, 0, TW, TH);
+      ctx.translate(nEdge, nEdge);
+    }
     if (mT || mB || mL || mR) {
       ctx.fillStyle = frameMarginColor;
       ctx.fillRect(0, 0, OW, OH);
     }
     ctx.drawImage(img, cl, ct, cw, ch, mL, mT, cwR, chR);
+    // drawImage はメモリ上限超過時にエラーを出さず「何も描かない」ことがある
+    // （文字と余白だけの白抜け画像の原因）。写真領域を9点サンプリングして、
+    // 1点も描けていなければこの解像度は失敗として扱い、縮小リトライへ回す。
+    try {
+      // 写真の下に塗られている色（内側の余白色 > 外側フレーム色 > なし=透明）。
+      const bg = mT || mB || mL || mR ? frameMarginColor : exifOn ? noteBg : null;
+      const [mr, mg, mb] = bg ? hexToRgb(bg).split(",").map(Number) : [0, 0, 0];
+      let drawn = false;
+      for (const fy of [0.1, 0.5, 0.9]) {
+        for (const fx of [0.1, 0.5, 0.9]) {
+          const px = Math.min(canvas.width - 1, Math.round((nEdge + mL + fx * cwR) * outScale));
+          const py = Math.min(canvas.height - 1, Math.round((nEdge + mT + fy * chR) * outScale));
+          const d = ctx.getImageData(px, py, 1, 1).data;
+          // 下地ありなら「全点が下地色のまま」、なしなら「全点が透明のまま」を未描画とみなす。
+          if (bg ? d[0] !== mr || d[1] !== mg || d[2] !== mb : d[3] !== 0) {
+            drawn = true;
+            break;
+          }
+        }
+        if (drawn) break;
+      }
+      if (!drawn) {
+        releaseCanvas(canvas);
+        throw new Error("photo-not-drawn");
+      }
+    } catch (e) {
+      if ((e as Error)?.message === "photo-not-drawn") throw e;
+      // getImageData 自体の失敗（検証不能）は描画成功とみなして続行する。
+    }
     if (frameFade > 0 && (mT || mB || mL || mR)) {
       const fh = Math.round(frameFade * chR), fw = Math.round(frameFade * cwR);
       const rgba = (a: number) => `rgba(${hexToRgb(frameMarginColor)},${a})`;
@@ -985,6 +1147,15 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       fontLoads.push(document.fonts.load(`${w} 16px "${p.jp}"`).catch(() => {}));
       fontLoads.push(document.fonts.load(`${w} 16px "${p.en}"`).catch(() => {}));
     }
+    // 記録の帯はアプリの Webフォントで描くため、未ロードだと代替書体で焼かれて
+    // プレビューとずれる。選択中のフォントペア（和文・欧文）を待ってから描画する。
+    if (exifOn) {
+      const p = FONT_PAIRS[noteFont];
+      for (const w of [400, 500, 600, 700]) {
+        fontLoads.push(document.fonts.load(`${w} 16px "${p.jp}"`).catch(() => {}));
+        fontLoads.push(document.fonts.load(`${w} 16px "${p.en}"`).catch(() => {}));
+      }
+    }
     await Promise.all(fontLoads);
     ctx.textBaseline = "alphabetic";
     // 字間（letter-spacing）。Canvas 未対応ブラウザでは無視される（＝標準字間で描かれる）。
@@ -994,6 +1165,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     };
     if (bakeLabels) {
       for (const lb of arLabels) {
+        if (lb.hidden) continue; // 非表示ラベル（題材専用）は焼き込まない
         const dotX = pfx(lb.dotU);
         const dotY = pfy(lb.dotV);
         const cx = pfx(lb.labelU);
@@ -1337,22 +1509,87 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.restore();
       }
     }
+    // 記録の帯（外側フレーム下部の中央に2行。camera=Shot on 表記 / free=自由入力）。
+    if (exifOn && nBand > 0) {
+      const ink = noteInkColors();
+      const noteFF = roleFontStack(noteFont);
+      const mainFs = Math.round(L * 0.019);
+      const subFs = Math.round(L * 0.014);
+      const cy = OH + nBand / 2; // translate 済み座標: 内側コンテンツの直下が帯
+      const gap = Math.round(mainFs * 0.8);
+      ctx.save();
+      ctx.textBaseline = "middle";
+      if (noteMode === "camera") {
+        const segs: Array<{ text: string; font: string; color: string }> = [];
+        if (exifModel || exifMaker) {
+          segs.push({ text: "Shot on ", font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
+          if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${noteFF}`, color: ink.main });
+          if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
+        }
+        const both = segs.length > 0 && !!exifSpec;
+        if (segs.length > 0) {
+          // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
+          let total = 0;
+          for (const s of segs) {
+            ctx.font = s.font;
+            total += ctx.measureText(s.text).width;
+          }
+          let x = OW / 2 - total / 2;
+          ctx.textAlign = "left";
+          for (const s of segs) {
+            ctx.font = s.font;
+            ctx.fillStyle = s.color;
+            ctx.fillText(s.text, x, both ? cy - gap : cy);
+            x += ctx.measureText(s.text).width;
+          }
+        }
+        if (exifSpec) {
+          ctx.textAlign = "center";
+          ctx.font = `500 ${subFs}px ${noteFF}`;
+          ctx.fillStyle = ink.sub;
+          ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
+        }
+      } else {
+        const ff = noteFF;
+        const both = !!noteLine1 && !!noteLine2;
+        ctx.textAlign = "center";
+        if (noteLine1) {
+          ctx.font = `${noteL1.italic ? "italic " : ""}${noteL1.bold ? 700 : 600} ${mainFs}px ${ff}`;
+          ctx.fillStyle = noteL1.dim ? ink.sub : ink.main;
+          ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
+        }
+        if (noteLine2) {
+          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${Math.round(L * 0.016)}px ${ff}`;
+          ctx.fillStyle = noteL2.dim ? ink.sub : ink.main;
+          ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
+        }
+      }
+      ctx.restore();
+    }
     return canvasToJpegBlob(canvas, 0.92);
   };
 
-  // 書き出しの入口。失敗（例外・空Blob）したら出力上限を段階的に下げて再試行する。
-  // どのサイズでも失敗したときだけ null（呼び出し側でエラー表示）。
+  // 書き出しの入口。失敗（例外・空Blob・写真の未描画）したら出力上限を段階的に下げて
+  // 再試行する。結果は「成功（どの上限で焼けたか）」か「失敗（原因の種類）」で返し、
+  // 呼び出し側がユーザーへの案内文を出し分ける。
   const EXPORT_CAPS = [4096, 2560, 1600];
-  const bakeExport = async (): Promise<Blob | null> => {
+  type BakeResult = { blob: Blob; cap: number } | { blob: null; error: "load" | "memory" };
+  const bakeExport = async (): Promise<BakeResult> => {
+    let img: HTMLImageElement;
+    try {
+      img = await loadImage(photoUrl);
+    } catch {
+      return { blob: null, error: "load" };
+    }
     for (const cap of EXPORT_CAPS) {
       try {
-        const blob = await bakeComposite(cap);
-        if (blob) return blob;
+        const blob = await bakeComposite(img, cap);
+        if (blob) return { blob, cap };
       } catch {
         /* 次のサイズで再試行 */
       }
     }
-    return null;
+    return { blob: null, error: "memory" };
   };
 
   // テンプレートの値束を各 state に一括反映し、編集画面へ。
@@ -1500,7 +1737,28 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // テーマ選択へ「戻った」だけの状態でも、編集済みの内容は保存する。
   const makeSnapshot = (): StudioSnapshot | null =>
     everEdited
-      ? { style: currentStyle(), templateId: activeTemplateId, labels: arLabels, captionIdx }
+      ? {
+          style: currentStyle(),
+          templateId: activeTemplateId,
+          labels: arLabels,
+          captionIdx,
+          exif: {
+            on: exifOn,
+            model: exifModel,
+            maker: exifMaker,
+            spec: exifSpec,
+            mode: noteMode,
+            line1: noteLine1,
+            line2: noteLine2,
+            font: noteFont,
+            bg: noteBg,
+            band: noteBand,
+            l1: noteL1,
+            l2: noteL2,
+            inkAuto: noteInkAuto,
+            ink: noteInk,
+          },
+        }
       : null;
 
   // プレビューは Blob の objectURL で表示（巨大な dataURL を state に持つとスマホで
@@ -1515,45 +1773,54 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const openExportPreview = async () => {
     if (previewBaking) return;
     setPreviewBaking(true);
-    setExportError(null);
+    setExportNotice(null);
     try {
-      const blob = await bakeExport();
-      if (blob) {
-        setPreviewBlob(blob);
-        setPreviewUrl(URL.createObjectURL(blob));
+      const r = await bakeExport();
+      if (r.blob) {
+        setPreviewBlob(r.blob);
+        setPreviewUrl(URL.createObjectURL(r.blob));
+        // 最大解像度で焼けなかったときは、黙って出さずに理由と対処を知らせる。
+        if (r.cap < EXPORT_CAPS[0]) {
+          setExportNotice({
+            kind: "warn",
+            text: t("studio.export.lowMemory", { cap: r.cap }),
+          });
+        }
+      } else if (r.error === "load") {
+        setExportNotice({
+          kind: "error",
+          text: t("studio.export.loadFailed"),
+        });
       } else {
-        setExportError("画像の書き出しに失敗しました。時間をおいてもう一度お試しください。");
+        setExportNotice({
+          kind: "error",
+          text: t("studio.export.bakeFailed"),
+        });
       }
     } finally {
       setPreviewBaking(false);
     }
   };
-  const closePreview = () => setPreviewUrl(null);
-
-  // 一覧へ戻る。編集に入っている写真は、その時点の見た目を自動で書き出してから戻る
-  // （一覧で「仕上げ済み」になり、まとめて保存にも含まれる。手動の「書き出す」は不要）。
-  const [exiting, setExiting] = useState(false);
-  const exitToBoard = async () => {
-    if (exiting) return;
-    let blob = previewBlob;
-    if (exportView === "edit") {
-      setExiting(true);
-      try {
-        // 書き出しに失敗しても一覧へは戻す（ボタンが固まったままにしない）。
-        blob = (await bakeExport()) ?? previewBlob;
-      } finally {
-        setExiting(false);
-      }
-    }
-    onExit(makeSnapshot(), blob);
+  // プレビューを閉じたら Blob も破棄する（「保存」で使うのは表示中だけ。閉じた後まで
+  // フル解像度JPEGを持ち続けない。次回のプレビューで焼き直す）。
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewBlob(null);
   };
+
+  // 一覧へ戻る。編集状態は snapshot（JSONデータ）だけで保存し、画像の焼き込みは
+  // 行わない。Canvas の生成はプレビュー・保存の時だけに絞る（スマホのメモリ対策）。
+  const exitToBoard = () => onExit(makeSnapshot(), savedOnce);
   // 保存。モバイルは Web Share API（「"写真"に保存」）優先、PC は直接ダウンロード。
   // ブラウザ差異の吸収は lib/exportImage.ts の saveBlob に集約。
+  // 成功したら「保存済み」として記録し、一覧の状態表示に使う。
+  const [savedOnce, setSavedOnce] = useState(false);
   const saveExportImage = async () => {
     if (!previewBlob) return;
     const outcome = await saveBlob(previewBlob, "frame.jpg");
+    if (outcome === "shared" || outcome === "downloaded") setSavedOnce(true);
     if (outcome === "failed")
-      setExportError("保存に失敗しました。プレビューの画像を長押しして「\"写真\"に保存」をお試しください。");
+      setExportNotice({ kind: "error", text: t("studio.export.saveFailed") });
   };
 
   // ============================ ドラッグ（編集） ============================ //
@@ -1725,9 +1992,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     caption: captionLang !== "none",
     title: titleOn,
     frame: frameActive,
+    note: exifOn,
   };
   const relevantTabs = activeTemplate ? templateTabs(activeTemplate.style) : PANEL_TABS;
-  const visibleTabs = panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]) : PANEL_TABS;
+  // 「記録」はテンプレに依存しない機能なので、シンプルモードでも常に見せる。
+  const visibleTabs =
+    panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note") : PANEL_TABS;
   const changePanelMode = (m: "simple" | "full") => {
     setPanelMode(m);
     try {
@@ -1736,7 +2006,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       /* 保存できなくても動作に支障なし */
     }
     if (m === "simple") {
-      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t]);
+      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note");
       if (!simple.includes(panelTab)) setPanelTab(simple[0] ?? "label");
     }
   };
@@ -1745,7 +2015,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // シンプルモードで見えるタブが違っても、必ずどこかから編集できるように）。
   const dataEdit = (
     <div className="studio-data-edit">
-      <span className="studio-data-head">山の情報（タップで編集できます）</span>
+      <span className="studio-data-head">{t("studio.data.heading")}</span>
       {arLabels.map((lb, i) => (
         <div key={lb.id} className="studio-data-row">
           <input
@@ -1753,8 +2023,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             className="studio-data-input studio-data-input--name"
             value={lb.name}
             onChange={(e) => setLabelName(i, e.target.value)}
-            placeholder="名前"
-            aria-label={`${i + 1}番目の名前`}
+            placeholder={t("studio.data.namePlaceholder")}
+            aria-label={t("studio.data.nameLabel", { n: i + 1 })}
             autoComplete="off"
           />
           <input
@@ -1762,8 +2032,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             className="studio-data-input studio-data-input--en"
             value={lb.nameEn ?? ""}
             onChange={(e) => setLabelNameEn(i, e.target.value)}
-            placeholder="英語名(任意)"
-            aria-label={`${lb.name}の英語名（任意）`}
+            placeholder={t("studio.data.nameEnPlaceholder")}
+            aria-label={t("studio.data.nameEnLabel", { name: lb.name })}
             autoComplete="off"
           />
           <span className="studio-data-elev">
@@ -1773,11 +2043,21 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               className="studio-data-input studio-data-input--elev"
               value={lb.elevM ?? ""}
               onChange={(e) => setLabelElev(i, e.target.value)}
-              placeholder="標高"
-              aria-label={`${lb.name}の標高（任意）`}
+              placeholder={t("studio.data.elevationPlaceholder")}
+              aria-label={t("studio.data.elevationLabel", { name: lb.name })}
             />
             m
           </span>
+          <button
+            type="button"
+            className={`studio-data-eye${lb.hidden ? " is-off" : ""}`}
+            onClick={() => setLabelHidden(i, !lb.hidden)}
+            title={t("studio.data.showOnPhoto")}
+            aria-label={t("studio.data.showOnPhotoLabel", { name: lb.name })}
+            aria-pressed={!lb.hidden}
+          >
+            {lb.hidden ? <IconEyeOff size={15} /> : <IconEye size={15} />}
+          </button>
         </div>
       ))}
     </div>
@@ -1787,9 +2067,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const subjectRow =
     arLabels.length > 1 ? (
       <div className="ar-fs-row">
-        <span>取り上げる山</span>
+        <span>{t("studio.data.subject")}</span>
         <div className="ar-font-sel">
-          <select value={captionIdx} onChange={(e) => setCaptionIdx(Number(e.target.value))} aria-label="取り上げる山">
+          <select value={captionIdx} onChange={(e) => setCaptionIdx(Number(e.target.value))} aria-label={t("studio.data.subject")}>
             {arLabels.map((l, i) => (
               <option key={i} value={i}>{l.name}</option>
             ))}
@@ -1806,8 +2086,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           <div className="ar-tpl-inner">
             <header className="ar-tpl-head">
               <p className="kicker">Theme</p>
-              <h1>テーマを選ぶ</h1>
-              <p>{isNarrow ? "スワイプで見比べて、気に入ったテーマで仕上げへ。" : "左右で見比べて、気に入ったテーマで仕上げへ。"}あとから細かく調整できます。</p>
+              <h1>{t("studio.theme.heading")}</h1>
+              <p>{isNarrow ? t("studio.theme.subNarrow") : t("studio.theme.subWide")}{t("studio.theme.subTail")}</p>
             </header>
 
             {isNarrow ? (
@@ -1824,12 +2104,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           : e.currentTarget.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" })
                       }
                       role="button"
-                      aria-label={i === tplIdx ? `${it.sub}で仕上げる` : `${it.sub}を見る`}
+                      aria-label={i === tplIdx ? t("studio.theme.finishWith", { sub: t(it.sub) }) : t("studio.theme.previewOf", { sub: t(it.sub) })}
                     >
                       {it.tpl ? (
-                        <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg${TPL_PREVIEW_VER}`} alt={it.sub} />
+                        <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg${TPL_PREVIEW_VER}`} alt={t(it.sub)} />
                       ) : (
-                        <div className="tpl-card-custom">テーマなしで、まっさらから</div>
+                        <div className="tpl-card-custom">{t("studio.theme.customCard")}</div>
                       )}
                     </div>
                   ))}
@@ -1843,12 +2123,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <div className="tpl-slide-body">
                     <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
                     <div className="tpl-slide-text">
-                      <b>{TPL_ITEMS[tplIdx].sub}</b>
-                      <p>{TPL_ITEMS[tplIdx].hint}</p>
+                      <b>{t(TPL_ITEMS[tplIdx].sub)}</b>
+                      <p>{t(TPL_ITEMS[tplIdx].hint)}</p>
                     </div>
                   </div>
                   <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
-                    このテーマで仕上げる
+                    {t("studio.theme.chooseThis")}
                   </button>
                 </div>
               </>
@@ -1861,7 +2141,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     className="tpl-flow-nav"
                     onClick={() => setTplIdx((i) => Math.max(0, i - 1))}
                     disabled={tplIdx === 0}
-                    aria-label="前のテーマ"
+                    aria-label={t("studio.theme.prev")}
                   >
                     ‹
                   </button>
@@ -1891,12 +2171,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                             else setTplIdx(i);
                           }}
                           role="button"
-                          aria-label={off === 0 ? `${it.sub}で仕上げる` : `${it.sub}を見る`}
+                          aria-label={off === 0 ? t("studio.theme.finishWith", { sub: t(it.sub) }) : t("studio.theme.previewOf", { sub: t(it.sub) })}
                         >
                           {it.tpl ? (
                             <img src={`${import.meta.env.BASE_URL}template-previews/${it.id}.jpg${TPL_PREVIEW_VER}`} alt="" />
                           ) : (
-                            <div className="tpl-card-custom">テーマなしで、まっさらから</div>
+                            <div className="tpl-card-custom">{t("studio.theme.customCard")}</div>
                           )}
                         </div>
                       );
@@ -1907,7 +2187,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     className="tpl-flow-nav"
                     onClick={() => setTplIdx((i) => Math.min(TPL_ITEMS.length - 1, i + 1))}
                     disabled={tplIdx === TPL_ITEMS.length - 1}
-                    aria-label="次のテーマ"
+                    aria-label={t("studio.theme.next")}
                   >
                     ›
                   </button>
@@ -1916,29 +2196,33 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <div className="tpl-slide-body">
                     <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
                     <div className="tpl-slide-text">
-                      <b>{TPL_ITEMS[tplIdx].sub}</b>
-                      <p>{TPL_ITEMS[tplIdx].hint}</p>
+                      <b>{t(TPL_ITEMS[tplIdx].sub)}</b>
+                      <p>{t(TPL_ITEMS[tplIdx].hint)}</p>
                     </div>
                   </div>
                   <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
-                    このテーマで仕上げる
+                    {t("studio.theme.chooseThis")}
                   </button>
                 </div>
               </>
             )}
 
             <div className="ar-tpl-foot">
-              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), previewBlob)}>一覧へ</button>
-              <button className="ar-btn-sub" onClick={onReselect}>山を選び直す</button>
+              <button className="ar-btn-sub" onClick={() => onExit(makeSnapshot(), savedOnce)}>{t("studio.common.toBoard")}</button>
+              <button className="ar-btn-sub" onClick={onReselect}>{t("studio.theme.reselect")}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 書き出し・保存の失敗通知（タップで閉じる） */}
-      {exportError && (
-        <div className="ar-export-toast" role="alert" onClick={() => setExportError(null)}>
-          {exportError}
+      {/* 書き出し・保存の通知（error=失敗 / warn=低解像度フォールバック等。タップで閉じる） */}
+      {exportNotice && (
+        <div
+          className={`ar-export-toast${exportNotice.kind === "warn" ? " is-warn" : ""}`}
+          role="alert"
+          onClick={() => setExportNotice(null)}
+        >
+          {exportNotice.text}
         </div>
       )}
 
@@ -1947,35 +2231,35 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         <div className="ar-preview" onClick={closePreview}>
           <div className="ar-preview-card" onClick={(e) => e.stopPropagation()}>
             <div className="ar-preview-head">
-              <span>できあがり</span>
-              <span className="ar-preview-note">この内容で保存します。よければダウンロードしてください。</span>
+              <span>{t("studio.export.previewHeading")}</span>
+              <span className="ar-preview-note">{t("studio.export.previewNote")}</span>
             </div>
             <div className="ar-preview-body">
-              <img src={previewUrl} alt="書き出しプレビュー" />
+              <img src={previewUrl} alt={t("studio.export.previewAlt")} />
             </div>
-            <p className="studio-save-hint">保存できないときは、上の画像を長押しして「&quot;写真&quot;に保存」も使えます。</p>
+            <p className="studio-save-hint">{t("studio.export.saveHint")}</p>
             <div className="ar-preview-actions">
-              <button className="ar-btn-sub" onClick={closePreview}>もどる</button>
+              <button className="ar-btn-sub" onClick={closePreview}>{t("studio.export.back")}</button>
               {onNext ? (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onNext(makeSnapshot(), previewBlob)}
-                  title="この写真を終えて、次のまだ仕上げていない写真へ"
+                  onClick={() => onNext(makeSnapshot(), savedOnce)}
+                  title={t("studio.export.nextPhotoTitle")}
                 >
-                  次の写真へ（あと{nextCount}枚）
+                  {t("studio.export.nextPhoto", { n: nextCount })}
                 </button>
               ) : (
                 <button
                   className="ar-btn-sub"
-                  onClick={() => onExit(makeSnapshot(), previewBlob)}
-                  title="仕上げを終えて一覧へ"
+                  onClick={() => onExit(makeSnapshot(), savedOnce)}
+                  title={t("studio.export.finishTitle")}
                 >
-                  一覧へ
+                  {t("studio.common.toBoard")}
                 </button>
               )}
               <button className="ar-btn-main" onClick={saveExportImage}>
                 <IconDownload size={15} />
-                保存
+                {t("studio.export.save")}
               </button>
             </div>
           </div>
@@ -2005,6 +2289,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               } as React.CSSProperties
             }
           >
+            {/* 記録の帯 ON のとき、内側の合成結果を包む外側フレーム（余白タブとは独立） */}
+            <div
+              className={`ar-note-wrap${exifOn ? " is-on" : ""}`}
+              ref={noteWrapRef}
+              style={{ background: exifOn ? noteBg : "transparent" }}
+            >
             <div
               className="ar-frame"
               ref={arFrameRef}
@@ -2040,6 +2330,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {labelLineOn && (
                   <svg className="ar-edit-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                       const sp = labelSidePoint(i);
                       const dp = photoToFrame(lb.dotU, lb.dotV);
                       const ax = sp.x * 100, ay = sp.y * 100;
@@ -2064,6 +2355,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <div className="ar-edit-chrome">
                     <svg className="ar-edit-guides" viewBox="0 0 100 100" preserveAspectRatio="none">
                       {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                         const sp = labelSidePoint(i);
                         const dp = photoToFrame(lb.dotU, lb.dotV);
                         return (
@@ -2081,6 +2373,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       })}
                     </svg>
                     {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                       const sp = labelSidePoint(i);
                       const dp = photoToFrame(lb.dotU, lb.dotV);
                       return (
@@ -2107,6 +2400,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   </div>
                   )}
                   {arLabels.map((lb, i) => {
+                      if (lb.hidden) return null;
                     const lc = labelContent(lb);
                     const lp = photoToFrame(lb.labelU, lb.labelV);
                     return (
@@ -2191,7 +2485,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       {capBoth && captionLayout === "horizontal" && (
                         <div
                           className="ar-cap-divider"
-                          title="日英の境界を動かす"
+                          title={t("studio.stage.capDividerTitle")}
                           onPointerDown={onCapSplitDown}
                           onPointerMove={onEditMove}
                           onPointerUp={onEditUp}
@@ -2213,7 +2507,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       <span
                         key={s}
                         className={`ar-cap-handle ar-cap-handle--${s}`}
-                        title={s === "l" || s === "r" ? "幅を変える" : "縦に伸ばす（幅が狭まる）"}
+                        title={s === "l" || s === "r" ? t("studio.stage.capResizeWidth") : t("studio.stage.capResizeHeight")}
                         onPointerDown={onCapResizeDown}
                         onPointerMove={onEditMove}
                         onPointerUp={onEditUp}
@@ -2254,17 +2548,77 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 );
               })()}
             </div>
-            <p className="studio-stage-hint">文字は写真の上でドラッグして動かせます</p>
+              {/* 記録の帯（外側フレーム下部の中央。書き出しと同じ2トーン配色） */}
+              {exifOn && (() => {
+                const ink = noteInkColors();
+                const ch = (photoNat?.h ?? 1000) * fChF;
+                const totalH = ch * (1 + fMtb) + NOTE_EDGE * ch + noteBand * ch;
+                return (
+                  <div
+                    className="ar-exif"
+                    style={
+                      {
+                        height: `${((noteBand * ch) / totalH) * 100}%`,
+                        fontFamily: roleFontStack(noteFont),
+                        "--exif-main": ink.main,
+                        "--exif-sub": ink.sub,
+                      } as React.CSSProperties
+                    }
+                    aria-hidden="true"
+                  >
+                    {noteMode === "camera" ? (
+                      <>
+                        {(exifModel || exifMaker) && (
+                          <span className="ar-exif-model">
+                            <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
+                            {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                          </span>
+                        )}
+                        {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
+                      </>
+                    ) : (
+                      <span className="ar-exif-free">
+                        {noteLine1 && (
+                          <span
+                            className="ar-exif-l1"
+                            style={{
+                              fontWeight: noteL1.bold ? 700 : 600,
+                              fontStyle: noteL1.italic ? "italic" : "normal",
+                              color: noteL1.dim ? "var(--exif-sub)" : "var(--exif-main)",
+                            }}
+                          >
+                            {noteLine1}
+                          </span>
+                        )}
+                        {noteLine2 && (
+                          <span
+                            className="ar-exif-l2"
+                            style={{
+                              fontWeight: noteL2.bold ? 600 : 400,
+                              fontStyle: noteL2.italic ? "italic" : "normal",
+                              color: noteL2.dim ? "var(--exif-sub)" : "var(--exif-main)",
+                            }}
+                          >
+                            {noteLine2}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+            <p className="studio-stage-hint">{t("studio.stage.hint")}</p>
           </div>
 
           {/* 操作パネル。PCで畳んだときは右端の細いレールだけ残してステージを全幅に */}
           {!panelOpen && !isNarrow ? (
             <div className="studio-rail">
-              <button className="studio-icon-btn" onClick={() => setPanelOpen(true)} title="設定を開く">
+              <button className="studio-icon-btn" onClick={() => setPanelOpen(true)} title={t("studio.stage.openSettings")}>
                 <IconCaret dir="left" size={16} />
               </button>
-              <span className="studio-rail-label" aria-hidden="true">仕上げ</span>
-              <button className="studio-icon-btn" onClick={openExportPreview} disabled={previewBaking} title="書き出す">
+              <span className="studio-rail-label" aria-hidden="true">{t("studio.common.finishing")}</span>
+              <button className="studio-icon-btn" onClick={openExportPreview} disabled={previewBaking} title={t("studio.stage.export")}>
                 <IconDownload size={15} />
               </button>
             </div>
@@ -2273,21 +2627,21 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             <div className="studio-panel-head">
               {/* PC: 畳むボタンは左端（ステージとの境界側）。右へ縮む動きと向きが揃う */}
               {!isNarrow && (
-                <button className="studio-icon-btn" onClick={() => setPanelOpen(false)} title="畳む">
+                <button className="studio-icon-btn" onClick={() => setPanelOpen(false)} title={t("studio.stage.collapse")}>
                   <IconCaret dir="right" size={16} />
                 </button>
               )}
               <span className="studio-panel-title">
-                仕上げ
+                {t("studio.common.finishing")}
                 {activeTemplate && (
-                  <span className="studio-panel-tpl" title={activeTemplate.sub}>{activeTemplate.name}</span>
+                  <span className="studio-panel-tpl" title={t(activeTemplate.sub)}>{activeTemplate.name}</span>
                 )}
               </span>
-              <div className="studio-mode" role="group" aria-label="パネル表示モード">
+              <div className="studio-mode" role="group" aria-label={t("studio.panel.modeGroupAria")}>
                 {(
                   [
-                    ["simple", "シンプル", "テンプレに関係する設定だけ表示"],
-                    ["full", "フル", "すべての設定を表示"],
+                    ["simple", t("studio.panel.modeSimple"), t("studio.panel.modeSimpleHint")],
+                    ["full", t("studio.panel.modeFull"), t("studio.panel.modeFullHint")],
                   ] as ["simple" | "full", string, string][]
                 ).map(([m, label, hint]) => (
                   <button
@@ -2304,20 +2658,21 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               </div>
               {/* スマホ: ボトムシートなので畳むボタンは従来どおり右端・下向き */}
               {isNarrow && (
-                <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? "畳む" : "開く"}>
+                <button className="studio-icon-btn" onClick={() => setPanelOpen((o) => !o)} title={panelOpen ? t("studio.stage.collapse") : t("studio.stage.expand")}>
                   <IconCaret dir={panelOpen ? "down" : "up"} size={16} />
                 </button>
               )}
             </div>
             {panelOpen && (
               <>
-              <div className="studio-tabs" role="tablist" aria-label="仕上げの設定">
+              <div className="studio-tabs" role="tablist" aria-label={t("studio.tabs.ariaLabel")}>
                 {(
                   [
-                    ["label", "山名"],
-                    ["caption", "解説"],
-                    ["title", "タイトル"],
-                    ["frame", "フレーム"],
+                    ["label", t("studio.tabs.label")],
+                    ["caption", t("studio.tabs.caption")],
+                    ["title", t("studio.tabs.title")],
+                    ["frame", t("studio.tabs.frame")],
+                    ["note", t("studio.tabs.note")],
                   ] as [PanelTab, string][]
                 )
                   .filter(([id]) => visibleTabs.includes(id))
@@ -2341,28 +2696,28 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 <section className="studio-sec">
                   {dataEdit}
                   <label className="switch-row">
-                    <span>写真に山名を入れる</span>
+                    <span>{t("studio.label.bake")}</span>
                     <input type="checkbox" className="switch" checked={bakeLabels} onChange={(e) => setBakeLabels(e.target.checked)} />
                   </label>
                   {bakeLabels && (
                     <>
                       <div className="ar-fs-row">
-                        <span>表示</span>
+                        <span>{t("studio.label.display")}</span>
                         <div className="ar-font-sel">
-                          <select value={labelMode} onChange={(e) => setLabelMode(e.target.value as LabelMode)} aria-label="ラベルの表示内容">
-                            <option value="jaSubEnElev">日本語名 ＋ 英語名・標高</option>
-                            <option value="jaSubEn">日本語名 ＋ 英語名</option>
-                            <option value="jaSubElev">日本語名 ＋ 標高</option>
-                            <option value="enSubElev">英語名 ＋ 標高</option>
-                            <option value="jaOnly">日本語名のみ</option>
-                            <option value="enOnly">英語名のみ</option>
+                          <select value={labelMode} onChange={(e) => setLabelMode(e.target.value as LabelMode)} aria-label={t("studio.label.displayAria")}>
+                            <option value="jaSubEnElev">{t("studio.label.optJaSubEnElev")}</option>
+                            <option value="jaSubEn">{t("studio.label.optJaSubEn")}</option>
+                            <option value="jaSubElev">{t("studio.label.optJaSubElev")}</option>
+                            <option value="enSubElev">{t("studio.label.optEnSubElev")}</option>
+                            <option value="jaOnly">{t("studio.label.optJaOnly")}</option>
+                            <option value="enOnly">{t("studio.label.optEnOnly")}</option>
                           </select>
                         </div>
                       </div>
                       <div className="ar-fs-row">
-                        <span>文字の背景</span>
-                        <div className="seg" role="group" aria-label="文字の背景">
-                          {([["なし", "none"], ["あり", "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
+                        <span>{t("studio.label.textBg")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.label.textBgAria")}>
+                          {([[t("studio.common.bgNone"), "none"], [t("studio.common.bgSolid"), "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
                             <button key={v} className={labelBg === v ? "is-active" : ""} onClick={() => setLabelBg(v)}>{lab}</button>
                           ))}
                         </div>
@@ -2370,58 +2725,58 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       {labelBg !== "none" && (
                         <>
                           <div className="ar-fs-row">
-                            <span>背景の色</span>
-                            <input type="color" className="ar-color-input" value={labelPanelColor} onChange={(e) => setLabelPanelColor(e.target.value)} aria-label="文字背景の色" />
+                            <span>{t("studio.label.bgColor")}</span>
+                            <input type="color" className="ar-color-input" value={labelPanelColor} onChange={(e) => setLabelPanelColor(e.target.value)} aria-label={t("studio.label.bgColorAria")} />
                           </div>
                           <div className="ar-fs-slider-row">
-                            <span>背景の濃さ</span>
+                            <span>{t("studio.label.bgOpacity")}</span>
                             <span className="ar-fs-val">{Math.round(labelPanelOpacity * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={labelPanelOpacity} onChange={(e) => setLabelPanelOpacity(Number(e.target.value))} aria-label="文字背景の濃さ" />
+                          <FsSlider min={0.1} max={1} step={0.05} value={labelPanelOpacity} onChange={setLabelPanelOpacity} ariaLabel={t("studio.label.bgOpacityAria")} />
                         </>
                       )}
                       <div className="ar-fs-row">
-                        <span>文字の色</span>
-                        <input type="color" className="ar-color-input" value={labelColor} onChange={(e) => setLabelColor(e.target.value)} aria-label="文字の色" />
+                        <span>{t("studio.label.textColor")}</span>
+                        <input type="color" className="ar-color-input" value={labelColor} onChange={(e) => setLabelColor(e.target.value)} aria-label={t("studio.label.textColor")} />
                       </div>
                       <label className="switch-row">
-                        <span>引き出し線（矢印）</span>
+                        <span>{t("studio.label.leaderLine")}</span>
                         <input type="checkbox" className="switch" checked={labelLineOn} onChange={(e) => setLabelLineOn(e.target.checked)} />
                       </label>
                       {labelLineOn && (
                         <div className="ar-fs-row">
-                          <span>線の色</span>
-                          <input type="color" className="ar-color-input" value={labelLineColor} onChange={(e) => setLabelLineColor(e.target.value)} aria-label="引き出し線の色" />
+                          <span>{t("studio.label.lineColor")}</span>
+                          <input type="color" className="ar-color-input" value={labelLineColor} onChange={(e) => setLabelLineColor(e.target.value)} aria-label={t("studio.label.lineColorAria")} />
                         </div>
                       )}
                       <label className="switch-row">
-                        <span>文字の影</span>
+                        <span>{t("studio.label.textShadow")}</span>
                         <input type="checkbox" className="switch" checked={labelShadow} onChange={(e) => setLabelShadow(e.target.checked)} />
                       </label>
                       <div className="ar-fs-slider-row">
-                        <span>山名サイズ</span>
+                        <span>{t("studio.label.nameSize")}</span>
                         <span className="ar-fs-val">{Math.round(labelNameScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={labelNameScale} onChange={(e) => setLabelNameScale(Number(e.target.value))} aria-label="山名サイズ" />
-                      {fontRow("labelName", "山名フォント")}
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={labelNameScale} onChange={setLabelNameScale} ariaLabel={t("studio.label.nameSize")} />
+                      {fontRow("labelName", t("studio.label.nameFont"))}
                       <div className="ar-fs-slider-row">
-                        <span>字間</span>
+                        <span>{t("studio.label.letterSpace")}</span>
                         <span className="ar-fs-val">{labelLetterSpace.toFixed(2)}em</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={labelLetterSpace} onChange={(e) => setLabelLetterSpace(Number(e.target.value))} aria-label="山名の字間" />
+                      <FsSlider min={0} max={0.3} step={0.01} value={labelLetterSpace} onChange={setLabelLetterSpace} ariaLabel={t("studio.label.letterSpaceAria")} />
                       {labelHasSub && (
                         <>
                           <div className="ar-fs-slider-row">
-                            <span>補足サイズ</span>
+                            <span>{t("studio.label.subSize")}</span>
                             <span className="ar-fs-val">{Math.round(labelSubScale * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={labelSubScale} onChange={(e) => setLabelSubScale(Number(e.target.value))} aria-label="補足サイズ" />
-                          {fontRow("labelSub", "補足フォント")}
+                          <FsSlider min={0.7} max={1.6} step={0.05} value={labelSubScale} onChange={setLabelSubScale} ariaLabel={t("studio.label.subSize")} />
+                          {fontRow("labelSub", t("studio.label.subFont"))}
                           <div className="ar-fs-slider-row">
-                            <span>行間（山名と補足）</span>
+                            <span>{t("studio.label.lineHeight")}</span>
                             <span className="ar-fs-val">{Math.round(labelLineHeight * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={labelLineHeight} onChange={(e) => setLabelLineHeight(Number(e.target.value))} aria-label="山名と補足の行間" />
+                          <FsSlider min={0.6} max={2.0} step={0.05} value={labelLineHeight} onChange={setLabelLineHeight} ariaLabel={t("studio.label.lineHeightAria")} />
                         </>
                       )}
                     </>
@@ -2435,9 +2790,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {dataEdit}
                   {subjectRow}
                   <div className="ar-fs-row">
-                    <span>言語</span>
-                    <div className="seg" role="group" aria-label="解説の言語">
-                      {([["日本語", "ja"], ["英語", "en"], ["両方", "both"], ["なし", "none"]] as [string, "ja" | "en" | "both" | "none"][]).map(([lab, v]) => (
+                    <span>{t("studio.caption.language")}</span>
+                    <div className="seg" role="group" aria-label={t("studio.caption.languageAria")}>
+                      {([[t("studio.common.langJa"), "ja"], [t("studio.common.langEn"), "en"], [t("studio.common.langBoth"), "both"], [t("studio.common.bgNone"), "none"]] as [string, "ja" | "en" | "both" | "none"][]).map(([lab, v]) => (
                         <button key={v} className={captionLang === v ? "is-active" : ""} onClick={() => setCaptionLang(v)}>{lab}</button>
                       ))}
                     </div>
@@ -2447,31 +2802,31 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       {captionLang === "both" && (
                         <>
                           <div className="ar-fs-row">
-                            <span>並べ方</span>
-                            <div className="seg" role="group" aria-label="日英の並べ方">
-                              {([["横", "horizontal"], ["縦", "vertical"]] as [string, "horizontal" | "vertical"][]).map(([lab, v]) => (
+                            <span>{t("studio.caption.layout")}</span>
+                            <div className="seg" role="group" aria-label={t("studio.caption.layoutAria")}>
+                              {([[t("studio.caption.layoutHorizontal"), "horizontal"], [t("studio.caption.layoutVertical"), "vertical"]] as [string, "horizontal" | "vertical"][]).map(([lab, v]) => (
                                 <button key={v} className={captionLayout === v ? "is-active" : ""} onClick={() => setCaptionLayout(v)}>{lab}</button>
                               ))}
                             </div>
                           </div>
                           <div className="ar-fs-row">
-                            <span>見出し</span>
+                            <span>{t("studio.caption.headingMode")}</span>
                             <div className="ar-font-sel">
-                              <select value={captionTitleMode} onChange={(e) => setCaptionTitleMode(e.target.value as "each" | "groupV" | "groupH" | "ja" | "en")} aria-label="見出しの出し方">
-                                <option value="each">本文ごと</option>
-                                <option value="groupV">まとめる（上下）</option>
-                                <option value="groupH">まとめる（左右）</option>
-                                <option value="ja">日本語のみ</option>
-                                <option value="en">英語のみ</option>
+                              <select value={captionTitleMode} onChange={(e) => setCaptionTitleMode(e.target.value as "each" | "groupV" | "groupH" | "ja" | "en")} aria-label={t("studio.caption.headingModeAria")}>
+                                <option value="each">{t("studio.caption.headingEach")}</option>
+                                <option value="groupV">{t("studio.caption.headingGroupV")}</option>
+                                <option value="groupH">{t("studio.caption.headingGroupH")}</option>
+                                <option value="ja">{t("studio.caption.headingJaOnly")}</option>
+                                <option value="en">{t("studio.caption.headingEnOnly")}</option>
                               </select>
                             </div>
                           </div>
                         </>
                       )}
                       <div className="ar-fs-row">
-                        <span>長さ</span>
-                        <div className="seg" role="group" aria-label="解説の長さ">
-                          {([["長め", "long"], ["短め", "short"]] as [string, "long" | "short"][]).map(([lab, v]) => (
+                        <span>{t("studio.caption.length")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.caption.lengthAria")}>
+                          {([[t("studio.caption.lengthLong"), "long"], [t("studio.caption.lengthShort"), "short"]] as [string, "long" | "short"][]).map(([lab, v]) => (
                             <button key={v} className={captionLength === v ? "is-active" : ""} onClick={() => setCaptionLength(v)}>{lab}</button>
                           ))}
                         </div>
@@ -2482,9 +2837,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           className="ar-cap-editor"
                           rows={4}
                           value={capItem ? descJa(capItem) ?? "" : ""}
-                          placeholder="この山の解説は辞書にありません。ここに書くと写真に載せられます。"
+                          placeholder={t("studio.caption.jaPlaceholder")}
                           onChange={(e) => setCapText("ja", e.target.value)}
-                          aria-label={`解説本文（日本語・${captionLength === "short" ? "短め" : "長め"}）`}
+                          aria-label={captionLength === "short" ? t("studio.caption.jaAriaShort") : t("studio.caption.jaAriaLong")}
                         />
                       )}
                       {(captionLang === "en" || captionLang === "both") && (
@@ -2494,19 +2849,19 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           value={capItem ? descEn(capItem) ?? "" : ""}
                           placeholder="No description in the dictionary. Write your own here."
                           onChange={(e) => setCapText("en", e.target.value)}
-                          aria-label={`解説本文（英語・${captionLength === "short" ? "短め" : "長め"}）`}
+                          aria-label={captionLength === "short" ? t("studio.caption.enAriaShort") : t("studio.caption.enAriaLong")}
                         />
                       )}
                       {capEdited && (
                         <div className="ar-fs-row">
-                          <span>編集済み</span>
-                          <button type="button" className="ar-cap-restore" onClick={restoreCapText}>辞書の解説に戻す</button>
+                          <span>{t("studio.caption.edited")}</span>
+                          <button type="button" className="ar-cap-restore" onClick={restoreCapText}>{t("studio.caption.restore")}</button>
                         </div>
                       )}
                       <div className="ar-fs-row">
-                        <span>文字の背景</span>
-                        <div className="seg" role="group" aria-label="解説の文字の背景">
-                          {([["なし", "none"], ["あり", "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
+                        <span>{t("studio.caption.textBg")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.caption.textBgAria")}>
+                          {([[t("studio.common.bgNone"), "none"], [t("studio.common.bgSolid"), "solid"]] as [string, BgPanel][]).map(([lab, v]) => (
                             <button key={v} className={captionBg === v ? "is-active" : ""} onClick={() => setCaptionBg(v)}>{lab}</button>
                           ))}
                         </div>
@@ -2514,53 +2869,53 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       {captionBg !== "none" && (
                         <>
                           <div className="ar-fs-row">
-                            <span>背景の色</span>
-                            <input type="color" className="ar-color-input" value={captionPanelColor} onChange={(e) => setCaptionPanelColor(e.target.value)} aria-label="解説の文字背景の色" />
+                            <span>{t("studio.caption.bgColor")}</span>
+                            <input type="color" className="ar-color-input" value={captionPanelColor} onChange={(e) => setCaptionPanelColor(e.target.value)} aria-label={t("studio.caption.bgColorAria")} />
                           </div>
                           <div className="ar-fs-slider-row">
-                            <span>背景の濃さ</span>
+                            <span>{t("studio.caption.bgOpacity")}</span>
                             <span className="ar-fs-val">{Math.round(captionPanelOpacity * 100)}%</span>
                           </div>
-                          <input type="range" className="ar-fs-slider" min={0.1} max={1} step={0.05} value={captionPanelOpacity} onChange={(e) => setCaptionPanelOpacity(Number(e.target.value))} aria-label="解説の文字背景の濃さ" />
+                          <FsSlider min={0.1} max={1} step={0.05} value={captionPanelOpacity} onChange={setCaptionPanelOpacity} ariaLabel={t("studio.caption.bgOpacityAria")} />
                         </>
                       )}
                       <div className="ar-fs-row">
-                        <span>文字の色</span>
-                        <input type="color" className="ar-color-input" value={captionColor} onChange={(e) => setCaptionColor(e.target.value)} aria-label="解説の文字の色" />
+                        <span>{t("studio.caption.textColor")}</span>
+                        <input type="color" className="ar-color-input" value={captionColor} onChange={(e) => setCaptionColor(e.target.value)} aria-label={t("studio.caption.textColorAria")} />
                       </div>
                       <label className="switch-row">
-                        <span>文字の影</span>
+                        <span>{t("studio.caption.textShadow")}</span>
                         <input type="checkbox" className="switch" checked={captionShadow} onChange={(e) => setCaptionShadow(e.target.checked)} />
                       </label>
                       <div className="ar-fs-slider-row">
-                        <span>見出しサイズ</span>
+                        <span>{t("studio.caption.headingSize")}</span>
                         <span className="ar-fs-val">{Math.round(captionTitleScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={captionTitleScale} onChange={(e) => setCaptionTitleScale(Number(e.target.value))} aria-label="見出しサイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={captionTitleScale} onChange={setCaptionTitleScale} ariaLabel={t("studio.caption.headingSize")} />
                       <div className="ar-fs-slider-row">
-                        <span>本文サイズ</span>
+                        <span>{t("studio.caption.bodySize")}</span>
                         <span className="ar-fs-val">{Math.round(captionBodyScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={1.6} step={0.05} value={captionBodyScale} onChange={(e) => setCaptionBodyScale(Number(e.target.value))} aria-label="本文サイズ" />
-                      {fontRow("captionTitle", "見出しフォント")}
-                      {fontRow("captionBody", "本文フォント")}
+                      <FsSlider min={0.7} max={1.6} step={0.05} value={captionBodyScale} onChange={setCaptionBodyScale} ariaLabel={t("studio.caption.bodySize")} />
+                      {fontRow("captionTitle", t("studio.caption.headingFont"))}
+                      {fontRow("captionBody", t("studio.caption.bodyFont"))}
                       <div className="ar-fs-slider-row">
-                        <span>字間</span>
+                        <span>{t("studio.caption.letterSpace")}</span>
                         <span className="ar-fs-val">{captionLetterSpace.toFixed(2)}em</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.3} step={0.01} value={captionLetterSpace} onChange={(e) => setCaptionLetterSpace(Number(e.target.value))} aria-label="解説の字間" />
+                      <FsSlider min={0} max={0.3} step={0.01} value={captionLetterSpace} onChange={setCaptionLetterSpace} ariaLabel={t("studio.caption.letterSpaceAria")} />
                       <div className="ar-fs-slider-row">
-                        <span>行間</span>
+                        <span>{t("studio.caption.lineHeight")}</span>
                         <span className="ar-fs-val">{Math.round(captionLineHeight * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.6} max={2.0} step={0.05} value={captionLineHeight} onChange={(e) => setCaptionLineHeight(Number(e.target.value))} aria-label="解説の行間" />
+                      <FsSlider min={0.6} max={2.0} step={0.05} value={captionLineHeight} onChange={setCaptionLineHeight} ariaLabel={t("studio.caption.lineHeightAria")} />
                       {/* タグ */}
                       <label className="switch-row">
-                        <span>タグに標高</span>
+                        <span>{t("studio.caption.tagElevation")}</span>
                         <input type="checkbox" className="switch" checked={capShowElev} onChange={(e) => setCapShowElev(e.target.checked)} />
                       </label>
                       <label className="switch-row">
-                        <span>タグに場所</span>
+                        <span>{t("studio.caption.tagLocation")}</span>
                         <input type="checkbox" className="switch" checked={capShowLoc} onChange={(e) => setCapShowLoc(e.target.checked)} />
                       </label>
                       {capItemTags.length > 0 && (
@@ -2589,20 +2944,20 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                               addCapTag();
                             }
                           }}
-                          placeholder="タグを追加（例: 百名山）"
-                          aria-label="タグを追加"
+                          placeholder={t("studio.caption.tagAddPlaceholder")}
+                          aria-label={t("studio.caption.tagAddAria")}
                           autoComplete="off"
                         />
-                        <button type="button" onClick={addCapTag} disabled={!newTag.trim()}>追加</button>
+                        <button type="button" onClick={addCapTag} disabled={!newTag.trim()}>{t("studio.caption.tagAdd")}</button>
                       </div>
                       <div className="ar-fs-row">
-                        <span>タグの色</span>
-                        <input type="color" className="ar-color-input" value={tagColor} onChange={(e) => setTagColor(e.target.value)} aria-label="タグの色" />
+                        <span>{t("studio.caption.tagColor")}</span>
+                        <input type="color" className="ar-color-input" value={tagColor} onChange={(e) => setTagColor(e.target.value)} aria-label={t("studio.caption.tagColorAria")} />
                       </div>
                       <div className="ar-fs-row">
-                        <span>色の使い方</span>
-                        <div className="seg" role="group" aria-label="タグの色の使い方">
-                          {([["背景", "bg"], ["文字", "text"]] as [string, "bg" | "text"][]).map(([lab, v]) => (
+                        <span>{t("studio.caption.tagUsage")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.caption.tagUsageAria")}>
+                          {([[t("studio.caption.tagUsageBg"), "bg"], [t("studio.caption.tagUsageText"), "text"]] as [string, "bg" | "text"][]).map(([lab, v]) => (
                             <button key={v} className={tagColorTarget === v ? "is-active" : ""} onClick={() => setTagColorTarget(v)}>{lab}</button>
                           ))}
                         </div>
@@ -2618,44 +2973,44 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   {dataEdit}
                   {subjectRow}
                   <label className="switch-row">
-                    <span>中央に大きな山名</span>
+                    <span>{t("studio.title.enable")}</span>
                     <input type="checkbox" className="switch" checked={titleOn} onChange={(e) => setTitleOn(e.target.checked)} />
                   </label>
                   {titleOn && (
                     <>
                       <div className="ar-fs-row">
-                        <span>言語</span>
-                        <div className="seg" role="group" aria-label="タイトルの言語">
-                          {([["英語", "en"], ["日本語", "ja"]] as [string, "en" | "ja"][]).map(([lab, v]) => (
+                        <span>{t("studio.title.language")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.title.languageAria")}>
+                          {([[t("studio.common.langEn"), "en"], [t("studio.common.langJa"), "ja"]] as [string, "en" | "ja"][]).map(([lab, v]) => (
                             <button key={v} className={titleLang === v ? "is-active" : ""} onClick={() => setTitleLang(v)}>{lab}</button>
                           ))}
                         </div>
                       </div>
                       <label className="switch-row">
-                        <span>小見出し（場所）</span>
+                        <span>{t("studio.title.showSub")}</span>
                         <input type="checkbox" className="switch" checked={titleShowOver} onChange={(e) => setTitleShowOver(e.target.checked)} />
                       </label>
                       <label className="switch-row">
-                        <span>標高</span>
+                        <span>{t("studio.title.showElevation")}</span>
                         <input type="checkbox" className="switch" checked={titleShowNum} onChange={(e) => setTitleShowNum(e.target.checked)} />
                       </label>
                       <div className="ar-fs-slider-row">
-                        <span>サイズ</span>
+                        <span>{t("studio.title.size")}</span>
                         <span className="ar-fs-val">{Math.round(titleScale * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.7} max={2.0} step={0.05} value={titleScale} onChange={(e) => setTitleScale(Number(e.target.value))} aria-label="タイトルサイズ" />
+                      <FsSlider min={0.7} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel={t("studio.title.sizeAria")} />
                       <div className="ar-fs-row">
-                        <span>文字の色</span>
-                        <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label="タイトルの色" />
+                        <span>{t("studio.title.textColor")}</span>
+                        <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label={t("studio.title.textColorAria")} />
                       </div>
                       <label className="switch-row">
-                        <span>文字の影</span>
+                        <span>{t("studio.title.textShadow")}</span>
                         <input type="checkbox" className="switch" checked={titleShadow} onChange={(e) => setTitleShadow(e.target.checked)} />
                       </label>
                       <div className="ar-fs-row">
-                        <span>フォント</span>
+                        <span>{t("studio.title.font")}</span>
                         <div className="ar-font-sel">
-                          <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label="タイトルフォント">
+                          <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label={t("studio.title.fontAria")}>
                             {FONT_PAIR_IDS.map((id) => (
                               <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
                             ))}
@@ -2663,15 +3018,15 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         </div>
                       </div>
                       <div className="ar-fs-slider-row">
-                        <span>字間</span>
+                        <span>{t("studio.title.letterSpace")}</span>
                         <span className="ar-fs-val">{Math.round(titleLetterSpace * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={3} step={0.05} value={titleLetterSpace} onChange={(e) => setTitleLetterSpace(Number(e.target.value))} aria-label="タイトルの字間" />
+                      <FsSlider min={0} max={3} step={0.05} value={titleLetterSpace} onChange={setTitleLetterSpace} ariaLabel={t("studio.title.letterSpaceAria")} />
                       <div className="ar-fs-slider-row">
-                        <span>行間（3段の間隔）</span>
+                        <span>{t("studio.title.lineHeight")}</span>
                         <span className="ar-fs-val">{Math.round(titleLineHeight * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={(e) => setTitleLineHeight(Number(e.target.value))} aria-label="タイトルの行間" />
+                      <FsSlider min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={setTitleLineHeight} ariaLabel={t("studio.title.lineHeightAria")} />
                     </>
                   )}
                 </section>
@@ -2681,43 +3036,170 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 {panelTab === "frame" && (
                 <>
                 <section className="studio-sec">
-                  <h3>余白・ふち</h3>
-                  {(["t", "b", "l", "r"] as const).map((d) => (
+                  <h3>{t("studio.frame.marginHeading")}</h3>
+                  {(["t", "b", "l", "r"] as const).map((d) => {
+                    const dirLabel = t(d === "t" ? "studio.frame.dirTop" : d === "b" ? "studio.frame.dirBottom" : d === "l" ? "studio.frame.dirLeft" : "studio.frame.dirRight");
+                    return (
                     <div key={`m${d}`}>
                       <div className="ar-fs-slider-row">
-                        <span>余白 {d === "t" ? "上" : d === "b" ? "下" : d === "l" ? "左" : "右"}</span>
+                        <span>{t("studio.frame.marginDir", { dir: dirLabel })}</span>
                         <span className="ar-fs-val">{Math.round(frameMargin[d] * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(e) => setFrameMargin((p) => ({ ...p, [d]: Number(e.target.value) }))} aria-label={`余白${d}`} />
+                      <FsSlider min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(v) => setFrameMargin((p) => ({ ...p, [d]: v }))} ariaLabel={t("studio.frame.marginDir", { dir: dirLabel })} />
                     </div>
-                  ))}
+                    );
+                  })}
                   <div className="ar-fs-row">
-                    <span>余白の色</span>
-                    <input type="color" className="ar-color-input" value={frameMarginColor} onChange={(e) => setFrameMarginColor(e.target.value)} aria-label="余白の色" disabled={frameMarginAuto} />
+                    <span>{t("studio.frame.marginColor")}</span>
+                    <input type="color" className="ar-color-input" value={frameMarginColor} onChange={(e) => setFrameMarginColor(e.target.value)} aria-label={t("studio.frame.marginColor")} disabled={frameMarginAuto} />
                   </div>
                   <label className="switch-row">
-                    <span>余白の色を写真に合わせる</span>
+                    <span>{t("studio.frame.marginAuto")}</span>
                     <input type="checkbox" className="switch" checked={frameMarginAuto} onChange={(e) => setFrameMarginAuto(e.target.checked)} />
                   </label>
                   <div className="ar-fs-slider-row">
-                    <span>ふち（ぼかし）</span>
+                    <span>{t("studio.frame.fade")}</span>
                     <span className="ar-fs-val">{Math.round(frameFade * 100)}%</span>
                   </div>
-                  <input type="range" className="ar-fs-slider" min={0} max={0.5} step={0.01} value={frameFade} onChange={(e) => setFrameFade(Number(e.target.value))} aria-label="ふち" />
+                  <FsSlider min={0} max={0.5} step={0.01} value={frameFade} onChange={setFrameFade} ariaLabel={t("studio.frame.fadeAria")} />
                 </section>
                 <section className="studio-sec">
-                  <h3>切り抜き</h3>
-                  {(["l", "t", "r", "b"] as const).map((d) => (
+                  <h3>{t("studio.frame.cropHeading")}</h3>
+                  {(["l", "t", "r", "b"] as const).map((d) => {
+                    const dirLabel = t(d === "t" ? "studio.frame.dirTop" : d === "b" ? "studio.frame.dirBottom" : d === "l" ? "studio.frame.dirLeft" : "studio.frame.dirRight");
+                    return (
                     <div key={`c${d}`}>
                       <div className="ar-fs-slider-row">
-                        <span>切り抜き {d === "t" ? "上" : d === "b" ? "下" : d === "l" ? "左" : "右"}</span>
+                        <span>{t("studio.frame.cropDir", { dir: dirLabel })}</span>
                         <span className="ar-fs-val">{Math.round(cropInset[d] * 100)}%</span>
                       </div>
-                      <input type="range" className="ar-fs-slider" min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(e) => setCropInset((p) => ({ ...p, [d]: Number(e.target.value) }))} aria-label={`切り抜き${d}`} />
+                      <FsSlider min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(v) => setCropInset((p) => ({ ...p, [d]: v }))} ariaLabel={t("studio.frame.cropDir", { dir: dirLabel })} />
                     </div>
-                  ))}
+                    );
+                  })}
                 </section>
                 </>
+                )}
+
+                {/* 記録（下の帯: 撮影情報 or 自由入力の山行記録） */}
+                {panelTab === "note" && (
+                <section className="studio-sec">
+                  <h3>{t("studio.note.heading")}</h3>
+                  <label className="switch-row">
+                    <span>{t("studio.note.enable")}</span>
+                    <input type="checkbox" className="switch" checked={exifOn} onChange={(e) => toggleExif(e.target.checked)} />
+                  </label>
+                  {exifOn && (
+                    <>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.note.frameColor")}</span>
+                        <input type="color" className="ar-color-input" value={noteBg} onChange={(e) => setNoteBg(e.target.value)} aria-label={t("studio.note.frameColorAria")} />
+                      </div>
+                      <label className="switch-row">
+                        <span>文字の色をフレームに合わせる</span>
+                        <input type="checkbox" className="switch" checked={noteInkAuto} onChange={(e) => setNoteInkAuto(e.target.checked)} />
+                      </label>
+                      {!noteInkAuto && (
+                        <div className="ar-fs-row">
+                          <span>文字の色</span>
+                          <input type="color" className="ar-color-input" value={noteInk} onChange={(e) => setNoteInk(e.target.value)} aria-label="記録の文字の色" />
+                        </div>
+                      )}
+                      <div className="ar-fs-row">
+                        <span>フォント</span>
+                        <div className="ar-font-sel">
+                          <select value={noteFont} onChange={(e) => setNoteFont(e.target.value as FontPairId)} aria-label="記録のフォント">
+                            {FONT_PAIR_IDS.map((id) => (
+                              <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      {/* 下の帯の高さは「上の縁より何%広げるか」で指定。+0% = 上下の縁が同じ幅。 */}
+                      <div className="ar-fs-slider-row">
+                        <span>{t("studio.note.bandHeight")}</span>
+                        <span className="ar-fs-val">+{Math.round(Math.max(0, noteBand - NOTE_EDGE) * 100)}%</span>
+                      </div>
+                      <FsSlider
+                        min={0}
+                        max={0.35}
+                        step={0.005}
+                        value={Math.max(0, noteBand - NOTE_EDGE)}
+                        onChange={(v) => setNoteBand(NOTE_EDGE + v)}
+                        ariaLabel={t("studio.note.bandHeightAria")}
+                      />
+                      <div className="ar-fs-row">
+                        <span>{t("studio.note.content")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.note.contentAria")}>
+                          {([[t("studio.note.contentCamera"), "camera"], [t("studio.note.contentFree"), "free"]] as [string, "camera" | "free"][]).map(([lab, v]) => (
+                            <button key={v} className={noteMode === v ? "is-active" : ""} onClick={() => setNoteMode(v)}>{lab}</button>
+                          ))}
+                        </div>
+                      </div>
+                      {noteMode === "camera" ? (
+                        <div className="studio-data-edit">
+                          <span className="studio-data-head">{t("studio.note.exifHeading")}</span>
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifModel}
+                            onChange={(e) => setExifModel(e.target.value)}
+                            placeholder={t("studio.note.exifModelPlaceholder")}
+                            aria-label={t("studio.note.exifModelAria")}
+                            autoComplete="off"
+                          />
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifMaker}
+                            onChange={(e) => setExifMaker(e.target.value)}
+                            placeholder={t("studio.note.exifMakerPlaceholder")}
+                            aria-label={t("studio.note.exifMakerAria")}
+                            autoComplete="off"
+                          />
+                          <input
+                            type="text"
+                            className="studio-data-input"
+                            value={exifSpec}
+                            onChange={(e) => setExifSpec(e.target.value)}
+                            placeholder={t("studio.note.exifSpecPlaceholder")}
+                            aria-label={t("studio.note.exifSpecAria")}
+                            autoComplete="off"
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div className="studio-data-edit">
+                            <span className="studio-data-head">{t("studio.note.freeHeading")}</span>
+                            {(
+                              [
+                                [t("studio.note.line1Placeholder"), t("studio.note.line1Aria"), noteLine1, setNoteLine1, noteL1, setNoteL1],
+                                [t("studio.note.line2Placeholder"), t("studio.note.line2Aria"), noteLine2, setNoteLine2, noteL2, setNoteL2],
+                              ] as [string, string, string, (v: string) => void, NoteLineStyle, (v: NoteLineStyle) => void][]
+                            ).map(([ph, aria, text, setText, st, setSt]) => (
+                              <div key={aria}>
+                                <input
+                                  type="text"
+                                  className="studio-data-input"
+                                  value={text}
+                                  onChange={(e) => setText(e.target.value)}
+                                  placeholder={ph}
+                                  aria-label={aria}
+                                  autoComplete="off"
+                                />
+                                <div className="seg ar-note-line-style" role="group" aria-label={t("studio.note.lineStyleAria", { label: aria })}>
+                                  <button className={st.bold ? "is-active" : ""} onClick={() => setSt({ ...st, bold: !st.bold })}>{t("studio.note.bold")}</button>
+                                  <button className={st.italic ? "is-active" : ""} onClick={() => setSt({ ...st, italic: !st.italic })}>{t("studio.note.italic")}</button>
+                                  <button className={st.dim ? "is-active" : ""} onClick={() => setSt({ ...st, dim: !st.dim })}>{t("studio.note.dim")}</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </section>
                 )}
               </div>
               </>
@@ -2725,21 +3207,16 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
 
             {/* 書き出し（常時表示の下部バー） */}
             <div className="studio-panel-foot">
-              <button className="ar-btn-sub" onClick={() => setExportView("template")} title="テーマ選択へ戻る（編集内容は保持されます）">
+              <button className="ar-btn-sub" onClick={() => setExportView("template")} title={t("studio.export.themeTabTitle")}>
                 <IconChevron dir="left" size={14} />
-                テーマ
+                {t("studio.export.themeTab")}
               </button>
-              <button
-                className="ar-btn-sub"
-                onClick={exitToBoard}
-                disabled={exiting}
-                title="この時点の見た目を保存して写真一覧へ戻る"
-              >
-                {exiting ? "保存中…" : "一覧へ"}
+              <button className="ar-btn-sub" onClick={exitToBoard} title={t("studio.export.toBoardTitle")}>
+                {t("studio.common.toBoard")}
               </button>
               <button className="ar-btn-main" onClick={openExportPreview} disabled={previewBaking}>
                 <IconDownload size={15} />
-                {previewBaking ? "生成中…" : "書き出す"}
+                {previewBaking ? t("studio.export.generating") : t("studio.export.exportCta")}
               </button>
             </div>
           </div>

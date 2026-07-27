@@ -44,24 +44,34 @@ export const dataUrlToBlob = (dataUrl: string): Blob | null => {
   }
 };
 
+// 使い終わった Canvas のバッキングメモリを即時解放する。iOS Safari は Canvas の
+// 解放が遅く、書き出しを繰り返すとメモリ上限に達しやすいため、0×0 にして返却を促す。
+export const releaseCanvas = (canvas: HTMLCanvasElement): void => {
+  canvas.width = 0;
+  canvas.height = 0;
+};
+
 // canvas → JPEG Blob。toBlob が null を返す端末では toDataURL 経由を試し、
 // それも空（"data:," 等）なら null（＝この解像度では書き出せない）を返す。
+// 変換後の canvas は用済みとして解放する（呼び出し側で再利用しないこと）。
 export const canvasToJpegBlob = async (canvas: HTMLCanvasElement, quality = 0.92): Promise<Blob | null> => {
-  const blob = await new Promise<Blob | null>((resolve) => {
-    try {
-      canvas.toBlob(resolve, "image/jpeg", quality);
-    } catch {
-      resolve(null);
-    }
-  });
-  if (blob && blob.size > 0) return blob;
   try {
+    const blob = await new Promise<Blob | null>((resolve) => {
+      try {
+        canvas.toBlob(resolve, "image/jpeg", quality);
+      } catch {
+        resolve(null);
+      }
+    });
+    if (blob && blob.size > 0) return blob;
     const dataUrl = canvas.toDataURL("image/jpeg", quality);
     if (!dataUrl.startsWith("data:image/")) return null; // 上限超過時は "data:," が返る
     const b = dataUrlToBlob(dataUrl);
     return b && b.size > 0 ? b : null;
   } catch {
     return null;
+  } finally {
+    releaseCanvas(canvas);
   }
 };
 
