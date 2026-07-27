@@ -31,12 +31,10 @@ jobs:
 
       - run: npm ci
 
-      # 開発用はプロジェクトページ (https://takanarishimbo.github.io/frame-dev/) で公開する。
+      # カスタムドメイン (https://yamaframe.com/) はルート直下で公開する。
       - name: Build
         env:
-          VITE_BASE: /frame-dev/
-          # 開発チーム用サイトでは未公開機能（記録タブ）も表示する
-          VITE_FEATURE_NOTE: "1"
+          VITE_BASE: /
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
