@@ -461,7 +461,13 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
 // ふち）、「記録」(note) は下の帯に載せる情報（撮影情報や山行記録）。どちらも余白を使うが
 // 前者は「形の自由度」、後者は「内容」を編集する。
 type PanelTab = "label" | "caption" | "title" | "frame" | "note";
-const PANEL_TABS: PanelTab[] = ["label", "caption", "title", "frame", "note"];
+// 「記録」はまだ本番未公開のフィーチャーフラグ付き。コード自体は本番にも入るが、
+// ビルド時に VITE_FEATURE_NOTE=1 を渡したとき（と開発サーバー）だけタブを見せる。
+// OFF のとき exifOn は常に false のままなので、書き出し・保存への影響もない。
+const NOTE_ENABLED = import.meta.env.VITE_FEATURE_NOTE === "1" || import.meta.env.DEV;
+const PANEL_TABS: PanelTab[] = NOTE_ENABLED
+  ? ["label", "caption", "title", "frame", "note"]
+  : ["label", "caption", "title", "frame"];
 // テンプレが実際に使う機能からタブを導出する（シンプルモードの表示対象）。
 const templateTabs = (s: ExportStyle): PanelTab[] => {
   const tabs: PanelTab[] = [];
