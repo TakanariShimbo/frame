@@ -1,0 +1,33 @@
+{
+  "year": 2022,
+  "title": "挑戦の先に",
+  "description": "YAMA FRAME AWARDは、日本の山岳の美しさと、そこにある物語を写真を通して未来へつなぐアワードです。",
+  "concept": ["一歩の先に、", "見たことのない景色がある。"],
+  "outro": "受賞作品は今後も順次ご紹介していきます。",
+  "isPublished": true,
+  "seo": {
+    "title": "2022 挑戦の先に | YAMA FRAME AWARD",
+    "description": "2022年度YAMA FRAME AWARD「挑戦の先に」の受賞作品をご紹介します。",
+    "ogImage": "/images/photo-contests/2022/grand-prix.jpg"
+  },
+  "awards": [
+    {
+      "id": "grand-prix",
+      "order": 1,
+      "number": "01",
+      "prizeName": "GRAND PRIX",
+      "title": "飯豊遠望",
+      "copy": "長い道のりの果てに、山はその姿を見せてくれた。",
+      "description": "深い山域を長く歩いた末にたどり着いた稜線からの眺望を捉えた作品です。挑戦の先にしか見られない景色が、そこにあります。",
+      "image": {
+        "src": "/images/photo-contests/2022/grand-prix.jpg",
+        "alt": "長い稜線の果てに広がる山並み",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Kazuya Endo",
+        "x": { "label": "@kazuya_endo", "url": "https://x.com/example" }
+      }
+    }
+  ]
+}

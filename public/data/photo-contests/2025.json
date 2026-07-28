@@ -1,0 +1,106 @@
+{
+  "year": 2025,
+  "title": "雲海を越えて",
+  "description": "YAMA FRAME AWARDは、日本の山岳の美しさと、そこにある物語を写真を通して未来へつなぐアワードです。",
+  "concept": ["雲の海を越えて、", "光の岸辺へ。"],
+  "outro": "受賞作品は今後も順次ご紹介していきます。",
+  "isPublished": true,
+  "seo": {
+    "title": "2025 雲海を越えて | YAMA FRAME AWARD",
+    "description": "2025年度YAMA FRAME AWARD「雲海を越えて」の受賞作品をご紹介します。",
+    "ogImage": "/images/photo-contests/2025/grand-prix.jpg"
+  },
+  "awards": [
+    {
+      "id": "grand-prix",
+      "order": 1,
+      "number": "01",
+      "prizeName": "GRAND PRIX",
+      "title": "光の高原",
+      "copy": "雲の海が引いたあと、高原は光で満たされる。",
+      "description": "夜明けとともに雲海が晴れていく高原で、朝の光が草原を染め上げる瞬間を捉えた作品です。広がりのある構図が、山上の開放感を伝えます。",
+      "image": {
+        "src": "/images/photo-contests/2025/grand-prix.jpg",
+        "alt": "朝の光に照らされる高原と山並み",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Miyu Kobayashi",
+        "x": { "label": "@miyu_k_photo", "url": "https://x.com/example" },
+        "instagram": { "label": "miyu.kobayashi", "url": "https://www.instagram.com/example/" }
+      }
+    },
+    {
+      "id": "award-02",
+      "order": 2,
+      "number": "02",
+      "prizeName": "EXCELLENCE AWARD",
+      "title": "火の山の朝",
+      "copy": "煙をまとう山が、朝焼けに浮かぶ。",
+      "description": "噴煙をたなびかせる山を、雲海越しに望んだ作品です。荒々しさと穏やかさが同居する、山の二面性を写し取っています。",
+      "image": {
+        "src": "/images/photo-contests/2025/award-02.jpg",
+        "alt": "雲海に浮かぶ噴煙をあげる山",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Kenta Fujii",
+        "x": { "label": "@kenta_fujii", "url": "https://x.com/example" }
+      }
+    },
+    {
+      "id": "award-03",
+      "order": 3,
+      "number": "03",
+      "prizeName": "EXCELLENCE AWARD",
+      "title": "槍の彼方",
+      "copy": "尖峰の先に、雲の海が広がっていた。",
+      "description": "縦走路の途中、雲海の上に突き出た尖峰を望む一枚。手前の稜線と彼方の峰が織りなす奥行きが印象的な作品です。",
+      "image": {
+        "src": "/images/photo-contests/2025/award-03.jpg",
+        "alt": "雲海の上に突き出た尖峰と稜線",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Aoi Tanaka",
+        "instagram": { "label": "aoi_tanaka_ph", "url": "https://www.instagram.com/example/" }
+      }
+    },
+    {
+      "id": "award-04",
+      "order": 4,
+      "number": "04",
+      "prizeName": "SPECIAL AWARD",
+      "title": "花崗の砦",
+      "copy": "白い岩稜が、雲を従えて立つ。",
+      "description": "花崗岩の白い稜線と流れる雲を捉えた作品です。岩の質感と空の柔らかさの対比が美しい一枚です。",
+      "image": {
+        "src": "/images/photo-contests/2025/award-04.jpg",
+        "alt": "白い花崗岩の稜線と流れる雲",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Sota Watanabe"
+      }
+    },
+    {
+      "id": "award-05",
+      "order": 5,
+      "number": "05",
+      "prizeName": "SPECIAL AWARD",
+      "title": "岩峰の目覚め",
+      "copy": "朝もやの中、岩の峰がゆっくりと姿を現す。",
+      "description": "朝もやが晴れていく谷から見上げた岩峰。刻々と変わる光の中で、山が目覚めていく時間を写した作品です。",
+      "image": {
+        "src": "/images/photo-contests/2025/award-05.jpg",
+        "alt": "朝もやの中に姿を現す岩峰",
+        "position": "center 35%"
+      },
+      "winner": {
+        "name": "Yui Ishikawa",
+        "x": { "label": "@yui_ishikawa", "url": "https://x.com/example" },
+        "instagram": { "label": "yui.ishikawa.photo", "url": "https://www.instagram.com/example/" }
+      }
+    }
+  ]
+}

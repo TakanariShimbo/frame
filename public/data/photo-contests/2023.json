@@ -1,0 +1,70 @@
+{
+  "year": 2023,
+  "title": "峰の記憶",
+  "description": "YAMA FRAME AWARDは、日本の山岳の美しさと、そこにある物語を写真を通して未来へつなぐアワードです。",
+  "concept": ["ひとつの峰に、", "幾千の記憶が眠る。"],
+  "outro": "受賞作品は今後も順次ご紹介していきます。",
+  "isPublished": true,
+  "seo": {
+    "title": "2023 峰の記憶 | YAMA FRAME AWARD",
+    "description": "2023年度YAMA FRAME AWARD「峰の記憶」の受賞作品をご紹介します。",
+    "ogImage": "/images/photo-contests/2023/grand-prix.jpg"
+  },
+  "awards": [
+    {
+      "id": "grand-prix",
+      "order": 1,
+      "number": "01",
+      "prizeName": "GRAND PRIX",
+      "title": "笠の稜線",
+      "copy": "遠くから眺めた記憶が、いつか自分の足跡になる。",
+      "description": "特徴的な笠形の山容を、朝の斜光の中で捉えた作品です。誰もが一度は見上げたことのある峰の、記憶の中の姿を写しています。",
+      "image": {
+        "src": "/images/photo-contests/2023/grand-prix.jpg",
+        "alt": "朝の光に照らされた笠形の山",
+        "position": "center 40%"
+      },
+      "winner": {
+        "name": "Shun Matsumoto",
+        "x": { "label": "@shun_matsumoto", "url": "https://x.com/example" },
+        "instagram": { "label": "shun.matsumoto", "url": "https://www.instagram.com/example/" }
+      }
+    },
+    {
+      "id": "award-02",
+      "order": 2,
+      "number": "02",
+      "prizeName": "EXCELLENCE AWARD",
+      "title": "赤岳残雪",
+      "copy": "雪形が消えるころ、また会いに行く。",
+      "description": "残雪期の岩峰を正面から捉えた作品です。雪と岩のコントラストが、季節の移ろいを静かに語ります。",
+      "image": {
+        "src": "/images/photo-contests/2023/award-02.jpg",
+        "alt": "残雪をまとった岩峰",
+        "position": "center 30%"
+      },
+      "winner": {
+        "name": "Emi Nishida",
+        "x": { "label": "@emi_nishida", "url": "https://x.com/example" }
+      }
+    },
+    {
+      "id": "award-03",
+      "order": 3,
+      "number": "03",
+      "prizeName": "EXCELLENCE AWARD",
+      "title": "谷川の朝",
+      "copy": "幾度も通った谷は、朝ごとに違う顔をみせる。",
+      "description": "雲の切れ間から朝日が差し込む谷筋を捉えた作品です。長年通い続けた撮影地への愛着が感じられる一枚です。",
+      "image": {
+        "src": "/images/photo-contests/2023/award-03.jpg",
+        "alt": "朝日が差し込む山の谷筋",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Daichi Mori",
+        "instagram": { "label": "daichi_mori_ph", "url": "https://www.instagram.com/example/" }
+      }
+    }
+  ]
+}

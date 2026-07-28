@@ -364,3 +364,23 @@ export function IconEyeOff({ size = 16, className }: Props) {
     </svg>
   );
 }
+
+/** X（旧Twitter）。フォトコンテスト受賞者のSNSリンク用（塗りロゴ）。 */
+export function IconX({ size = 16, className }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M17.7 3 H20.6 L14.2 10.4 L21.8 21 H15.9 L11.2 14.7 L5.9 21 H3 L9.9 13.1 L2.6 3 H8.7 L12.9 8.7 Z M16.7 19.2 H18.3 L7.8 4.7 H6.1 Z" />
+    </svg>
+  );
+}
+
+/** Instagram。フォトコンテスト受賞者のSNSリンク用。 */
+export function IconInstagram({ size = 16, className }: Props) {
+  return (
+    <svg {...svgProps(size, className)} strokeWidth={1.8}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4.6" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

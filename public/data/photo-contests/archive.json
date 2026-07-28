@@ -1,0 +1,84 @@
+{
+  "heading": {
+    "eyebrow": "ARCHIVE",
+    "title": "PHOTO CONTEST ARCHIVE",
+    "description": [
+      "YAMA FRAME AWARDは、山岳写真の表現と文化を讃え、",
+      "次世代へ継承していくことを目的としたフォトコンテストです。",
+      "ここでは、これまでの開催履歴と受賞作品をご覧いただけます。"
+    ]
+  },
+  "seo": {
+    "title": "PHOTO CONTEST ARCHIVE | YAMA FRAME AWARD",
+    "description": "YAMA FRAME AWARDのフォトコンテスト開催履歴と受賞作品のアーカイブです。",
+    "ogImage": "/images/photo-contests/2026/cover.jpg"
+  },
+  "contests": [
+    {
+      "year": 2026,
+      "title": "黎明の稜線",
+      "description": "夜明けの光が山々を染める瞬間。静寂と躍動が交差する稜線の美しさを、あなたの視点で表現してください。",
+      "coverImage": {
+        "src": "/images/photo-contests/2026/cover.jpg",
+        "mobileSrc": "/images/photo-contests/2026/cover-mobile.jpg",
+        "alt": "朝日に照らされた雪山の稜線",
+        "position": "center 45%"
+      },
+      "isLatest": true,
+      "isPublished": true,
+      "order": 1
+    },
+    {
+      "year": 2025,
+      "title": "雲海を越えて",
+      "description": "雲海の彼方に広がる世界。光と影が織りなすドラマを、自由な表現で切り取ってください。",
+      "coverImage": {
+        "src": "/images/photo-contests/2025/cover.jpg",
+        "alt": "朝日が昇る雲海と山並み",
+        "position": "center"
+      },
+      "isLatest": false,
+      "isPublished": true,
+      "order": 2
+    },
+    {
+      "year": 2024,
+      "title": "静寂の森",
+      "description": "深い森の静けさ、木漏れ日、湿り気を帯びた空気。山の中の静謐を写し出してください。",
+      "coverImage": {
+        "src": "/images/photo-contests/2024/cover.jpg",
+        "alt": "木漏れ日が差し込む深い森",
+        "position": "center"
+      },
+      "isLatest": false,
+      "isPublished": true,
+      "order": 3
+    },
+    {
+      "year": 2023,
+      "title": "峰の記憶",
+      "description": "人の記憶に残る山の姿。印象的な山岳風景を、あなたの感性で表現してください。",
+      "coverImage": {
+        "src": "/images/photo-contests/2023/cover.jpg",
+        "alt": "夕日に染まる岩峰",
+        "position": "center 40%"
+      },
+      "isLatest": false,
+      "isPublished": true,
+      "order": 4
+    },
+    {
+      "year": 2022,
+      "title": "挑戦の先に",
+      "description": "一歩を踏み出す勇気、旅の中で出会う景色。山が教えてくれるかけがえのない瞬間を。",
+      "coverImage": {
+        "src": "/images/photo-contests/2022/cover.jpg",
+        "alt": "山頂に立つ登山者のシルエット",
+        "position": "center 30%"
+      },
+      "isLatest": false,
+      "isPublished": true,
+      "order": 5
+    }
+  ]
+}

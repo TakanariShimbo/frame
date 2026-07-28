@@ -1,0 +1,52 @@
+{
+  "year": 2024,
+  "title": "静寂の森",
+  "description": "YAMA FRAME AWARDは、日本の山岳の美しさと、そこにある物語を写真を通して未来へつなぐアワードです。",
+  "concept": ["森の静けさは、", "山の呼吸である。"],
+  "outro": "受賞作品は今後も順次ご紹介していきます。",
+  "isPublished": true,
+  "seo": {
+    "title": "2024 静寂の森 | YAMA FRAME AWARD",
+    "description": "2024年度YAMA FRAME AWARD「静寂の森」の受賞作品をご紹介します。",
+    "ogImage": "/images/photo-contests/2024/grand-prix.jpg"
+  },
+  "awards": [
+    {
+      "id": "grand-prix",
+      "order": 1,
+      "number": "01",
+      "prizeName": "GRAND PRIX",
+      "title": "唐松の径",
+      "copy": "霧の径を抜けると、そこは金色の森だった。",
+      "description": "霧に包まれた唐松林の中、わずかに差し込む光が径を照らす瞬間を捉えた作品です。縦の構図が森の深さを際立たせています。",
+      "image": {
+        "src": "/images/photo-contests/2024/grand-prix.jpg",
+        "alt": "霧に包まれた唐松林の小径",
+        "position": "center 40%"
+      },
+      "winner": {
+        "name": "Naoki Hayashi",
+        "x": { "label": "@naoki_hayashi", "url": "https://x.com/example" },
+        "instagram": { "label": "naoki.hayashi.ph", "url": "https://www.instagram.com/example/" }
+      }
+    },
+    {
+      "id": "award-02",
+      "order": 2,
+      "number": "02",
+      "prizeName": "EXCELLENCE AWARD",
+      "title": "山巓の残照",
+      "copy": "日が沈んでも、山はまだ光を憶えている。",
+      "description": "日没後のわずかな時間、稜線に残る光を写した作品です。静まり返る山の気配が伝わってきます。",
+      "image": {
+        "src": "/images/photo-contests/2024/award-02.jpg",
+        "alt": "残照に照らされる山の稜線",
+        "position": "center"
+      },
+      "winner": {
+        "name": "Rina Okada",
+        "instagram": { "label": "rina_okada_photo", "url": "https://www.instagram.com/example/" }
+      }
+    }
+  ]
+}
