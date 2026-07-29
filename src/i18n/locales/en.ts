@@ -83,6 +83,10 @@ export default {
       mincho: { description: "Elegant and calm. A travel-guide feel." },
       posterMincho: { description: "Magazine/poster-style refinement. Good for titles on shared images." },
       brush: { description: "Distinctive, Japanese-style brushwork. For titles only." },
+      travelNote: { description: "A loose, handwritten feel. For travel-journal and notebook styling." },
+      handPen: { description: "Natural pen-style handwriting. Good for memos and captions." },
+      maruMoji: { description: "Round, cute letters with a casual, pop feel." },
+      decoMincho: { description: "A decorative mincho with playful details. Good for titles." },
     },
     data: {
       heading: "Mountain info (tap to edit)",

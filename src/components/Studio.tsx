@@ -37,7 +37,7 @@ const hexToRgb = (hex: string): string => {
   return `${r},${g},${b}`;
 };
 // 記録の帯の文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
-// 記録の帯の書体は山名・題字と同じ6種類のフォントペアから選ぶ。既定の「ゴシック」
+// 記録の帯の書体は山名・題字と同じ10種類のフォントペアから選ぶ。既定の「ベーシック」
 // (Inter + Noto Sans JP) は liit の端末標準サンセリフとほぼ同じ見た目で、端末差もない。
 const exifInk = (marginColor: string): { main: string; sub: string } => {
   const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
@@ -146,7 +146,17 @@ type LabelMode = "jaSubEnElev" | "jaSubEn" | "jaSubElev" | "enSubElev" | "jaOnly
 
 // 焼き込み文字の役割（サイズ・フォントを役割ごとに設定する単位）。
 type FontRole = "labelName" | "labelSub" | "captionTitle" | "captionBody";
-type FontPairId = "gothic" | "roundedGothic" | "modernGothic" | "mincho" | "posterMincho" | "brush";
+type FontPairId =
+  | "gothic"
+  | "roundedGothic"
+  | "modernGothic"
+  | "mincho"
+  | "posterMincho"
+  | "brush"
+  | "travelNote"
+  | "handPen"
+  | "maruMoji"
+  | "decoMincho";
 type FontPair = { label: string; jp: string; en: string; description: string };
 type RoleFonts = Record<FontRole, FontPairId>;
 
@@ -154,12 +164,16 @@ type RoleFonts = Record<FontRole, FontPairId>;
 // label はUI言語によらず常にこの表記のまま（山名同様、フォント名は翻訳しない）。
 // description はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
 const FONT_PAIRS: Record<FontPairId, FontPair> = {
-  gothic: { label: "ゴシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
-  roundedGothic: { label: "丸ゴシック", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
-  modernGothic: { label: "モダンゴシック", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
-  mincho: { label: "明朝", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
-  posterMincho: { label: "ポスター明朝", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
-  brush: { label: "筆文字", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
+  gothic: { label: "ベーシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
+  roundedGothic: { label: "やわらか", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
+  modernGothic: { label: "モダン", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
+  mincho: { label: "上品", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
+  posterMincho: { label: "クラシック", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
+  brush: { label: "和筆", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
+  travelNote: { label: "旅ノート", jp: "Yomogi", en: "Caveat", description: "studio.font.travelNote.description" },
+  handPen: { label: "手書きペン", jp: "Zen Kurenaido", en: "Patrick Hand", description: "studio.font.handPen.description" },
+  maruMoji: { label: "まる文字", jp: "Zen Maru Gothic", en: "Quicksand", description: "studio.font.maruMoji.description" },
+  decoMincho: { label: "デコ明朝", jp: "Kaisei Decol", en: "Cormorant Infant", description: "studio.font.decoMincho.description" },
 };
 const FONT_PAIR_IDS = Object.keys(FONT_PAIRS) as FontPairId[];
 const DEFAULT_ROLE_FONTS: RoleFonts = {
@@ -628,7 +642,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
   const [noteLine1, setNoteLine1] = useState(initExif?.line1 ?? "");
   const [noteLine2, setNoteLine2] = useState(initExif?.line2 ?? "");
-  // 書体（6種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
+  // 書体（10種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
   const [noteFont, setNoteFont] = useState<FontPairId>(
     initExif?.font ?? (initExif?.serif === true ? "posterMincho" : initExif?.serif === false ? "modernGothic" : "gothic"),
   );

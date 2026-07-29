@@ -82,6 +82,10 @@ export default {
       mincho: { description: "上品で落ち着いた雰囲気。観光ガイド風。" },
       posterMincho: { description: "雑誌・ポスター風の高級感。共有画像のタイトル向き。" },
       brush: { description: "和風で印象的。タイトル専用向き。" },
+      travelNote: { description: "手書き風のゆるさ。旅日記やノート風の仕上げに。" },
+      handPen: { description: "ペンで書いたような自然な手書き文字。メモやキャプション向き。" },
+      maruMoji: { description: "丸くかわいい文字。カジュアルでポップな雰囲気。" },
+      decoMincho: { description: "装飾的な明朝体。遊び心のあるタイトル向き。" },
     },
     data: {
       heading: "山の情報（タップで編集できます）",
