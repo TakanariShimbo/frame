@@ -384,3 +384,24 @@ export function IconInstagram({ size = 16, className }: Props) {
     </svg>
   );
 }
+
+/** Threads（@マーク風の一筆書きロゴ）。応募プラットフォーム用。 */
+export function IconThreads({ size = 16, className }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden className={className}>
+      <path d="M12 21c-4.9 0-8-3.4-8-9s3.1-9 8-9c3.3 0 5.6 1.5 6.8 4" />
+      <path d="M9.4 13.2c.5 1.6 2 2.3 3.4 2.1 1.7-.2 2.7-1.3 2.6-2.8-.1-1.8-1.8-2.5-3.6-2.5-2 0-3.4.9-3.4 2.6 0 1.9 1.8 2.9 3.9 2.9 2.6 0 4.4-1.6 4.4-4.4" />
+    </svg>
+  );
+}
+
+/** 地球（公式サイトリンク用）。 */
+export function IconGlobe({ size = 16, className }: Props) {
+  return (
+    <svg {...svgProps(size, className)} strokeWidth={1.8}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12 H20.5" />
+      <path d="M12 3.5 C15 6.5 15 17.5 12 20.5 C9 17.5 9 6.5 12 3.5 Z" />
+    </svg>
+  );
+}

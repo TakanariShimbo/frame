@@ -13,9 +13,12 @@ type Props = {
 export default function ArchiveItem({ contest, index, sectionRef }: Props) {
   const side = index % 2 === 1 ? "pca-item--flip" : "";
   const cls = contest.isLatest ? "pca-item pca-item--latest" : `pca-item ${side}`.trim();
+  // 遷移先とCTAはデータ側（link）で上書き可能。未指定なら従来どおり結果ページ。
+  const href = contest.link?.href ?? `/photo-contest/${contest.year}`;
+  const cta = contest.link?.cta ?? "VIEW RESULTS";
   return (
     <section ref={sectionRef} id={`contest-${contest.year}`} className={cls} data-reveal>
-      <AppLink to={`/photo-contest/${contest.year}`} className="pca-link" aria-label={`${contest.year} ${contest.title} の結果を見る`}>
+      <AppLink to={href} className="pca-link" aria-label={`${contest.year} ${contest.title} ${cta}`}>
         <div className="pca-media">
           <ContestPicture image={contest.coverImage} priority={index === 0} />
           <span className="pca-shade" aria-hidden />
@@ -26,7 +29,7 @@ export default function ArchiveItem({ contest, index, sectionRef }: Props) {
           <h2 className="pca-title">{contest.title}</h2>
           <p className="pca-desc">{contest.description}</p>
           <span className="pca-cta">
-            VIEW RESULTS
+            {cta}
             <span className="pca-arrow" aria-hidden />
           </span>
         </div>

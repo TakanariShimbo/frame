@@ -26,7 +26,8 @@
       },
       "isLatest": true,
       "isPublished": true,
-      "order": 1
+      "order": 1,
+      "link": { "href": "/photo-contest/2026-01/announcement", "cta": "開催概要を見る" }
     },
     {
       "year": 2025,
