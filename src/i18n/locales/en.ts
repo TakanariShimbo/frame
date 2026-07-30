@@ -87,6 +87,8 @@ export default {
       handPen: { description: "Natural pen-style handwriting. Good for memos and captions." },
       maruMoji: { description: "Round, cute letters with a casual, pop feel." },
       decoMincho: { description: "A decorative mincho with playful details. Good for titles." },
+      weight: { light: "Light", medium: "Medium", bold: "Bold" },
+      weightAria: "{{label}} weight",
     },
     data: {
       heading: "Mountain info (tap to edit)",

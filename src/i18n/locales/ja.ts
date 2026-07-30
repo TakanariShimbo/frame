@@ -86,6 +86,8 @@ export default {
       handPen: { description: "ペンで書いたような自然な手書き文字。メモやキャプション向き。" },
       maruMoji: { description: "丸くかわいい文字。カジュアルでポップな雰囲気。" },
       decoMincho: { description: "装飾的な明朝体。遊び心のあるタイトル向き。" },
+      weight: { light: "細い", medium: "中くらい", bold: "太い" },
+      weightAria: "{{label}}の太さ",
     },
     data: {
       heading: "山の情報（タップで編集できます）",

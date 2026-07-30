@@ -1229,7 +1229,7 @@ button {
 .ar-label-name {
   font-family: var(--label-name-ff, inherit);
   font-size: calc(2.7cqmax * var(--label-name-fs, 1));
-  font-weight: 700;
+  font-weight: var(--label-name-fw, 700);
   letter-spacing: var(--label-ls, 0.01em);
 }
 .ar-label-sub {
@@ -1237,7 +1237,7 @@ button {
   margin-top: calc(0.15em + (var(--label-lh, 1) - 1) * 2.1cqmax * var(--label-sub-fs, 1));
   font-family: var(--label-sub-ff, inherit);
   font-size: calc(1.55cqmax * var(--label-sub-fs, 1));
-  font-weight: 500;
+  font-weight: var(--label-sub-fw, 500);
   letter-spacing: var(--label-ls, normal);
   opacity: 0.92;
 }
@@ -1395,7 +1395,7 @@ button {
 .ar-caption-title {
   font-family: var(--cap-title-ff, inherit);
   font-size: calc(2.6cqmax * var(--cap-title-fs, 1));
-  font-weight: 700;
+  font-weight: var(--cap-title-fw, 700);
   letter-spacing: var(--cap-ls, normal);
   display: flex;
   align-items: baseline;
@@ -1449,6 +1449,7 @@ button {
 .ar-caption-text {
   margin: 0.35em 0 0;
   font-family: var(--cap-body-ff, inherit);
+  font-weight: var(--cap-body-fw, 400);
   font-size: calc(2cqmax * var(--cap-body-fs, 1));
   line-height: calc(1.5 * var(--cap-lh, 1));
   letter-spacing: var(--cap-ls, normal);
@@ -1479,21 +1480,21 @@ button {
 }
 .ar-title-over {
   font-size: calc(1.95cqmax * var(--title-fs, 1));
-  font-weight: 500;
+  font-weight: var(--title-sub-fw, 500);
   letter-spacing: calc(0.35em * var(--title-ls, 1));
   margin-right: calc(-0.35em * var(--title-ls, 1));
   margin-bottom: calc(0.9cqmax * var(--title-fs, 1) * var(--title-gap, 1));
 }
 .ar-title-main {
   font-size: calc(7.5cqmax * var(--title-fs, 1));
-  font-weight: 700;
+  font-weight: var(--title-fw, 700);
   letter-spacing: calc(0.04em * var(--title-ls, 1));
   margin-right: calc(-0.04em * var(--title-ls, 1));
   line-height: 1.02;
 }
 .ar-title-num {
   font-size: calc(2.25cqmax * var(--title-fs, 1));
-  font-weight: 500;
+  font-weight: var(--title-sub-fw, 500);
   letter-spacing: calc(0.3em * var(--title-ls, 1));
   margin-right: calc(-0.3em * var(--title-ls, 1));
   margin-top: calc(0.7cqmax * var(--title-fs, 1) * var(--title-gap, 1));
@@ -2106,6 +2107,16 @@ button {
 }
 
 /* フォント選択。 */
+/* 書体＋太さの2セレクトを横に並べる入れ物。 */
+.ar-font-sels {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.ar-font-sels .ar-font-sel select {
+  max-width: 128px;
+}
 .ar-font-sel {
   display: flex;
   align-items: center;
