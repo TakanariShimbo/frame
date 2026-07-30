@@ -21,7 +21,7 @@
   "periodNote": "応募期間中に投稿された作品が対象です。",
   "routes": {
     "announcement": "/photo-contest/2026-01/announcement",
-    "results": "/photo-contest/2026"
+    "results": null
   },
   "hero": {
     "eyebrow": "ANNOUNCEMENT",
