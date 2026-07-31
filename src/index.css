@@ -1228,17 +1228,19 @@ button {
 }
 .ar-label-name {
   font-family: var(--label-name-ff, inherit);
-  font-size: calc(2.7cqmax * var(--label-name-fs, 1));
+  /* 焼き込みの nameFs = 長辺×2.6% と一致させる */
+  font-size: calc(2.6cqmax * var(--label-name-fs, 1));
   font-weight: var(--label-name-fw, 700);
   letter-spacing: var(--label-ls, 0.01em);
   /* 山名は編集で入れた改行(\n)をそのまま行に反映（焼き込みの nameFs×1.12 行送りと対応） */
   white-space: pre-line;
 }
 .ar-label-sub {
-  /* 行間スライダー（--label-lh）で山名との間隔を増減（焼き込みの 1.35×subFs と対応） */
-  margin-top: calc(0.15em + (var(--label-lh, 1) - 1) * 2.1cqmax * var(--label-sub-fs, 1));
+  /* 行間スライダー（--label-lh）で山名との間隔を増減（焼き込みの 1.35×subFs=2.18cqmax と対応） */
+  margin-top: calc(0.15em + (var(--label-lh, 1) - 1) * 2.18cqmax * var(--label-sub-fs, 1));
   font-family: var(--label-sub-ff, inherit);
-  font-size: calc(1.55cqmax * var(--label-sub-fs, 1));
+  /* 焼き込みの subFs = 長辺×2.6%×0.62 と一致させる */
+  font-size: calc(1.61cqmax * var(--label-sub-fs, 1));
   font-weight: var(--label-sub-fw, 500);
   letter-spacing: var(--label-ls, normal);
   opacity: 0.92;
@@ -1365,7 +1367,9 @@ button {
   flex: 0 0 auto;
   width: 0.3cqmax;
   min-width: 1px;
-  margin: 0 1.7%; /* 焼き込みの colGap(≈3.5%) と一致 */
+  /* 焼き込みの colGap = 出力幅×3.5%。%指定だと解説ブロック幅基準になり、幅を狭めると
+     ずれるので、フレーム幅基準の cqw で「線幅込みで合計 3.5cqw」にする */
+  margin: 0 calc(1.75cqw - 0.15cqmax);
   align-self: stretch;
   background: rgba(214, 180, 106, 0.55);
   border-radius: 1px;
@@ -1412,7 +1416,8 @@ button {
 .ar-cap-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(0.6cqmax * var(--cap-body-fs, 1));
+  /* 焼き込みの tagPillGap = 0.38×tagFs(=0.82×本文) ≒ 0.62cqmax と一致させる */
+  gap: calc(0.62cqmax * var(--cap-body-fs, 1));
   margin: calc(1.4cqmax * var(--cap-body-fs, 1)) 0;
 }
 .ar-cap-tags + .ar-caption-text {
@@ -1422,7 +1427,9 @@ button {
   font-family: var(--cap-body-ff, inherit);
   font-size: calc(1.64cqmax * var(--cap-body-fs, 1));
   line-height: 1;
-  padding: 0.34em 0.6em;
+  /* 焼き込みのピル寸法（横pad=0.5×tagFs / 高さ=tagFs+0.32×2）と一致させる。
+     ずれると折り返し（何行になるか）が出力と食い違う */
+  padding: 0.32em 0.5em;
   border-radius: 999px;
   background: var(--cap-tag-bg, rgba(0, 0, 0, 0.4));
   color: var(--cap-tag-fg, inherit);
@@ -1439,7 +1446,9 @@ button {
 .ar-cap-shared.is-row {
   display: flex;
   align-items: baseline;
-  gap: 0.32em;
+  /* 焼き込みの gap = 0.32×titleFs(2.6cqmax) と一致させる
+     （em 指定だと画面固定の継承フォントサイズ基準になり、プレビュー倍率でずれる） */
+  gap: calc(0.832cqmax * var(--cap-title-fs, 1));
   flex-wrap: wrap;
 }
 .ar-caption-title.is-sub {
@@ -1977,7 +1986,10 @@ button {
 }
 
 /* 記録の帯（liit 風）。外側フレーム下部の中央に配置し、配色は書き出しと同じ2トーン。
-   フォントサイズは書き出し比率（長辺の 1.9% / 1.4%）に合わせて cqmax で指定。 */
+   フォントサイズは書き出し比率（内側長辺の 1.9% / 1.4% など）に合わせる。
+   ここの cqmax は外枠（縁＋帯込み）基準なので、内側長辺との比 --note-k（JSXが算出）を
+   掛けて焼き込みと同じ実寸にする（特に縦写真では帯の分だけ外枠が大きく、素の cqmax だと
+   文字が2割前後大きく見えていた）。 */
 .ar-exif {
   position: absolute;
   left: 0;
@@ -1987,13 +1999,13 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.55cqmax;
+  gap: calc(0.55cqmax * var(--note-k, 1));
   pointer-events: none;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   white-space: nowrap;
 }
 .ar-exif-model {
-  font-size: 1.9cqmax;
+  font-size: calc(1.9cqmax * var(--note-k, 1));
   font-weight: 700;
   color: var(--exif-main, #3c3c3c);
   letter-spacing: 0.01em;
@@ -2003,7 +2015,7 @@ button {
   color: var(--exif-sub, #969696);
 }
 .ar-exif-spec {
-  font-size: 1.4cqmax;
+  font-size: calc(1.4cqmax * var(--note-k, 1));
   font-weight: 500;
   color: var(--exif-sub, #969696);
   letter-spacing: 0.04em;
@@ -2013,16 +2025,16 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.55cqmax;
+  gap: calc(0.55cqmax * var(--note-k, 1));
   color: var(--exif-main, #3c3c3c);
 }
 .ar-exif-l1 {
-  font-size: 1.9cqmax;
+  font-size: calc(1.9cqmax * var(--note-k, 1));
   font-weight: 600;
   letter-spacing: 0.03em;
 }
 .ar-exif-l2 {
-  font-size: 1.6cqmax;
+  font-size: calc(1.6cqmax * var(--note-k, 1));
   font-weight: 400;
   letter-spacing: 0.03em;
 }

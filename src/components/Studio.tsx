@@ -1598,6 +1598,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const both = segs.length > 0 && !!exifSpec;
         if (segs.length > 0) {
           // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
+          setLS(mainFs * 0.01); // プレビュー(.ar-exif-model の letter-spacing: 0.01em)と揃える
           let total = 0;
           for (const s of segs) {
             ctx.font = s.font;
@@ -1615,6 +1616,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         if (exifSpec) {
           ctx.textAlign = "center";
           ctx.font = `500 ${subFs}px ${noteFF}`;
+          setLS(subFs * 0.04); // プレビュー(.ar-exif-spec の letter-spacing: 0.04em)と揃える
           ctx.fillStyle = ink.sub;
           ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
         }
@@ -1624,11 +1626,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.textAlign = "center";
         if (noteLine1) {
           ctx.font = `${noteL1.italic ? "italic " : ""}${noteL1.bold ? 700 : 600} ${mainFs}px ${ff}`;
+          setLS(mainFs * 0.03); // プレビュー(.ar-exif-l1 の letter-spacing: 0.03em)と揃える
           ctx.fillStyle = noteL1.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
         }
         if (noteLine2) {
-          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${Math.round(L * 0.016)}px ${ff}`;
+          const fs2 = Math.round(L * 0.016);
+          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${fs2}px ${ff}`;
+          setLS(fs2 * 0.03); // プレビュー(.ar-exif-l2 の letter-spacing: 0.03em)と揃える
           ctx.fillStyle = noteL2.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
         }
@@ -2631,7 +2636,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               {exifOn && (() => {
                 const ink = noteInkColors();
                 const ch = (photoNat?.h ?? 1000) * fChF;
-                const totalH = ch * (1 + fMtb) + NOTE_EDGE * ch + noteBand * ch;
+                const cw = (photoNat?.w ?? 1500) * fCwF;
+                const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
+                const totalH = innerH + NOTE_EDGE * ch + noteBand * ch;
+                const outerW = innerW + NOTE_EDGE * ch * 2;
+                // 焼き込みの文字サイズ基準は内側（L=max(OW,OH)）。プレビューの cqmax は
+                // 外枠（縁＋帯込み）基準なので、その比で補正して実寸を揃える。
+                const noteK = Math.max(innerW, innerH) / Math.max(outerW, totalH);
                 return (
                   <div
                     className="ar-exif"
@@ -2641,6 +2652,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         fontFamily: roleFontStack(noteFont),
                         "--exif-main": ink.main,
                         "--exif-sub": ink.sub,
+                        "--note-k": noteK,
                       } as React.CSSProperties
                     }
                     aria-hidden="true"
