@@ -36,6 +36,28 @@ export type ArLabel = {
   hidden?: boolean; // 写真上に名札・引き出し線を描かない（解説・題字の題材候補には残る）
 };
 
+// 山名は編集で任意の位置に改行(\n)を入れられる。改行を反映するのは写真上の名札のみで、
+// タイトル・解説見出し・一覧表示など1行前提の箇所は oneLineName で1行に畳んで使う。
+
+// 改行入りの山名を行の配列にする（空行と行頭行末の空白は除く）。
+export function nameLines(name: string): string[] {
+  return name
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+// 改行入りの山名を1行にする。英数字同士の境目は空白で繋ぎ（"Mount\nFuji"→"Mount Fuji"）、
+// 和文はそのまま詰める（"雲取\n山"→"雲取山"）。
+export function oneLineName(name: string): string {
+  const lines = nameLines(name);
+  if (lines.length === 0) return "";
+  return lines.reduce((acc, line) => {
+    const glue = /[\x21-\x7e]$/.test(acc) && /^[\x21-\x7e]/.test(line) ? " " : "";
+    return acc + glue + line;
+  });
+}
+
 // 選んだ山＋辞書解説から、写真に焼き込む編集用ラベル列を作る。
 // 位置は写真上に横へ等間隔で並べた既定値（撮影内容に依らないので編集画面でドラッグ調整）。
 export function buildLabels(

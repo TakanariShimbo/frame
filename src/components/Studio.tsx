@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IconDownload, IconCaret, IconChevron, IconEye, IconEyeOff } from "./icons";
-import type { ArLabel } from "../lib/labels";
+import { nameLines, oneLineName, type ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
 import { readShootingInfo } from "../lib/exif";
 import FsSlider from "./FsSlider";
@@ -37,7 +37,7 @@ const hexToRgb = (hex: string): string => {
   return `${r},${g},${b}`;
 };
 // 記録の帯の文字色。余白色の明るさで濃色/淡色を切り替える（liit 風の2トーン）。
-// 記録の帯の書体は山名・題字と同じ6種類のフォントペアから選ぶ。既定の「ゴシック」
+// 記録の帯の書体は山名・題字と同じ10種類のフォントペアから選ぶ。既定の「ベーシック」
 // (Inter + Noto Sans JP) は liit の端末標準サンセリフとほぼ同じ見た目で、端末差もない。
 const exifInk = (marginColor: string): { main: string; sub: string } => {
   const [r, g, b] = hexToRgb(marginColor).split(",").map(Number);
@@ -146,7 +146,17 @@ type LabelMode = "jaSubEnElev" | "jaSubEn" | "jaSubElev" | "enSubElev" | "jaOnly
 
 // 焼き込み文字の役割（サイズ・フォントを役割ごとに設定する単位）。
 type FontRole = "labelName" | "labelSub" | "captionTitle" | "captionBody";
-type FontPairId = "gothic" | "roundedGothic" | "modernGothic" | "mincho" | "posterMincho" | "brush";
+type FontPairId =
+  | "gothic"
+  | "roundedGothic"
+  | "modernGothic"
+  | "mincho"
+  | "posterMincho"
+  | "brush"
+  | "travelNote"
+  | "handPen"
+  | "maruMoji"
+  | "decoMincho";
 type FontPair = { label: string; jp: string; en: string; description: string };
 type RoleFonts = Record<FontRole, FontPairId>;
 
@@ -154,12 +164,16 @@ type RoleFonts = Record<FontRole, FontPairId>;
 // label はUI言語によらず常にこの表記のまま（山名同様、フォント名は翻訳しない）。
 // description はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
 const FONT_PAIRS: Record<FontPairId, FontPair> = {
-  gothic: { label: "ゴシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
-  roundedGothic: { label: "丸ゴシック", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
-  modernGothic: { label: "モダンゴシック", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
-  mincho: { label: "明朝", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
-  posterMincho: { label: "ポスター明朝", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
-  brush: { label: "筆文字", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
+  gothic: { label: "ベーシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
+  roundedGothic: { label: "やわらか", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
+  modernGothic: { label: "モダン", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
+  mincho: { label: "上品", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
+  posterMincho: { label: "クラシック", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
+  brush: { label: "和筆", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
+  travelNote: { label: "旅ノート", jp: "Yomogi", en: "Caveat", description: "studio.font.travelNote.description" },
+  handPen: { label: "手書きペン", jp: "Zen Kurenaido", en: "Patrick Hand", description: "studio.font.handPen.description" },
+  maruMoji: { label: "まる文字", jp: "Zen Maru Gothic", en: "Quicksand", description: "studio.font.maruMoji.description" },
+  decoMincho: { label: "デコ明朝", jp: "Kaisei Decol", en: "Cormorant Infant", description: "studio.font.decoMincho.description" },
 };
 const FONT_PAIR_IDS = Object.keys(FONT_PAIRS) as FontPairId[];
 const DEFAULT_ROLE_FONTS: RoleFonts = {
@@ -173,6 +187,24 @@ const roleFontStack = (id: FontPairId) => {
   const p = FONT_PAIRS[id];
   return `"${p.en}", "${p.jp}", system-ui, sans-serif`;
 };
+
+// 文字の太さ（細い/中くらい/太いの3段階）。実ウェイトは 300/500/700 で、
+// 「中くらい」だけ本文は従来既定の 400 に合わせる（既定の見た目を変えないため）。
+// 300 を持たないフォント（クラシック・デコ明朝・筆記系）はブラウザが
+// 読み込み済みの最も近いウェイト（400 など）で描画される。
+type FontWeightLevel = "light" | "medium" | "bold";
+const FONT_WEIGHT_LEVELS: FontWeightLevel[] = ["light", "medium", "bold"];
+type RoleWeights = Record<FontRole, FontWeightLevel>;
+const DEFAULT_ROLE_WEIGHTS: RoleWeights = {
+  labelName: "bold",
+  labelSub: "medium",
+  captionTitle: "bold",
+  captionBody: "medium",
+};
+const roleWeightPx = (role: FontRole | "title", level: FontWeightLevel): number =>
+  level === "light" ? 300 : level === "bold" ? 700 : role === "captionBody" ? 400 : 500;
+// 題字の副行（場所・標高）は主行より一段細くする（従来: 主700/副500 の関係を保つ）。
+const titleSubWeightPx = (main: number): number => (main >= 700 ? 500 : main >= 500 ? 400 : 300);
 
 // 仕上げのテンプレート。選ぶと「見た目＋構図」をまとめて適用する値の束。
 type ExportStyle = {
@@ -221,7 +253,9 @@ type ExportStyle = {
   titleLetterSpace: number; // 字間（既定スペーシングへの倍率。1=標準）
   titleLineHeight: number; // 3段（場所/山名/標高）の行間（倍率。1=標準）
   titlePos: { u: number; v: number };
+  titleWeight: FontWeightLevel;
   roleFonts: RoleFonts;
+  roleWeights: RoleWeights;
   frameMargin: { t: number; r: number; b: number; l: number };
   frameMarginColor: string;
   frameMarginAuto: boolean;
@@ -279,7 +313,9 @@ const BASE_STYLE: ExportStyle = {
   titleLetterSpace: 1,
   titleLineHeight: 1,
   titlePos: { u: 0.5, v: 0.44 },
+  titleWeight: "bold",
   roleFonts: DEFAULT_ROLE_FONTS,
+  roleWeights: DEFAULT_ROLE_WEIGHTS,
   frameMargin: NO_MARGIN,
   frameMarginColor: "#ffffff",
   frameMarginAuto: false,
@@ -602,6 +638,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleColor, setTitleColor] = useState(initStyle?.titleColor ?? "#ffffff");
   const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
   const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
+  const [titleWeight, setTitleWeight] = useState<FontWeightLevel>(initStyle?.titleWeight ?? "bold");
   const [titleLetterSpace, setTitleLetterSpace] = useState(initStyle?.titleLetterSpace ?? 1);
   const [titleLineHeight, setTitleLineHeight] = useState(initStyle?.titleLineHeight ?? 1);
   const [titlePos, setTitlePos] = useState(initStyle?.titlePos ?? ({ u: 0.5, v: 0.44 }));
@@ -610,6 +647,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // --- フォント（役割ごと） --- //
   const [roleFonts, setRoleFonts] = useState<RoleFonts>(initStyle?.roleFonts ?? DEFAULT_ROLE_FONTS);
   const setRoleFont = (role: FontRole, value: FontPairId) => setRoleFonts((p) => ({ ...p, [role]: value }));
+  const [roleWeights, setRoleWeights] = useState<RoleWeights>(initStyle?.roleWeights ?? DEFAULT_ROLE_WEIGHTS);
+  const setRoleWeight = (role: FontRole, value: FontWeightLevel) => setRoleWeights((p) => ({ ...p, [role]: value }));
 
   // --- フレーム（切り抜き・余白・ふち） --- //
   const [cropInset, setCropInset] = useState(initStyle?.cropInset ?? ({ l: 0, t: 0, r: 0, b: 0 }));
@@ -628,7 +667,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
   const [noteLine1, setNoteLine1] = useState(initExif?.line1 ?? "");
   const [noteLine2, setNoteLine2] = useState(initExif?.line2 ?? "");
-  // 書体（6種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
+  // 書体（10種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
   const [noteFont, setNoteFont] = useState<FontPairId>(
     initExif?.font ?? (initExif?.serif === true ? "posterMincho" : initExif?.serif === false ? "modernGothic" : "gothic"),
   );
@@ -807,8 +846,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           : l,
       ),
     );
-  const capName = capItem?.name ?? "";
-  const capNameEn = capItem?.nameEn || capItem?.name || "";
+  const capName = oneLineName(capItem?.name ?? "");
+  const capNameEn = oneLineName(capItem?.nameEn || capItem?.name || "");
   const capColHasTitle = !capBoth || captionTitleMode === "each";
   const capTagLang: "ja" | "en" = captionLang === "en" ? "en" : "ja";
   const capSharedHasTags = !!capItem && capChips(capItem, capTagLang).length > 0;
@@ -841,7 +880,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     if (!it) return null;
     const en = titleLang === "en";
     const up = (s: string) => (en ? s.toUpperCase() : s);
-    const main = up(en ? it.nameEn || it.name : it.name);
+    const main = up(oneLineName(en ? it.nameEn || it.name : it.name));
     const over =
       titleShowOver && it.prefecture
         ? up(en ? prefEn(it.prefecture) : it.prefecture.replace(/\//g, "・"))
@@ -851,9 +890,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   };
 
   // ラベルの1段目(name)と2段目(sub)の文字列を labelMode から決める。
+  // name には編集で入れた改行(\n)がそのまま残り、名札の描画側で複数行に折り返す。
+  // 2段目(sub)と英名は1行に畳む。
   const labelContent = (lb: { name: string; nameEn?: string; elevM?: number }) => {
     const ja = lb.name;
-    const en = lb.nameEn || lb.name;
+    const en = oneLineName(lb.nameEn || lb.name);
     // 標高なし（自由入力）の場合は標高部分だけ省いて表示する。
     const elev = lb.elevM != null ? `${Math.round(lb.elevM).toLocaleString()}m` : "";
     switch (labelMode) {
@@ -878,19 +919,33 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       ? { bg: tagColor, fg: isDarkColor(tagColor) ? "rgba(255,255,255,0.95)" : "rgba(0,0,0,0.85)" }
       : { bg: tagBg(tagColor), fg: tagColor };
 
-  // 役割のフォント選択行。
+  // 太さ（細い/中くらい/太い）のセレクト。フォントセレクトの隣に並べる。
+  const weightSelect = (value: FontWeightLevel, onChange: (v: FontWeightLevel) => void, ariaLabel: string) => (
+    <div className="ar-font-sel">
+      <select value={value} onChange={(e) => onChange(e.target.value as FontWeightLevel)} aria-label={ariaLabel}>
+        {FONT_WEIGHT_LEVELS.map((lv) => (
+          <option key={lv} value={lv}>{t(`studio.font.weight.${lv}`)}</option>
+        ))}
+      </select>
+    </div>
+  );
+
+  // 役割のフォント選択行（書体＋太さ）。
   const fontRow = (role: FontRole, label: string) => (
     <>
       <div className="ar-fs-row">
         <span>{label}</span>
-        <div className="ar-font-sel">
-          <select value={roleFonts[role]} onChange={(e) => setRoleFont(role, e.target.value as FontPairId)} aria-label={label}>
-            {FONT_PAIR_IDS.map((id) => (
-              <option key={id} value={id} title={t(FONT_PAIRS[id].description)}>
-                {FONT_PAIRS[id].label}
-              </option>
-            ))}
-          </select>
+        <div className="ar-font-sels">
+          <div className="ar-font-sel">
+            <select value={roleFonts[role]} onChange={(e) => setRoleFont(role, e.target.value as FontPairId)} aria-label={label}>
+              {FONT_PAIR_IDS.map((id) => (
+                <option key={id} value={id} title={t(FONT_PAIRS[id].description)}>
+                  {FONT_PAIRS[id].label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {weightSelect(roleWeights[role], (v) => setRoleWeight(role, v), t("studio.font.weightAria", { label }))}
         </div>
       </div>
       <p className="ar-font-desc">{t(FONT_PAIRS[roleFonts[role]].description)}</p>
@@ -1024,7 +1079,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ks.every((k) => prev[+k] && Math.abs(prev[+k].w - next[+k].w) < 1e-4 && Math.abs(prev[+k].h - next[+k].h) < 1e-4);
       return same ? prev : next;
     });
-  }, [arLabels, labelMode, labelNameScale, labelSubScale, roleFonts, bakeLabels, exportView, measureTick]);
+  }, [arLabels, labelMode, labelNameScale, labelSubScale, roleFonts, roleWeights, bakeLabels, exportView, measureTick]);
 
   // ステージのサイズ変化時に再計測。
   useEffect(() => {
@@ -1125,6 +1180,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const ffSub = roleFontStack(roleFonts.labelSub);
     const ffTitle = roleFontStack(roleFonts.captionTitle);
     const ffBody = roleFontStack(roleFonts.captionBody);
+    const fwName = roleWeightPx("labelName", roleWeights.labelName);
+    const fwSub = roleWeightPx("labelSub", roleWeights.labelSub);
+    const fwCapTitle = roleWeightPx("captionTitle", roleWeights.captionTitle);
+    const fwCapBody = roleWeightPx("captionBody", roleWeights.captionBody);
     const drawPanel = (x: number, y: number, w: number, h: number, r: number, fill: string) => {
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.26)";
@@ -1138,10 +1197,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     };
     const fontLoads: Promise<unknown>[] = [];
     for (const [w, id] of [
-      [700, roleFonts.labelName],
-      [500, roleFonts.labelSub],
-      [700, roleFonts.captionTitle],
-      [400, roleFonts.captionBody],
+      [fwName, roleFonts.labelName],
+      [fwSub, roleFonts.labelSub],
+      [fwCapTitle, roleFonts.captionTitle],
+      [fwCapBody, roleFonts.captionBody],
     ] as [number, FontPairId][]) {
       const p = FONT_PAIRS[id];
       fontLoads.push(document.fonts.load(`${w} 16px "${p.jp}"`).catch(() => {}));
@@ -1171,19 +1230,25 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const cx = pfx(lb.labelU);
         const cy = pfy(lb.labelV);
         const { name, sub } = labelContent(lb);
+        // 山名は改行(\n)で複数行になる。最下行の基準線を従来の nameBaseline に固定し、
+        // 上へ積む（ラベルは下端基準で置かれるため、行が増えても位置がずれない）。
+        const nameLns = nameLines(name);
+        if (nameLns.length === 0) nameLns.push("");
+        // 行送りはプレビュー(.ar-edit-label の line-height: 1.12)と揃える。
+        const nameLineH = Math.round(nameFs * 1.12);
         const subBaseline = cy;
         const nameBaseline = sub ? cy - Math.round(subFs * 1.35 * labelLineHeight) : cy;
-        ctx.font = `700 ${nameFs}px ${ffName}`;
+        ctx.font = `${fwName} ${nameFs}px ${ffName}`;
         setLS(nameFs * labelLetterSpace);
-        const nameW = ctx.measureText(name).width;
+        const nameW = Math.max(...nameLns.map((ln) => ctx.measureText(ln).width));
         let subW = 0;
         if (sub) {
-          ctx.font = `500 ${subFs}px ${ffSub}`;
+          ctx.font = `${fwSub} ${subFs}px ${ffSub}`;
           setLS(subFs * labelLetterSpace);
           subW = ctx.measureText(sub).width;
         }
         const boxW = Math.max(nameW, subW);
-        const boxTop = nameBaseline - nameFs;
+        const boxTop = nameBaseline - nameFs - nameLineH * (nameLns.length - 1);
         const boxBottom = cy;
         const boxMidY = (boxTop + boxBottom) / 2;
         const anchor = lb.labelAnchor ?? "bottom";
@@ -1212,11 +1277,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         }
         ctx.textAlign = "center";
         ctx.fillStyle = labelColor;
-        ctx.font = `700 ${nameFs}px ${ffName}`;
+        ctx.font = `${fwName} ${nameFs}px ${ffName}`;
         setLS(nameFs * labelLetterSpace);
-        ctx.fillText(name, cx, nameBaseline);
+        nameLns.forEach((ln, li) => {
+          ctx.fillText(ln, cx, nameBaseline - nameLineH * (nameLns.length - 1 - li));
+        });
         if (sub) {
-          ctx.font = `500 ${subFs}px ${ffSub}`;
+          ctx.font = `${fwSub} ${subFs}px ${ffSub}`;
           setLS(subFs * labelLetterSpace);
           ctx.fillText(sub, cx, subBaseline);
         }
@@ -1232,9 +1299,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     if (captionLang !== "none" && cap && (capJa || capEn)) {
       const cols: { title: string; body: string; lang: "ja" | "en" }[] = [];
       if ((captionLang === "ja" || captionLang === "both") && capJa)
-        cols.push({ title: cap.name, body: capJa, lang: "ja" });
+        cols.push({ title: oneLineName(cap.name), body: capJa, lang: "ja" });
       if ((captionLang === "en" || captionLang === "both") && capEn)
-        cols.push({ title: cap.nameEn || cap.name, body: capEn, lang: "en" });
+        cols.push({ title: oneLineName(cap.nameEn || cap.name), body: capEn, lang: "en" });
       if (cols.length) {
         const titleFs = Math.round(L * 0.026 * captionTitleScale);
         const bodyFs = Math.round(L * 0.02 * captionBodyScale);
@@ -1285,7 +1352,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           return lines;
         };
         const wrapped = cols.map((c, ci) => {
-          ctx.font = `400 ${bodyFs}px ${ffBody}`;
+          ctx.font = `${fwCapBody} ${bodyFs}px ${ffBody}`;
           setLS(bodyFs * captionLetterSpace); // 折り返し計測にも字間を反映
           return { title: c.title, lines: wrapBody(c.body, colWidths[ci]) };
         });
@@ -1388,7 +1455,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           let ty2 = top;
           ctx.fillStyle = captionColor;
           if (colHasTitle) {
-            ctx.font = `700 ${titleFs}px ${ffTitle}`;
+            ctx.font = `${fwCapTitle} ${titleFs}px ${ffTitle}`;
             setLS(titleFs * captionLetterSpace);
             ctx.fillText(w.title, cxp, ty2 + titleFs);
             ty2 += titleLineH;
@@ -1399,7 +1466,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             ty2 += pillsH(colTagRows[ci]) + capGap;
           }
           ctx.fillStyle = captionColor;
-          ctx.font = `400 ${bodyFs}px ${ffBody}`;
+          ctx.font = `${fwCapBody} ${bodyFs}px ${ffBody}`;
           setLS(bodyFs * captionLetterSpace);
           for (const ln of w.lines) { ctx.fillText(ln, cxp, ty2 + bodyFs); ty2 += lineH; }
         };
@@ -1413,7 +1480,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             let cxp = bx;
             sharedParts.forEach((p, pi) => {
               if (pi > 0) {
-                ctx.font = `700 ${baseFs}px ${ffTitle}`;
+                ctx.font = `${fwCapTitle} ${baseFs}px ${ffTitle}`;
                 setLS(baseFs * captionLetterSpace);
                 cxp += gap;
                 ctx.globalAlpha = 0.7;
@@ -1421,7 +1488,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 ctx.globalAlpha = 1;
                 cxp += ctx.measureText("/").width + gap;
               }
-              ctx.font = `700 ${p.fs}px ${ffTitle}`;
+              ctx.font = `${fwCapTitle} ${p.fs}px ${ffTitle}`;
               setLS(p.fs * captionLetterSpace);
               ctx.fillText(p.text, cxp, baseline);
               cxp += ctx.measureText(p.text).width;
@@ -1429,7 +1496,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             ty += lineHFor(baseFs);
           } else {
             for (const p of sharedParts) {
-              ctx.font = `700 ${p.fs}px ${ffTitle}`;
+              ctx.font = `${fwCapTitle} ${p.fs}px ${ffTitle}`;
               setLS(p.fs * captionLetterSpace);
               ctx.fillText(p.text, bx, ty + p.fs);
               ty += lineHFor(p.fs);
@@ -1467,11 +1534,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const cy = pfy(titlePos.v);
         const ffTitle = roleFontStack(titleFont);
         const p = FONT_PAIRS[titleFont];
+        const fwTitleMain = roleWeightPx("title", titleWeight);
+        const fwTitleSub = titleSubWeightPx(fwTitleMain);
         await Promise.all([
-          document.fonts.load(`700 16px "${p.jp}"`).catch(() => {}),
-          document.fonts.load(`700 16px "${p.en}"`).catch(() => {}),
-          document.fonts.load(`500 16px "${p.jp}"`).catch(() => {}),
-          document.fonts.load(`500 16px "${p.en}"`).catch(() => {}),
+          document.fonts.load(`${fwTitleMain} 16px "${p.jp}"`).catch(() => {}),
+          document.fonts.load(`${fwTitleMain} 16px "${p.en}"`).catch(() => {}),
+          document.fonts.load(`${fwTitleSub} 16px "${p.jp}"`).catch(() => {}),
+          document.fonts.load(`${fwTitleSub} 16px "${p.en}"`).catch(() => {}),
         ]);
         const mainFs = Math.round(L * 0.075 * titleScale);
         const overFs = Math.max(1, Math.round(mainFs * 0.26));
@@ -1490,18 +1559,18 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.shadowOffsetY = Math.max(1, Math.round(L * 0.0015));
         }
         if (tp.over) {
-          ctx.font = `500 ${overFs}px ${ffTitle}`;
+          ctx.font = `${fwTitleSub} ${overFs}px ${ffTitle}`;
           setLS(overFs * 0.35 * titleLetterSpace);
           ctx.fillText(tp.over, cx, y);
           y += overFs + overGap;
         }
-        ctx.font = `700 ${mainFs}px ${ffTitle}`;
+        ctx.font = `${fwTitleMain} ${mainFs}px ${ffTitle}`;
         setLS(mainFs * 0.04 * titleLetterSpace);
         ctx.fillText(tp.main, cx, y);
         y += mainFs;
         if (tp.num) {
           y += numGap;
-          ctx.font = `500 ${numFs}px ${ffTitle}`;
+          ctx.font = `${fwTitleSub} ${numFs}px ${ffTitle}`;
           setLS(numFs * 0.3 * titleLetterSpace);
           ctx.fillText(tp.num, cx, y);
         }
@@ -1529,6 +1598,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const both = segs.length > 0 && !!exifSpec;
         if (segs.length > 0) {
           // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
+          setLS(mainFs * 0.01); // プレビュー(.ar-exif-model の letter-spacing: 0.01em)と揃える
           let total = 0;
           for (const s of segs) {
             ctx.font = s.font;
@@ -1546,6 +1616,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         if (exifSpec) {
           ctx.textAlign = "center";
           ctx.font = `500 ${subFs}px ${noteFF}`;
+          setLS(subFs * 0.04); // プレビュー(.ar-exif-spec の letter-spacing: 0.04em)と揃える
           ctx.fillStyle = ink.sub;
           ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
         }
@@ -1555,11 +1626,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         ctx.textAlign = "center";
         if (noteLine1) {
           ctx.font = `${noteL1.italic ? "italic " : ""}${noteL1.bold ? 700 : 600} ${mainFs}px ${ff}`;
+          setLS(mainFs * 0.03); // プレビュー(.ar-exif-l1 の letter-spacing: 0.03em)と揃える
           ctx.fillStyle = noteL1.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
         }
         if (noteLine2) {
-          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${Math.round(L * 0.016)}px ${ff}`;
+          const fs2 = Math.round(L * 0.016);
+          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${fs2}px ${ff}`;
+          setLS(fs2 * 0.03); // プレビュー(.ar-exif-l2 の letter-spacing: 0.03em)と揃える
           ctx.fillStyle = noteL2.dim ? ink.sub : ink.main;
           ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
         }
@@ -1638,10 +1712,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleColor(s.titleColor);
     setTitleShadow(s.titleShadow);
     setTitleFont(s.titleFont);
+    setTitleWeight(s.titleWeight);
     setTitleLetterSpace(s.titleLetterSpace);
     setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
     setRoleFonts(s.roleFonts);
+    setRoleWeights(s.roleWeights);
     setFrameMargin(s.frameMargin);
     setFrameMarginColor(s.frameMarginColor);
     setFrameMarginAuto(s.frameMarginAuto);
@@ -1729,8 +1805,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
     captionTitleScale, captionBodyScale, captionLetterSpace, captionLineHeight, captionPos, captionW, captionSplit,
     tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos,
-    roleFonts, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
+    roleFonts, roleWeights, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
   });
 
   // 一覧へ渡す編集状態。一度も編集に入っていなければ null。
@@ -2018,10 +2094,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       <span className="studio-data-head">{t("studio.data.heading")}</span>
       {arLabels.map((lb, i) => (
         <div key={lb.id} className="studio-data-row">
-          <input
-            type="text"
+          {/* 山名は改行可（Enterで改行）。改行は写真上の名札にそのまま反映される。 */}
+          <textarea
             className="studio-data-input studio-data-input--name"
             value={lb.name}
+            rows={Math.max(1, lb.name.split("\n").length)}
             onChange={(e) => setLabelName(i, e.target.value)}
             placeholder={t("studio.data.namePlaceholder")}
             aria-label={t("studio.data.nameLabel", { n: i + 1 })}
@@ -2033,7 +2110,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             value={lb.nameEn ?? ""}
             onChange={(e) => setLabelNameEn(i, e.target.value)}
             placeholder={t("studio.data.nameEnPlaceholder")}
-            aria-label={t("studio.data.nameEnLabel", { name: lb.name })}
+            aria-label={t("studio.data.nameEnLabel", { name: oneLineName(lb.name) })}
             autoComplete="off"
           />
           <span className="studio-data-elev">
@@ -2044,7 +2121,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               value={lb.elevM ?? ""}
               onChange={(e) => setLabelElev(i, e.target.value)}
               placeholder={t("studio.data.elevationPlaceholder")}
-              aria-label={t("studio.data.elevationLabel", { name: lb.name })}
+              aria-label={t("studio.data.elevationLabel", { name: oneLineName(lb.name) })}
             />
             m
           </span>
@@ -2053,7 +2130,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             className={`studio-data-eye${lb.hidden ? " is-off" : ""}`}
             onClick={() => setLabelHidden(i, !lb.hidden)}
             title={t("studio.data.showOnPhoto")}
-            aria-label={t("studio.data.showOnPhotoLabel", { name: lb.name })}
+            aria-label={t("studio.data.showOnPhotoLabel", { name: oneLineName(lb.name) })}
             aria-pressed={!lb.hidden}
           >
             {lb.hidden ? <IconEyeOff size={15} /> : <IconEye size={15} />}
@@ -2071,7 +2148,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         <div className="ar-font-sel">
           <select value={captionIdx} onChange={(e) => setCaptionIdx(Number(e.target.value))} aria-label={t("studio.data.subject")}>
             {arLabels.map((l, i) => (
-              <option key={i} value={i}>{l.name}</option>
+              <option key={i} value={i}>{oneLineName(l.name)}</option>
             ))}
           </select>
         </div>
@@ -2286,6 +2363,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 "--label-sub-ff": roleFontStack(roleFonts.labelSub), // 補足フォント
                 "--cap-title-ff": roleFontStack(roleFonts.captionTitle), // 見出しフォント
                 "--cap-body-ff": roleFontStack(roleFonts.captionBody), // 本文フォント
+                "--label-name-fw": roleWeightPx("labelName", roleWeights.labelName), // 山名の太さ
+                "--label-sub-fw": roleWeightPx("labelSub", roleWeights.labelSub), // 補足の太さ
+                "--cap-title-fw": roleWeightPx("captionTitle", roleWeights.captionTitle), // 見出しの太さ
+                "--cap-body-fw": roleWeightPx("captionBody", roleWeights.captionBody), // 本文の太さ
               } as React.CSSProperties
             }
           >
@@ -2422,7 +2503,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         onPointerUp={onEditUp}
                         onPointerCancel={onEditUp}
                       >
-                        <span className="ar-label-name">{lc.name}</span>
+                        {/* 改行入りの山名は焼き込みと同じ行立て（空行除去）で表示する */}
+                        <span className="ar-label-name">{nameLines(lc.name).join("\n")}</span>
                         {lc.sub && <span className="ar-label-sub">{lc.sub}</span>}
                       </div>
                     );
@@ -2477,7 +2559,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${captionSplit} 1 0` } : undefined}
                         >
-                          {capColHasTitle && <div className="ar-caption-title">{arLabels[captionIdx].name}</div>}
+                          {capColHasTitle && <div className="ar-caption-title">{oneLineName(arLabels[captionIdx].name)}</div>}
                           {capColHasTitle && !capBoth && capTagEls(capTagLang)}
                           <p className="ar-caption-text">{descJa(arLabels[captionIdx])}</p>
                         </div>
@@ -2497,7 +2579,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${1 - captionSplit} 1 0` } : undefined}
                         >
-                          {capColHasTitle && <div className="ar-caption-title">{arLabels[captionIdx].nameEn || arLabels[captionIdx].name}</div>}
+                          {capColHasTitle && <div className="ar-caption-title">{oneLineName(arLabels[captionIdx].nameEn || arLabels[captionIdx].name)}</div>}
                           {capColHasTitle && !capBoth && capTagEls(capTagLang)}
                           <p className="ar-caption-text">{descEn(arLabels[captionIdx])}</p>
                         </div>
@@ -2530,6 +2612,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         top: `${tf.v * 100}%`,
                         color: titleColor,
                         "--title-ff": roleFontStack(titleFont),
+                        "--title-fw": roleWeightPx("title", titleWeight),
+                        "--title-sub-fw": titleSubWeightPx(roleWeightPx("title", titleWeight)),
                         "--title-fs": titleScale,
                         "--title-ls": titleLetterSpace,
                         "--title-gap": titleLineHeight,
@@ -2552,7 +2636,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               {exifOn && (() => {
                 const ink = noteInkColors();
                 const ch = (photoNat?.h ?? 1000) * fChF;
-                const totalH = ch * (1 + fMtb) + NOTE_EDGE * ch + noteBand * ch;
+                const cw = (photoNat?.w ?? 1500) * fCwF;
+                const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
+                const totalH = innerH + NOTE_EDGE * ch + noteBand * ch;
+                const outerW = innerW + NOTE_EDGE * ch * 2;
+                // 焼き込みの文字サイズ基準は内側（L=max(OW,OH)）。プレビューの cqmax は
+                // 外枠（縁＋帯込み）基準なので、その比で補正して実寸を揃える。
+                const noteK = Math.max(innerW, innerH) / Math.max(outerW, totalH);
                 return (
                   <div
                     className="ar-exif"
@@ -2562,6 +2652,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         fontFamily: roleFontStack(noteFont),
                         "--exif-main": ink.main,
                         "--exif-sub": ink.sub,
+                        "--note-k": noteK,
                       } as React.CSSProperties
                     }
                     aria-hidden="true"
@@ -3009,12 +3100,15 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       </label>
                       <div className="ar-fs-row">
                         <span>{t("studio.title.font")}</span>
-                        <div className="ar-font-sel">
-                          <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label={t("studio.title.fontAria")}>
-                            {FONT_PAIR_IDS.map((id) => (
-                              <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
-                            ))}
-                          </select>
+                        <div className="ar-font-sels">
+                          <div className="ar-font-sel">
+                            <select value={titleFont} onChange={(e) => setTitleFont(e.target.value as FontPairId)} aria-label={t("studio.title.fontAria")}>
+                              {FONT_PAIR_IDS.map((id) => (
+                                <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          {weightSelect(titleWeight, setTitleWeight, t("studio.font.weightAria", { label: t("studio.title.fontAria") }))}
                         </div>
                       </div>
                       <div className="ar-fs-slider-row">
