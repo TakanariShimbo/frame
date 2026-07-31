@@ -1456,6 +1456,8 @@ button {
   line-height: calc(1.5 * var(--cap-lh, 1));
   letter-spacing: var(--cap-ls, normal);
   color: inherit;
+  /* 編集で入れた改行(\n)を反映（焼き込みの wrapBody も \n で改行するので出力と一致） */
+  white-space: pre-line;
 }
 
 /* --- センタータイトル（出力と一致させる寸法。変更しない） --- */
