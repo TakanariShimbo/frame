@@ -1231,6 +1231,8 @@ button {
   font-size: calc(2.7cqmax * var(--label-name-fs, 1));
   font-weight: var(--label-name-fw, 700);
   letter-spacing: var(--label-ls, 0.01em);
+  /* 山名は編集で入れた改行(\n)をそのまま行に反映（焼き込みの nameFs×1.12 行送りと対応） */
+  white-space: pre-line;
 }
 .ar-label-sub {
   /* 行間スライダー（--label-lh）で山名との間隔を増減（焼き込みの 1.35×subFs と対応） */
@@ -1799,6 +1801,10 @@ button {
 }
 .studio-data-input--name {
   flex: 1.2 1 0;
+  /* 改行できるよう textarea にしている。高さは rows（行数）で決め、手動リサイズは不可 */
+  resize: none;
+  overflow: hidden;
+  line-height: 1.45;
 }
 .studio-data-input--en {
   flex: 1 1 0;

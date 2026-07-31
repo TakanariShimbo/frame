@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { IconImage } from "./icons";
+import { oneLineName } from "../lib/labels";
 import type { WorkItem } from "../App";
 
 type Props = {
@@ -63,7 +64,7 @@ export default function Board({ items, onOpen, onAdd, onHome }: Props) {
               <span className="board-tile-veil" aria-hidden="true" />
               <span className="board-tile-meta">
                 <span className="board-tile-no">{String(i + 1).padStart(2, "0")}</span>
-                {it.labels && <span className="board-tile-name">{it.labels[0]?.name}</span>}
+                {it.labels && <span className="board-tile-name">{oneLineName(it.labels[0]?.name ?? "")}</span>}
                 <span className={`board-tile-status is-${st}`}>{st === "done" ? "✓ " : ""}{STATUS_LABEL[st]}</span>
               </span>
             </button>
