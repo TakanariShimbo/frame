@@ -48,7 +48,7 @@ export default function PhotoContestArchivePage() {
   if (state.status === "error") return <ContestNotFound isError />;
   if (!data) return <div className="pc-screen" aria-busy="true" />;
 
-  const navItems = contests.map((c, i) => ({ number: String(i + 1).padStart(2, "0"), label: `${c.year} ${c.title}` }));
+  const navItems = contests.map((c, i) => ({ number: String(i + 1).padStart(2, "0"), label: `${c.yearLabel ?? c.year} ${c.title}` }));
   const scrollToTop = () => {
     containerRef.current?.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };

@@ -106,11 +106,13 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
             </h1>
             <span className="pcan-goldline" aria-hidden />
             <p className="pcan-hero-lead">{hero.lead}</p>
-            <p className="pcan-hero-desc">{hero.description}</p>
-            <p className="pcan-hero-status">
-              <span className="pcan-status-dot" aria-hidden />
-              {statusLabel}
-            </p>
+            {hero.description && <p className="pcan-hero-desc">{hero.description}</p>}
+            {statusLabel && (
+              <p className="pcan-hero-status">
+                <span className="pcan-status-dot" aria-hidden />
+                {statusLabel}
+              </p>
+            )}
           </div>
         </section>
 

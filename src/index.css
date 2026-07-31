@@ -4094,7 +4094,8 @@ a.pcan-sponsor-body.is-link:hover {
     border-top: 1px solid var(--pcan-border);
   }
   .pcan-period-date {
-    font-size: clamp(24px, 8vw, 34px);
+    font-size: clamp(22px, 6.4vw, 30px);
+    white-space: normal; /* 枠内に収まらない日付は " — " で折り返す */
   }
 
   /* 情報3カラム→縦積み */

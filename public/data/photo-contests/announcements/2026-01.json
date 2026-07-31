@@ -13,10 +13,10 @@
     "resultsPublished": false
   },
   "statusLabels": {
-    "scheduled": "開催決定・近日受付開始",
-    "open": "応募受付中",
-    "closed": "応募受付終了",
-    "resultsPublished": "結果公開済み"
+    "scheduled": "",
+    "open": "",
+    "closed": "",
+    "resultsPublished": ""
   },
   "periodNote": "応募期間中に投稿された作品が対象です。",
   "routes": {
@@ -28,7 +28,6 @@
     "titleLines": ["PHOTO", "CONTEST"],
     "yearLabel": "2026/8",
     "lead": "山の個性を、あなたの視点で。",
-    "description": "ヤマフレームフォトコンテスト 2026",
     "image": {
       "src": "/images/photo-contests/2026-01/announcement/hero.jpg",
       "mobileSrc": "/images/photo-contests/2026-01/announcement/hero-mobile.jpg",
@@ -52,8 +51,7 @@
     "requirements": [
       "ヤマフレームを用いて出力された写真であること。",
       "#ヤマフレームフォトコンテスト を付けて投稿すること。",
-      "XとThreadsの場合：指定されたアカウントをメンションまたはハッシュタグをつけて投稿すること。",
-      "Instagramの場合：指定されたアカウントをメンションして投稿すること。",
+      "指定アカウントをメンションして応募すること。",
       "山、または山での体験に付随した写真であること。",
       "単写真であること。"
     ]
@@ -98,9 +96,9 @@
     {
       "name": "鎌倉天幕",
       "logo": null,
-      "linkType": "official",
-      "linkLabel": "Official Site",
-      "url": "https://newtecjapan.co.jp/",
+      "linkType": "instagram",
+      "linkLabel": "Instagram",
+      "url": "https://www.instagram.com/ntj_kamakuratenmaku",
       "order": 5,
       "isPublished": true
     }

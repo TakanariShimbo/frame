@@ -3,9 +3,8 @@
     "eyebrow": "YAMA FRAME AWARD",
     "title": "PHOTO CONTEST",
     "description": [
-      "YAMA FRAME AWARDは、山岳写真の表現と文化を讃え、",
-      "次世代へ継承していくことを目的としたフォトコンテストです。",
-      "開催中・開催予定のコンテストをご案内します。"
+      "山を楽しむ人、それぞれの一枚を。",
+      "YAMA FRAMEのフォトコンテストをご紹介します。"
     ]
   },
   "seo": {
@@ -16,6 +15,7 @@
   "contests": [
     {
       "year": 2026,
+      "yearLabel": "2026/8",
       "title": "山を、もっと自分らしく。",
       "description": "アプリを使って出力した山写真の個性を評価するフォトコンテスト。2026年8月開催予定。開催概要と応募方法をご案内します。",
       "coverImage": {

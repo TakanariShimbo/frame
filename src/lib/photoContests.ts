@@ -17,6 +17,7 @@ export type ContestSeo = {
 
 export type ArchiveContest = {
   year: number;
+  yearLabel?: string; // 一覧に大きく出す表示用ラベル（省略時は year をそのまま表示）。例 "2026/8"
   title: string;
   description: string;
   coverImage: ContestImage;
@@ -115,7 +116,7 @@ export type AnnouncementContent = {
     titleLines: string[];
     yearLabel: string;
     lead: string;
-    description: string;
+    description?: string; // 省略可（未指定ならリード下の補足文を出さない）
     image: ContestImage;
   };
   theme: { title: string; description: string };
@@ -384,7 +385,7 @@ function validateAnnouncement(json: unknown, file: string): AnnouncementContent 
   if (!isRecord(statusLabels)) {
     issues.push("statusLabels が必要です");
   } else {
-    for (const k of STATUS_KEYS) if (!isNonEmptyString(statusLabels[k])) issues.push(`statusLabels.${k} が必要です`);
+    for (const k of STATUS_KEYS) if (typeof statusLabels[k] !== "string") issues.push(`statusLabels.${k} は文字列で指定してください（空文字ならその状態のバッジを表示しない）`);
   }
 
   const routes = json.routes;

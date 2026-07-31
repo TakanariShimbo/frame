@@ -18,14 +18,14 @@ export default function ArchiveItem({ contest, index, sectionRef }: Props) {
   const cta = contest.link?.cta ?? "VIEW RESULTS";
   return (
     <section ref={sectionRef} id={`contest-${contest.year}`} className={cls} data-reveal>
-      <AppLink to={href} className="pca-link" aria-label={`${contest.year} ${contest.title} ${cta}`}>
+      <AppLink to={href} className="pca-link" aria-label={`${contest.yearLabel ?? contest.year} ${contest.title} ${cta}`}>
         <div className="pca-media">
           <ContestPicture image={contest.coverImage} priority={index === 0} />
           <span className="pca-shade" aria-hidden />
         </div>
         <div className="pca-info">
           {contest.isLatest && <span className="pca-latest">LATEST</span>}
-          <span className="pca-year">{contest.year}</span>
+          <span className="pca-year">{contest.yearLabel ?? contest.year}</span>
           <h2 className="pca-title">{contest.title}</h2>
           <p className="pca-desc">{contest.description}</p>
           <span className="pca-cta">
