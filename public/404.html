@@ -7,9 +7,11 @@
       // GitHub Pages はSPAの深いURL（例 /frame-dev/photo-contest/2026）で404を返すため、
       // パスをクエリ（/?/photo-contest/2026）へ変換して index.html へリダイレクトし、
       // index.html 側のスクリプトで元のURLへ復元する（spa-github-pages方式）。
-      // pathSegmentsToKeep=1: プロジェクトページのリポジトリ名（/frame-dev/）を保持する。
-      var pathSegmentsToKeep = 1;
+      // pathSegmentsToKeep: プロジェクトページ（*.github.io/<repo>/）ではリポジトリ名を
+      // 保持するため 1、カスタムドメイン（base="/"）では 0。ホスト名で自動判定する。
+      // 0にしないとカスタムドメインで /photo-contest/... が無限リダイレクトになる。
       var l = window.location;
+      var pathSegmentsToKeep = l.hostname.endsWith(".github.io") ? 1 : 0;
       l.replace(
         l.protocol +
           "//" +
