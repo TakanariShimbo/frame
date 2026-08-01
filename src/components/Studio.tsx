@@ -846,8 +846,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           : l,
       ),
     );
-  const capName = oneLineName(capItem?.name ?? "");
-  const capNameEn = oneLineName(capItem?.nameEn || capItem?.name || "");
+  // 見出しは改行(\n)を維持（横一列 groupH のときだけ表示側で1行に畳む）。
+  const capName = nameLines(capItem?.name ?? "").join("\n");
+  const capNameEn = nameLines(capItem?.nameEn || capItem?.name || "").join("\n");
   const capColHasTitle = !capBoth || captionTitleMode === "each";
   const capTagLang: "ja" | "en" = captionLang === "en" ? "en" : "ja";
   const capSharedHasTags = !!capItem && capChips(capItem, capTagLang).length > 0;
@@ -880,7 +881,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     if (!it) return null;
     const en = titleLang === "en";
     const up = (s: string) => (en ? s.toUpperCase() : s);
-    const main = up(oneLineName(en ? it.nameEn || it.name : it.name));
+    const main = up(nameLines(en ? it.nameEn || it.name : it.name).join("\n"));
     const over =
       titleShowOver && it.prefecture
         ? up(en ? prefEn(it.prefecture) : it.prefecture.replace(/\//g, "・"))
@@ -894,7 +895,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 2段目(sub)と英名は1行に畳む。
   const labelContent = (lb: { name: string; nameEn?: string; elevM?: number }) => {
     const ja = lb.name;
-    const en = oneLineName(lb.nameEn || lb.name);
+    // name欄に使う英名は改行(\n)を維持し、sub欄に使うときだけ1行に畳む。
+    const en = nameLines(lb.nameEn || lb.name).join("\n");
+    const enSub = oneLineName(lb.nameEn || lb.name);
     // 標高なし（自由入力）の場合は標高部分だけ省いて表示する。
     const elev = lb.elevM != null ? `${Math.round(lb.elevM).toLocaleString()}m` : "";
     switch (labelMode) {
@@ -907,9 +910,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       case "enSubElev":
         return { name: en, sub: elev };
       case "jaSubEn":
-        return { name: ja, sub: en };
+        return { name: ja, sub: enSub };
       default:
-        return { name: ja, sub: [lb.nameEn, elev].filter(Boolean).join(" | ") };
+        return { name: ja, sub: [lb.nameEn ? oneLineName(lb.nameEn) : undefined, elev].filter(Boolean).join(" | ") };
     }
   };
 
@@ -1299,9 +1302,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     if (captionLang !== "none" && cap && (capJa || capEn)) {
       const cols: { title: string; body: string; lang: "ja" | "en" }[] = [];
       if ((captionLang === "ja" || captionLang === "both") && capJa)
-        cols.push({ title: oneLineName(cap.name), body: capJa, lang: "ja" });
+        cols.push({ title: nameLines(cap.name).join("\n"), body: capJa, lang: "ja" });
       if ((captionLang === "en" || captionLang === "both") && capEn)
-        cols.push({ title: oneLineName(cap.nameEn || cap.name), body: capEn, lang: "en" });
+        cols.push({ title: nameLines(cap.nameEn || cap.name).join("\n"), body: capEn, lang: "en" });
       if (cols.length) {
         const titleFs = Math.round(L * 0.026 * captionTitleScale);
         const bodyFs = Math.round(L * 0.02 * captionBodyScale);
@@ -1369,6 +1372,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 ? [{ text: cols[0].title, fs: titleFs }, { text: cols[1].title, fs: titleFsSmall }]
                 : [];
         const sharedRow = captionTitleMode === "groupH" && both;
+        // 横一列(groupH)は1行前提のレイアウトなので改行を畳む。縦積みは改行を維持。
+        if (sharedRow) for (const p of sharedParts) p.text = oneLineName(p.text);
         const colHasTitle = !both || captionTitleMode === "each";
         const capGap = Math.round(bodyFs * 0.7);
         const rowGap = capGap;
@@ -1425,11 +1430,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const colTagRows = cols.map((_c, ci) => (colHasTitle && !both ? layoutPills(capChips(cap, tagLang), colWidths[ci]) : []));
         const colTagH = colTagRows.map((rows) => (rows.length ? capGap + pillsH(rows) + capGap : 0));
         const sharedTagRows = sharedParts.length ? layoutPills(capChips(cap, tagLang), blockW) : [];
-        const colBodyH = wrapped.map((w, ci) => (colHasTitle ? titleLineH : 0) + colTagH[ci] + w.lines.length * lineH);
+        const colBodyH = wrapped.map((w, ci) => (colHasTitle ? titleLineH * w.title.split("\n").length : 0) + colTagH[ci] + w.lines.length * lineH);
         const sharedTitleH = sharedParts.length
           ? sharedRow
             ? lineHFor(Math.max(...sharedParts.map((p) => p.fs)))
-            : sharedParts.reduce((a, p) => a + lineHFor(p.fs), 0)
+            : sharedParts.reduce((a, p) => a + lineHFor(p.fs) * p.text.split("\n").length, 0)
           : 0;
         const sharedGap = Math.round(bodyFs * 1.0);
         const sharedBelow = !sharedParts.length ? 0 : sharedTagRows.length ? capGap + pillsH(sharedTagRows) + capGap : sharedGap;
@@ -1457,8 +1462,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           if (colHasTitle) {
             ctx.font = `${fwCapTitle} ${titleFs}px ${ffTitle}`;
             setLS(titleFs * captionLetterSpace);
-            ctx.fillText(w.title, cxp, ty2 + titleFs);
-            ty2 += titleLineH;
+            for (const tl of w.title.split("\n")) {
+              ctx.fillText(tl, cxp, ty2 + titleFs);
+              ty2 += titleLineH;
+            }
           }
           if (colHasTitle && colTagRows[ci].length) {
             ty2 += capGap;
@@ -1498,8 +1505,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             for (const p of sharedParts) {
               ctx.font = `${fwCapTitle} ${p.fs}px ${ffTitle}`;
               setLS(p.fs * captionLetterSpace);
-              ctx.fillText(p.text, bx, ty + p.fs);
-              ty += lineHFor(p.fs);
+              for (const tl of p.text.split("\n")) {
+                ctx.fillText(tl, bx, ty + p.fs);
+                ty += lineHFor(p.fs);
+              }
             }
           }
           if (sharedTagRows.length) {
@@ -1547,7 +1556,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const numFs = Math.max(1, Math.round(mainFs * 0.3));
         const overGap = Math.round(mainFs * 0.42 * titleLineHeight);
         const numGap = Math.round(mainFs * 0.34 * titleLineHeight);
-        const totalH = (tp.over ? overFs + overGap : 0) + mainFs + (tp.num ? numGap + numFs : 0);
+        const mainLines = tp.main.split("\n");
+        const mainLineH = Math.round(mainFs * 1.02); // プレビュー .ar-title-main の line-height と一致
+        const mainBlockH = mainFs + (mainLines.length - 1) * mainLineH;
+        const totalH = (tp.over ? overFs + overGap : 0) + mainBlockH + (tp.num ? numGap + numFs : 0);
         let y = cy - totalH / 2;
         ctx.save();
         ctx.textAlign = "center";
@@ -1566,8 +1578,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         }
         ctx.font = `${fwTitleMain} ${mainFs}px ${ffTitle}`;
         setLS(mainFs * 0.04 * titleLetterSpace);
-        ctx.fillText(tp.main, cx, y);
-        y += mainFs;
+        for (let li = 0; li < mainLines.length; li++) {
+          ctx.fillText(mainLines[li], cx, y + li * mainLineH);
+        }
+        y += mainBlockH;
         if (tp.num) {
           y += numGap;
           ctx.font = `${fwTitleSub} ${numFs}px ${ffTitle}`;
@@ -2104,10 +2118,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             aria-label={t("studio.data.nameLabel", { n: i + 1 })}
             autoComplete="off"
           />
-          <input
-            type="text"
+          {/* 英語名も改行可（Enterで改行）。名札の英語表示にそのまま反映される。 */}
+          <textarea
             className="studio-data-input studio-data-input--en"
             value={lb.nameEn ?? ""}
+            rows={Math.max(1, (lb.nameEn ?? "").split("\n").length)}
             onChange={(e) => setLabelNameEn(i, e.target.value)}
             placeholder={t("studio.data.nameEnPlaceholder")}
             aria-label={t("studio.data.nameEnLabel", { name: oneLineName(lb.name) })}
@@ -2541,9 +2556,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       >
                         {capSharedRow ? (
                           <>
-                            <div className="ar-caption-title">{capName}</div>
+                            <div className="ar-caption-title">{oneLineName(capName)}</div>
                             <div className="ar-caption-title ar-cap-sep">/</div>
-                            <div className="ar-caption-title is-sub">{capNameEn}</div>
+                            <div className="ar-caption-title is-sub">{oneLineName(capNameEn)}</div>
                           </>
                         ) : (
                           capSharedTitleParts.map((p, i) => (
@@ -2559,7 +2574,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${captionSplit} 1 0` } : undefined}
                         >
-                          {capColHasTitle && <div className="ar-caption-title">{oneLineName(arLabels[captionIdx].name)}</div>}
+                          {capColHasTitle && <div className="ar-caption-title">{nameLines(arLabels[captionIdx].name).join("\n")}</div>}
                           {capColHasTitle && !capBoth && capTagEls(capTagLang)}
                           <p className="ar-caption-text">{descJa(arLabels[captionIdx])}</p>
                         </div>
@@ -2579,7 +2594,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           className="ar-cap-col"
                           style={capBoth && captionLayout === "horizontal" ? { flex: `${1 - captionSplit} 1 0` } : undefined}
                         >
-                          {capColHasTitle && <div className="ar-caption-title">{oneLineName(arLabels[captionIdx].nameEn || arLabels[captionIdx].name)}</div>}
+                          {capColHasTitle && <div className="ar-caption-title">{nameLines(arLabels[captionIdx].nameEn || arLabels[captionIdx].name).join("\n")}</div>}
                           {capColHasTitle && !capBoth && capTagEls(capTagLang)}
                           <p className="ar-caption-text">{descEn(arLabels[captionIdx])}</p>
                         </div>

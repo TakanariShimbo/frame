@@ -1399,6 +1399,8 @@ button {
   width: 26px;
 }
 .ar-caption-title {
+  /* 見出しの改行(\n)を反映（焼き込みは titleLineH×行数で対応） */
+  white-space: pre-line;
   font-family: var(--cap-title-ff, inherit);
   font-size: calc(2.6cqmax * var(--cap-title-fs, 1));
   font-weight: var(--cap-title-fw, 700);
@@ -1499,6 +1501,8 @@ button {
   margin-bottom: calc(0.9cqmax * var(--title-fs, 1) * var(--title-gap, 1));
 }
 .ar-title-main {
+  /* 編集で入れた改行(\n)を反映（焼き込みも mainLineH=1.02×fs で行送り） */
+  white-space: pre-line;
   font-size: calc(7.5cqmax * var(--title-fs, 1));
   font-weight: var(--title-fw, 700);
   letter-spacing: calc(0.04em * var(--title-ls, 1));
