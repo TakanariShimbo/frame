@@ -3152,7 +3152,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>{t("studio.title.size")}</span>
                         <span className="ar-fs-val">{Math.round(titleScale * 100)}%</span>
                       </div>
-                      <FsSlider min={0.7} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel={t("studio.title.sizeAria")} />
+                      <FsSlider min={0.3} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel={t("studio.title.sizeAria")} />
                       <div className="ar-fs-row">
                         <span>{t("studio.title.textColor")}</span>
                         <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label={t("studio.title.textColorAria")} />
