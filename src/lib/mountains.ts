@@ -1,3 +1,5 @@
+import { getAppMode } from "./mode";
+
 // 山名検索。山岳データ（public/data/mountains.json、約27,000山）を
 // 使い、名前・読み(カナ)・別名で部分一致検索する。正確な山頂座標と標高を持つのでオフライン可。
 //   出典: 「山名一覧 on the Web地図」(map.jpn.org, あにねこ氏) ＋「日本の主な山岳標高一覧」（国土地理院）を加工。
@@ -155,8 +157,8 @@ export async function loadDescriptionsFor(ids: number[]): Promise<Map<number, Mo
 
 /** 名前・読みで部分一致。重要度(priority)→標高の順で並べ、上位 limit 件を返す。 */
 export async function searchMountains(query: string, limit = 12): Promise<MountainHit[]> {
-  const [dict, featured] = await Promise.all([load(), loadFeatured()]);
-  const list = [...featured, ...dict];
+  // モードで検索対象を絞る: 山モードは山岳辞書のみ、花火モードはフィーチャーエントリのみ。
+  const list = getAppMode() === "hanabi" ? await loadFeatured() : await load();
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const qh = toHiragana(q);
