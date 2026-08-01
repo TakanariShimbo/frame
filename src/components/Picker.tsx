@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { setAppMode } from "../lib/mode";
 import { IconImage } from "./icons";
 import LanguageToggle from "./LanguageToggle";
 
@@ -140,10 +141,30 @@ export default function Picker({ onPick }: Props) {
           <p className="kicker">Frame</p>
           <h1>{t("picker.heroTitle")}</h1>
           <p className="pick-lead">{t("picker.heroLead")}</p>
-          <button type="button" className="pick-hero-cta" onClick={() => fileRef.current?.click()}>
-            <IconImage size={18} />
-            {t("picker.heroCta")}
-          </button>
+          <div className="pick-hero-ctas">
+            <button
+              type="button"
+              className="pick-hero-cta"
+              onClick={() => {
+                setAppMode("mountain");
+                fileRef.current?.click();
+              }}
+            >
+              <IconImage size={18} />
+              {t("picker.ctaMountain")}
+            </button>
+            <button
+              type="button"
+              className="pick-hero-cta pick-hero-cta--hanabi"
+              onClick={() => {
+                setAppMode("hanabi");
+                fileRef.current?.click();
+              }}
+            >
+              <IconImage size={18} />
+              {t("picker.ctaHanabi")}
+            </button>
+          </div>
           <p className="pick-hero-note">{t("picker.heroNote")}</p>
         </div>
         <div className="pick-hero-scroll" aria-hidden="true" />

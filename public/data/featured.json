@@ -1,0 +1,2822 @@
+[
+  {
+    "id": 9000001,
+    "name": "長岡花火",
+    "name_kana": "ながおかはなび",
+    "name_en": "Nagaoka Fireworks",
+    "aliases": [
+      {
+        "name": "長岡まつり大花火大会"
+      },
+      {
+        "name": "花火"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "新潟県",
+    "priority": 1000,
+    "description": {
+      "title_ja": "長岡花火",
+      "title_en": "Nagaoka Fireworks",
+      "description_ja_long": "毎年8月2日・3日に信濃川河川敷で開かれる日本三大花火の一つ。長岡空襲からの復興と慰霊、平和への祈りを受け継ぎ、正三尺玉やフェニックスが夜空を彩る。",
+      "description_ja_short": "8月2日・3日開催の日本三大花火の一つ。慰霊と復興の祈りを込めた大輪が信濃川の夜空を彩る。",
+      "description_en_long": "The Nagaoka Festival Grand Fireworks Show is held on August 2nd and 3rd along the Shinano River. One of Japan's three greatest displays, it carries a prayer for peace and recovery born from the 1945 air raid, crowned by giant shells and the Phoenix.",
+      "description_en_short": "One of Japan's three greatest fireworks festivals, held August 2nd and 3rd on the Shinano River in Nagaoka.",
+      "tags_ja": [
+        "花火",
+        "夏",
+        "新潟県",
+        "祭り"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Summer",
+        "Niigata",
+        "Festival"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000002,
+    "name": "復興祈願花火フェニックス",
+    "name_kana": "ふっこうきがんはなびふぇにっくす",
+    "name_en": "Phoenix",
+    "aliases": [
+      {
+        "name": "フェニックス"
+      },
+      {
+        "name": "フェニックス花火協賛者一同"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 999,
+    "description": {
+      "title_ja": "復興祈願花火フェニックス",
+      "title_en": "Phoenix",
+      "description_ja_long": "中越地震からの復興を祈って2005年に誕生した、長岡花火を象徴する超大型スターマイン。全長約2kmの打上げ幅から音楽に乗せて光のパノラマが広がる。",
+      "description_ja_short": "復興祈願で2005年に誕生。全長約2kmの光のパノラマが音楽とともに広がる名物スターマイン。",
+      "description_en_long": "The Phoenix is Nagaoka's signature super-wide starmine, first launched in 2005 as a prayer for recovery from the Chuetsu Earthquake, filling a front of about two kilometers along the Shinano River in sync with music.",
+      "description_en_short": "Nagaoka's signature two-kilometer starmine, born in 2005 as a prayer for earthquake recovery.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "復興祈願"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Phoenix"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000003,
+    "name": "正三尺玉",
+    "name_kana": "しょうさんじゃくだま",
+    "name_en": "Shosanjakudama",
+    "aliases": [
+      {
+        "name": "三尺玉"
+      },
+      {
+        "name": "吉乃川"
+      },
+      {
+        "name": "越後交通"
+      },
+      {
+        "name": "原信"
+      },
+      {
+        "name": "INPEX"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 998,
+    "description": {
+      "title_ja": "正三尺玉",
+      "title_en": "Shosanjakudama",
+      "description_ja_long": "直径約90cmの巨大な玉を上空約600mへ打ち上げ、直径約650mの大輪を咲かせる長岡名物。開花とともに腹に響く轟音が信濃川の会場全体を包み込む。",
+      "description_ja_short": "直径約90cmの玉が上空約600mで約650mの大輪に開く、長岡名物の巨大花火。",
+      "description_en_long": "The Shosanjakudama is Nagaoka's iconic giant shell, about 90 centimeters across, fired some 600 meters up to bloom roughly 650 meters wide, its thunderous report rolling across the Shinano River venue.",
+      "description_en_short": "Nagaoka's iconic giant shell, blooming about 650 meters across high above the Shinano River.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "三尺玉"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Giant shell"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000004,
+    "name": "白菊",
+    "name_kana": "しらぎく",
+    "name_en": "Shiragiku",
+    "aliases": [
+      {
+        "name": "慰霊の白菊"
+      },
+      {
+        "name": "嘉瀬煙火工業"
+      },
+      {
+        "name": "長岡花火財団"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 997,
+    "description": {
+      "title_ja": "白菊",
+      "title_en": "Shiragiku",
+      "description_ja_long": "白一色で静かに開く慰霊の花火。花火師・嘉瀬誠次氏がシベリア抑留の戦友に捧げたことに始まり、戦災と災害の犠牲者への祈りとして大会の冒頭を飾る。",
+      "description_ja_short": "白一色で開く慰霊の花火。犠牲者への鎮魂を込め、大会の冒頭に静かに打ち上げられる。",
+      "description_en_long": "The Shiragiku is a pure-white memorial shell first fired by pyrotechnician Seiji Kase in mourning for comrades lost in Siberian internment. It now opens the festival as a prayer for all victims of war and disaster.",
+      "description_en_short": "A pure-white memorial shell that opens the festival as a silent prayer for victims of war and disaster.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "慰霊"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Memorial"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000005,
+    "name": "天地人花火",
+    "name_kana": "てんちじんはなび",
+    "name_en": "Tenchijin Fireworks",
+    "aliases": [
+      {
+        "name": "天地人"
+      },
+      {
+        "name": "天地人花火協賛企業一同"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 996,
+    "description": {
+      "title_ja": "天地人花火",
+      "title_en": "Tenchijin Fireworks",
+      "description_ja_long": "長岡ゆかりの武将・直江兼続を描いた大河ドラマ「天地人」を記念する音楽付きスターマイン。義と愛の物語を思わせる勇壮な花火が信濃川の夜空を駆ける。",
+      "description_ja_short": "大河ドラマ「天地人」を記念した音楽付きスターマイン。直江兼続の物語を花火で描く。",
+      "description_en_long": "The Tenchijin Fireworks are a musical starmine commemorating the taiga drama about Naoe Kanetsugu, the samurai of loyalty and love tied to the Nagaoka region, sweeping gallantly across the night sky over the river.",
+      "description_en_short": "A musical starmine honoring the taiga drama Tenchijin and the local samurai Naoe Kanetsugu.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "天地人"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Tenchijin"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000006,
+    "name": "米百俵花火・尺玉100連発",
+    "name_kana": "こめひゃっぴょうはなびしゃくだまひゃくれんぱつ",
+    "name_en": "Kome Hyappyo 100 Shells",
+    "aliases": [
+      {
+        "name": "米百俵花火"
+      },
+      {
+        "name": "尺玉100連発"
+      },
+      {
+        "name": "TDKラムダ"
+      },
+      {
+        "name": "NNCエンジニアリング"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 995,
+    "description": {
+      "title_ja": "米百俵花火・尺玉100連発",
+      "title_en": "Kome Hyappyo 100 Shells",
+      "description_ja_long": "戊辰戦争後、米百俵を売って学校を建てた長岡藩の精神にちなむ演目。上空約330mで開く尺玉100発を、息つく間もなく連続で打ち上げる圧巻の構成。",
+      "description_ja_short": "「米百俵の精神」にちなみ尺玉100発を連続打上げ。大会屈指の迫力を誇る演目。",
+      "description_en_long": "Honoring the Kome Hyappyo spirit of investing in the future, one hundred giant shells are fired in relentless succession, each blooming about 330 meters up, making one of the festival's most powerful programs.",
+      "description_en_short": "One hundred giant shells fired in relentless succession, honoring Nagaoka's Kome Hyappyo spirit.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "米百俵"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Kome Hyappyo"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000007,
+    "name": "ナイアガラ",
+    "name_kana": "ないあがら",
+    "name_en": "Niagara",
+    "aliases": [
+      {
+        "name": "ナイアガラ大瀑布"
+      },
+      {
+        "name": "植木組"
+      },
+      {
+        "name": "朝日山"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 994,
+    "description": {
+      "title_ja": "ナイアガラ",
+      "title_en": "Niagara",
+      "description_ja_long": "信濃川に架かる大手大橋から、滝のように光が流れ落ちる大仕掛けの花火。川面に映る金色のカーテンが美しく、プログラム中盤の見どころの一つ。",
+      "description_ja_short": "大手大橋から滝のように流れ落ちる光のカーテン。川面に映る金色が美しい仕掛け花火。",
+      "description_en_long": "The Niagara is a set-piece cascade of golden sparks pouring from the Ohte Bridge over the Shinano River, its falling curtain of light mirrored on the water as one of the highlights of the mid-program.",
+      "description_en_short": "A golden cascade of sparks pouring from the Ohte Bridge, mirrored on the Shinano River.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "ナイアガラ"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Niagara"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000008,
+    "name": "ベスビアス超大型スターマイン",
+    "name_kana": "べすびあすちょうおおがたすたーまいん",
+    "name_en": "Vesuvius Starmine",
+    "aliases": [
+      {
+        "name": "ベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 993,
+    "description": {
+      "title_ja": "ベスビアス超大型スターマイン",
+      "title_en": "Vesuvius Starmine",
+      "description_ja_long": "火山ベスビオの噴火にたとえられる長岡伝統の超大型スターマイン。広い打上げ幅から何百発もの花火が湧き上がり、光の奔流が夜空を焦がす主力演目。",
+      "description_ja_short": "火山の噴火にたとえられる長岡伝統の超大型スターマイン。光の奔流が夜空を焦がす。",
+      "description_en_long": "Named for the eruption of Mount Vesuvius, this traditional Nagaoka super starmine sends hundreds of shells surging upward like a torrent of fire, staged several times through the festival by its sponsors.",
+      "description_en_short": "Nagaoka's traditional super starmine, a volcanic torrent of light staged throughout the festival.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "スターマイン"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Starmine"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000009,
+    "name": "匠の花火",
+    "name_kana": "たくみのはなび",
+    "name_en": "Takumi Fireworks",
+    "aliases": [
+      {
+        "name": "匠"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 992,
+    "description": {
+      "title_ja": "匠の花火",
+      "title_en": "Takumi Fireworks",
+      "description_ja_long": "長岡花火財団が贈る、花火師の技を主役にした演目。色の変化や開きの正確さ、消え際の美しさなど、一発ごとの完成度をじっくり味わえる通好みの時間。",
+      "description_ja_short": "花火師の技を主役に、一発ごとの色・開き・消え際の完成度を味わう通好みの演目。",
+      "description_en_long": "Presented by the Nagaoka Fireworks Foundation, Takumi puts the pyrotechnician's craft itself center stage, savoring each shell for its color shifts, the precision of its bloom, and the beauty of its fade.",
+      "description_en_short": "A connoisseur's program devoted to the artisan's craft, one carefully judged shell at a time.",
+      "tags_ja": [
+        "花火",
+        "長岡花火",
+        "花火師"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka",
+        "Artisan"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000101,
+    "name": "カノン～この先に続く道(ミライ)に向かって～",
+    "aliases": [
+      {
+        "name": "オンヨネ＆エヌ・シィ・ティ・JTB＆エヌ・シィ・ティ"
+      },
+      {
+        "name": "オンヨネ"
+      },
+      {
+        "name": "エヌ"
+      },
+      {
+        "name": "シィ"
+      },
+      {
+        "name": "ティ"
+      },
+      {
+        "name": "JTB"
+      },
+      {
+        "name": "ナイアガラ超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "カノン～この先に続く道(ミライ)に向かって～",
+      "title_en": "カノン～この先に続く道(ミライ)に向かって～",
+      "description_ja_long": "未来へ続く道への願いをカノンの旋律に重ね、大手大橋のナイアガラとともに夜空を開く開幕の共演。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "カノンの旋律とナイアガラで夜空を開く開幕の共演。ナイアガラ超大型スターマイン。",
+      "description_en_long": "An opening collaboration that pairs the Niagara cascade on the Ohte Bridge with a starmine set to Pachelbel's Canon, carrying a wish for the road to the future.",
+      "description_en_short": "An opening collaboration that pairs the Niagara cascade on the Ohte Bridge with a starmine set to Pachelbel's Canon, carrying a wish for the road to the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000102,
+    "name": "純金箔24K 黄金の輝き",
+    "aliases": [
+      {
+        "name": "トーア"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "純金箔24K 黄金の輝き",
+      "title_en": "純金箔24K 黄金の輝き",
+      "description_ja_long": "タイトルに掲げた純金箔のように、黄金一色の光が夜空を染め上げる豪華な一幕。湧き上がる光の奔流が夜空を焦がす伝統の型。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "純金箔のような黄金一色が夜空を染める。ベスビアス超大型スターマイン。",
+      "description_en_long": "A luxurious display in which the night sky is dyed in a single shade of gold, evoking the pure gold leaf of its title. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A luxurious display in which the night sky is dyed in a single shade of gold, evoking the pure gold leaf of its title.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000103,
+    "name": "ガラスが拓く未来のとびら",
+    "aliases": [
+      {
+        "name": "ミクロ技術研究所長岡事業所"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ガラスが拓く未来のとびら",
+      "title_en": "ガラスが拓く未来のとびら",
+      "description_ja_long": "ガラスの精密加工を手がける協賛社にちなみ、透明感のある光が未来の扉を開くように広がる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "ガラス加工の協賛社にちなむ透明感ある光。超大型スーパーベスビアス。",
+      "description_en_long": "Sponsored by a precision glass maker, the display spreads with a glassy transparency, as if opening a door to the future. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Sponsored by a precision glass maker, the display spreads with a glassy transparency, as if opening a door to the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000104,
+    "name": "大河の恵み～水が生む紙の物語",
+    "aliases": [
+      {
+        "name": "北越コーポレーション・北越グループ"
+      },
+      {
+        "name": "北越コーポレーション"
+      },
+      {
+        "name": "北越グループ"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "大河の恵み～水が生む紙の物語",
+      "title_en": "大河の恵み～水が生む紙の物語",
+      "description_ja_long": "製紙業を営む協賛社らしく、信濃川の水の恵みと紙づくりの物語を光の連なりで描き出す。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "信濃川の水と紙づくりの物語を光で描く。ベスビアス大スターマイン。",
+      "description_en_long": "True to its papermaking sponsor, the display tells the story of paper born from the blessings of the Shinano River's water. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "True to its papermaking sponsor, the display tells the story of paper born from the blessings of the Shinano River's water.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000105,
+    "name": "誰かのために！72年の感謝報恩",
+    "aliases": [
+      {
+        "name": "ソリマチテックグループ"
+      },
+      {
+        "name": "10号72発"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "誰かのために！72年の感謝報恩",
+      "title_en": "誰かのために！72年の感謝報恩",
+      "description_ja_long": "創業72年の感謝を込めて尺玉72発を打ち上げる、「誰かのために」を掲げた感謝報恩の演目。大輪の尺玉が連続して夜空に開く。",
+      "description_ja_short": "創業72年の感謝を尺玉72発に込める。10号72発。",
+      "description_en_long": "Seventy-two giant shells, one for each year since the sponsor's founding, fired in gratitude under the banner of doing something for someone.",
+      "description_en_short": "Seventy-two giant shells, one for each year since the sponsor's founding, fired in gratitude under the banner of doing something for someone.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000106,
+    "name": "米百俵の心",
+    "aliases": [
+      {
+        "name": "中越興業グループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "米百俵の心",
+      "title_en": "米百俵の心",
+      "description_ja_long": "米百俵を売って学校を建てた長岡藩の故事に想いを重ね、未来への投資の心を光で表す。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "米百俵の故事に重ねた未来への想い。超大型スーパーベスビアス。",
+      "description_en_long": "A display that honors Nagaoka's Kome Hyappyo story of selling rice to build a school, expressing the spirit of investing in the future. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A display that honors Nagaoka's Kome Hyappyo story of selling rice to build a school, expressing the spirit of investing in the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000107,
+    "name": "長岡から世界へ、希望の花束",
+    "aliases": [
+      {
+        "name": "イートラスト"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "長岡から世界へ、希望の花束",
+      "title_en": "長岡から世界へ、希望の花束",
+      "description_ja_long": "長岡から世界へ希望を届けるという想いを、花束のように色とりどりの光に託して打ち上げる。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "世界へ届ける花束のような色とりどりの光。ベスビアス超大型スターマイン。",
+      "description_en_long": "A bouquet of many-colored lights carrying a wish to deliver hope from Nagaoka to the world. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A bouquet of many-colored lights carrying a wish to deliver hope from Nagaoka to the world.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000108,
+    "name": "ともに歩んだ80年、明日へ届ける感謝の響き",
+    "aliases": [
+      {
+        "name": "越後製菓"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ともに歩んだ80年、明日へ届ける感謝の響き",
+      "title_en": "ともに歩んだ80年、明日へ届ける感謝の響き",
+      "description_ja_long": "米菓や切り餅で知られる越後製菓が、創業80年をともに歩んだ感謝を込めて夜空に響かせる。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "越後製菓が創業80年の感謝を込める。ベスビアス超大型スターマイン。",
+      "description_en_long": "Echigo Seika, known for its rice crackers and mochi, marks 80 years of history with a resounding display of gratitude. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Echigo Seika, known for its rice crackers and mochi, marks 80 years of history with a resounding display of gratitude.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000109,
+    "name": "真夏のイルミネーション",
+    "aliases": [
+      {
+        "name": "ユニオンツール"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "真夏のイルミネーション",
+      "title_en": "真夏のイルミネーション",
+      "description_ja_long": "冬に長岡工場を彩るイルミネーションで知られるユニオンツールが、その光を真夏の夜空に咲かせる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "冬の名物イルミネーションを真夏の夜空に。超大型スーパーベスビアス。",
+      "description_en_long": "Union Tool, famous for the winter illuminations that adorn its Nagaoka plant, brings that glow to the midsummer night sky. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Union Tool, famous for the winter illuminations that adorn its Nagaoka plant, brings that glow to the midsummer night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000110,
+    "name": "人が想い描く未来、その先へ",
+    "aliases": [
+      {
+        "name": "クレスコ"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "人が想い描く未来、その先へ",
+      "title_en": "人が想い描く未来、その先へ",
+      "description_ja_long": "人が想い描く未来のさらに先へ、という願いを掲げ、光の連なりが夜空の奥へと駆け上がる。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "想い描く未来のさらに先へ駆ける光。ベスビアス大スターマイン。",
+      "description_en_long": "Under the theme of going beyond the future people imagine, trails of light race deeper and deeper into the night sky. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Under the theme of going beyond the future people imagine, trails of light race deeper and deeper into the night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000111,
+    "name": "心ひとつに",
+    "aliases": [
+      {
+        "name": "TeNYテレビ新潟"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "心ひとつに",
+      "title_en": "心ひとつに",
+      "description_ja_long": "地元の放送局TeNYテレビ新潟が贈る、会場の心をひとつにする願いを込めたスターマイン。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "会場の心をひとつにする願いを込めて。ベスビアス超大型スターマイン。",
+      "description_en_long": "Presented by local broadcaster TeNY, a starmine carrying the wish to bring every heart at the venue together as one. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Presented by local broadcaster TeNY, a starmine carrying the wish to bring every heart at the venue together as one.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000112,
+    "name": "未来へ～平和を願って～",
+    "aliases": [
+      {
+        "name": "リバーサイド千秋・アピタ長岡店・JTB"
+      },
+      {
+        "name": "リバーサイド千秋"
+      },
+      {
+        "name": "アピタ長岡店"
+      },
+      {
+        "name": "JTB"
+      },
+      {
+        "name": "10号20発・20号3発"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "未来へ～平和を願って～",
+      "title_en": "未来へ～平和を願って～",
+      "description_ja_long": "尺玉に加えて20号玉3発を打ち上げ、未来と平和への願いを大輪の連なりに込める演目。慰霊と復興の祈りを受け継ぐ大会を彩る。",
+      "description_ja_short": "20号玉3発とともに平和への願いを込める。10号20発・20号3発。",
+      "description_en_long": "Three massive 20-gou shells join the giant shells in a program that entrusts its prayer for peace and the future to a chain of great blooms.",
+      "description_en_short": "Three massive 20-gou shells join the giant shells in a program that entrusts its prayer for peace and the future to a chain of great blooms.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000113,
+    "name": "ふるさとの四季",
+    "aliases": [
+      {
+        "name": "岩塚製菓グループ"
+      },
+      {
+        "name": "超大型ワイドスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ふるさとの四季",
+      "title_en": "ふるさとの四季",
+      "description_ja_long": "新潟の米菓メーカー岩塚製菓が、ふるさとの春夏秋冬を四つの表情の光で描く横長の絵巻。横一線に広がる光のパノラマが見どころ。",
+      "description_ja_short": "ふるさとの春夏秋冬を光で描く絵巻。超大型ワイドスターマイン。",
+      "description_en_long": "Rice-cracker maker Iwatsuka Confectionery paints the four seasons of its hometown in a wide scroll of changing light. It is staged as a super-wide starmine spread across a broad launch front at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Rice-cracker maker Iwatsuka Confectionery paints the four seasons of its hometown in a wide scroll of changing light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000114,
+    "name": "福田グループスピリット～100年先も誠実～",
+    "aliases": [
+      {
+        "name": "福田グループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "福田グループスピリット～100年先も誠実～",
+      "title_en": "福田グループスピリット～100年先も誠実～",
+      "description_ja_long": "「100年先も誠実」を掲げる建設の福田グループが、その精神を貫くようにまっすぐな光を上げる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "「100年先も誠実」の精神を光に込めて。超大型スーパーベスビアス。",
+      "description_en_long": "The Fukuda construction group raises columns of straight, honest light under its motto of staying sincere for the next hundred years. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "The Fukuda construction group raises columns of straight, honest light under its motto of staying sincere for the next hundred years.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000115,
+    "name": "感謝の絆、未来への輝き",
+    "aliases": [
+      {
+        "name": "日産サティオ新潟西"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "感謝の絆、未来への輝き",
+      "title_en": "感謝の絆、未来への輝き",
+      "description_ja_long": "地元とともに歩む自動車販売店が、日頃の感謝の絆を未来への輝きに変えて夜空へ届ける。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "感謝の絆を未来への輝きに変えて。ベスビアス超大型スターマイン。",
+      "description_en_long": "A local car dealership turns its bonds of gratitude into brilliance for the future, delivered high into the night sky. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A local car dealership turns its bonds of gratitude into brilliance for the future, delivered high into the night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000116,
+    "name": "すべての『いのち』にありがとう",
+    "aliases": [
+      {
+        "name": "長岡市仏教会・立正佼成会長岡教会"
+      },
+      {
+        "name": "長岡市仏教会"
+      },
+      {
+        "name": "立正佼成会長岡教会"
+      },
+      {
+        "name": "スペシャルスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "すべての『いのち』にありがとう",
+      "title_en": "すべての『いのち』にありがとう",
+      "description_ja_long": "長岡市仏教会などが贈る祈りの花火。すべてのいのちへの感謝と供養の想いを静かな光に込める。テーマに沿った音楽と色彩の演出が光る。",
+      "description_ja_short": "すべてのいのちへの感謝と祈りを込めて。スペシャルスターマイン。",
+      "description_en_long": "A prayerful display from Nagaoka's Buddhist association, entrusting gratitude and remembrance for all life to its quiet light. It is staged as a themed starmine staged with music and color at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A prayerful display from Nagaoka's Buddhist association, entrusting gratitude and remembrance for all life to its quiet light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000117,
+    "name": "AIRMANスパーキング",
+    "aliases": [
+      {
+        "name": "AIRMAN"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "AIRMANスパーキング",
+      "title_en": "AIRMANスパーキング",
+      "description_ja_long": "エンジンコンプレッサで知られる建機メーカーAIRMAN（旧北越工業）が、火花のように弾ける光で沸かせる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "AIRMANブランドの火花のように弾ける光。超大型スーパーベスビアス。",
+      "description_en_long": "AIRMAN, the machinery maker formerly known as Hokuetsu Industries, rouses the crowd with light that bursts like flying sparks. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "AIRMAN, the machinery maker formerly known as Hokuetsu Industries, rouses the crowd with light that bursts like flying sparks.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000118,
+    "name": "故郷はひとつ",
+    "aliases": [
+      {
+        "name": "協賛企業一同"
+      },
+      {
+        "name": "花火"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "故郷はひとつ",
+      "title_en": "故郷はひとつ",
+      "description_ja_long": "多数の協賛で打ち上げる合同プログラム。ふるさとへの想いをひとつにし、しっとりと夜空を彩る。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "ふるさとへの想いをひとつにする合同花火、長岡花火の花火。",
+      "description_en_long": "A joint program backed by many sponsors, gathering everyone's feelings for their hometown into one gentle display. It is staged as a special program supported by many sponsors at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A joint program backed by many sponsors, gathering everyone's feelings for their hometown into one gentle display.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000119,
+    "name": "インプレッション・トリップ",
+    "aliases": [
+      {
+        "name": "クラブツーリズム"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "インプレッション・トリップ",
+      "title_en": "インプレッション・トリップ",
+      "description_ja_long": "旅行会社クラブツーリズムが誘う、印象深い旅の情景を巡るような色変化のスターマイン。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "旅の情景を巡るような色変化の花火。ベスビアス大スターマイン。",
+      "description_en_long": "Travel company Club Tourism leads a starmine journey through shifting colors, like scenes from an unforgettable trip. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2nd and 3rd.",
+      "description_en_short": "Travel company Club Tourism leads a starmine journey through shifting colors, like scenes from an unforgettable trip.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000120,
+    "name": "光差す明日へ",
+    "aliases": [
+      {
+        "name": "伊藤建設グループ・宮下電設"
+      },
+      {
+        "name": "伊藤建設グループ"
+      },
+      {
+        "name": "宮下電設"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "光差す明日へ",
+      "title_en": "光差す明日へ",
+      "description_ja_long": "地元の建設と電設の協賛社が、光の差す明日を照らすように力強い光の柱を打ち立てる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "明日を照らす力強い光の柱。超大型スーパーベスビアス。",
+      "description_en_long": "Local construction and electrical firms raise powerful pillars of light, as if illuminating the road to a brighter tomorrow. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Local construction and electrical firms raise powerful pillars of light, as if illuminating the road to a brighter tomorrow.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000121,
+    "name": "挑戦の精神",
+    "aliases": [
+      {
+        "name": "カナデビア・カナデビアE&E"
+      },
+      {
+        "name": "カナデビア"
+      },
+      {
+        "name": "カナデビアE"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "挑戦の精神",
+      "title_en": "挑戦の精神",
+      "description_ja_long": "ものづくりの協賛社が掲げる挑戦の精神そのままに、勢いよく夜空へ駆け上がる花火が続く。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "挑戦の精神を体現して駆け上がる花火。ベスビアス大スターマイン。",
+      "description_en_long": "True to its sponsor's spirit of challenge, shell after shell charges boldly up into the night sky. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "True to its sponsor's spirit of challenge, shell after shell charges boldly up into the night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000122,
+    "name": "夜空に輝くプレミアム",
+    "aliases": [
+      {
+        "name": "セブン-イレブン・セブン銀行"
+      },
+      {
+        "name": "セブン-イレブン"
+      },
+      {
+        "name": "セブン銀行"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "夜空に輝くプレミアム",
+      "title_en": "夜空に輝くプレミアム",
+      "description_ja_long": "セブン-イレブンとセブン銀行が贈る、選び抜かれた玉が夜空にプレミアムな輝きを連ねる演目。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "選び抜かれた玉がプレミアムに輝く。超大型スーパーベスビアス。",
+      "description_en_long": "Seven-Eleven and Seven Bank present a lineup of carefully selected shells that string premium brilliance across the sky. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Seven-Eleven and Seven Bank present a lineup of carefully selected shells that string premium brilliance across the sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000123,
+    "name": "エコの華",
+    "aliases": [
+      {
+        "name": "ナンバグループ"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "エコの華",
+      "title_en": "エコの華",
+      "description_ja_long": "環境への想いを込めた「エコの華」。資源を未来へつなぐ願いが、大輪の花になって開く。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "環境への想いが大輪の花になって開く。ベスビアス超大型スターマイン。",
+      "description_en_long": "A flower of ecology: the wish to carry resources on to the future blooms as great blossoms over the river. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A flower of ecology: the wish to carry resources on to the future blooms as great blossoms over the river.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000124,
+    "name": "光ある美しく豊かな世界へ",
+    "aliases": [
+      {
+        "name": "トクサイ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "光ある美しく豊かな世界へ",
+      "title_en": "光ある美しく豊かな世界へ",
+      "description_ja_long": "光ある美しく豊かな世界へ、という祈りを掲げ、澄んだ色の光が幾重にも夜空へ広がっていく。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "美しく豊かな世界への祈りを光に。超大型スーパーベスビアス。",
+      "description_en_long": "Under a prayer for a beautiful and abundant world filled with light, layers of clear color spread across the night. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Under a prayer for a beautiful and abundant world filled with light, layers of clear color spread across the night.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000125,
+    "name": "夏の思い出",
+    "aliases": [
+      {
+        "name": "コメリ"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "夏の思い出",
+      "title_en": "夏の思い出",
+      "description_ja_long": "新潟発のホームセンター、コメリが贈る夏の思い出の一場面。家族で見上げたい素直な大輪が続く。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "家族で見上げたい夏の思い出の大輪。ベスビアス大スターマイン。",
+      "description_en_long": "Komeri, the home-center chain born in Niigata, offers a scene for summer memories: honest, generous blooms for families looking up together.",
+      "description_en_short": "Komeri, the home-center chain born in Niigata, offers a scene for summer memories: honest, generous blooms for families looking up together.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000126,
+    "name": "スプラッシュファイヤー炎の舞",
+    "aliases": [
+      {
+        "name": "ワタナベグループ"
+      },
+      {
+        "name": "超大型ミラクルスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "スプラッシュファイヤー炎の舞",
+      "title_en": "スプラッシュファイヤー炎の舞",
+      "description_ja_long": "水しぶきのように弾ける光と炎の舞をテーマにした、動きの大きな演出が見どころのスターマイン。変化に富んだ多彩な演出が楽しめる。",
+      "description_ja_short": "水しぶきのような光と炎の舞。超大型ミラクルスターマイン。",
+      "description_en_long": "A starmine built around dancing flames and light that bursts like flying spray, with big, sweeping motion as its highlight. It is staged as a super-size starmine with varied, theatrical effects at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A starmine built around dancing flames and light that bursts like flying spray, with big, sweeping motion as its highlight.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000127,
+    "name": "ホテルニューオータニ長岡感謝の大輪",
+    "aliases": [
+      {
+        "name": "ホテルニューオータニ長岡"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ホテルニューオータニ長岡感謝の大輪",
+      "title_en": "ホテルニューオータニ長岡感謝の大輪",
+      "description_ja_long": "長岡駅前に立つ地元のホテルが、日頃の感謝を込めて打ち上げる、まっすぐで大ぶりな感謝の大輪。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "地元ホテルが贈る感謝の大輪。ベスビアス大スターマイン。",
+      "description_en_long": "Hotel New Otani Nagaoka, standing right in front of Nagaoka Station, fires generous blooms of straightforward gratitude. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Hotel New Otani Nagaoka, standing right in front of Nagaoka Station, fires generous blooms of straightforward gratitude.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000128,
+    "name": "長岡とともに技大、感謝の50年",
+    "aliases": [
+      {
+        "name": "長岡技術科学大学開学50周年記念花火協賛者一同"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "長岡とともに技大、感謝の50年",
+      "title_en": "長岡とともに技大、感謝の50年",
+      "description_ja_long": "長岡技術科学大学の開学50周年を記念し、長岡とともに歩んだ半世紀の感謝を夜空に刻む。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "技大開学50周年の感謝を夜空に刻む。超大型スーパーベスビアス。",
+      "description_en_long": "Marking the 50th anniversary of Nagaoka University of Technology, this display engraves half a century of gratitude in the sky. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Marking the 50th anniversary of Nagaoka University of Technology, this display engraves half a century of gratitude in the sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000129,
+    "name": "クリーンエナジー",
+    "aliases": [
+      {
+        "name": "石油資源開発"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "クリーンエナジー",
+      "title_en": "クリーンエナジー",
+      "description_ja_long": "長岡近郊のガス田で天然ガスを生産する石油資源開発が、クリーンエナジーへの想いを光にする。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "天然ガスの街らしいクリーンエナジーの光。超大型スーパーベスビアス。",
+      "description_en_long": "JAPEX, which produces natural gas from fields near Nagaoka, turns its commitment to clean energy into light. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "JAPEX, which produces natural gas from fields near Nagaoka, turns its commitment to clean energy into light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000130,
+    "name": "つながり",
+    "aliases": [
+      {
+        "name": "ネクスコ東日本長岡管理事務所グループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "つながり",
+      "title_en": "つながり",
+      "description_ja_long": "高速道路を守るネクスコ東日本のグループが、道がつなぐ人と人との縁を光の連なりで表す。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "道がつなぐ人と人との縁を光の連なりに。超大型スーパーベスビアス。",
+      "description_en_long": "The NEXCO East group, keeper of the expressways, expresses the bonds that roads create through an unbroken chain of light. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "The NEXCO East group, keeper of the expressways, expresses the bonds that roads create through an unbroken chain of light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000131,
+    "name": "鉄にいのち、ひとに未来",
+    "aliases": [
+      {
+        "name": "北越メタル"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "鉄にいのち、ひとに未来",
+      "title_en": "鉄にいのち、ひとに未来",
+      "description_ja_long": "長岡の電炉メーカー北越メタルが、鉄にいのちを吹き込む仕事への誇りを力強い光で示す。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "鉄の街の誇りを力強い光で示す。超大型スーパーベスビアス。",
+      "description_en_long": "Hokuetsu Metal, Nagaoka's steelmaker, shows its pride in breathing life into iron through powerful, unbending light. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Hokuetsu Metal, Nagaoka's steelmaker, shows its pride in breathing life into iron through powerful, unbending light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000132,
+    "name": "龍華～未来へ続く日の光～",
+    "aliases": [
+      {
+        "name": "目崎グループ"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "龍華～未来へ続く日の光～",
+      "title_en": "龍華～未来へ続く日の光～",
+      "description_ja_long": "龍が咲かせる華をイメージした演目。未来へ続く日の光のように、金色の尾を引いて立ち上る。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "龍の華のように金色の尾を引いて立ち上る。ベスビアス大スターマイン。",
+      "description_en_long": "Imagined as flowers blooming from a dragon, the shells climb with golden tails like sunlight stretching into the future. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Imagined as flowers blooming from a dragon, the shells climb with golden tails like sunlight stretching into the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000133,
+    "name": "感謝",
+    "aliases": [
+      {
+        "name": "SBFグループ・三共土地開発"
+      },
+      {
+        "name": "SBFグループ"
+      },
+      {
+        "name": "三共土地開発"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "感謝",
+      "title_en": "感謝",
+      "description_ja_long": "ただ一言「感謝」を掲げた演目。飾らない言葉のとおり、まっすぐな光が静かに夜空へ立ち上る。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "「感謝」の一言をまっすぐな光に込めて。超大型スーパーベスビアス。",
+      "description_en_long": "A program bearing the single word thanks: unadorned, straightforward light rising quietly into the night, just as the word promises. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A program bearing the single word thanks: unadorned, straightforward light rising quietly into the night, just as the word promises.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000134,
+    "name": "皆さまへ創業百周年の感謝を込めて",
+    "aliases": [
+      {
+        "name": "ジェスクホリウチ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "皆さまへ創業百周年の感謝を込めて",
+      "title_en": "皆さまへ創業百周年の感謝を込めて",
+      "description_ja_long": "創業100周年を迎えた協賛社が、一世紀分の感謝を込めて夜空いっぱいに光を捧げる記念の演目。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "創業100周年、一世紀分の感謝を捧げる。超大型スーパーベスビアス。",
+      "description_en_long": "Celebrating its 100th anniversary, the sponsor offers a century's worth of gratitude in a commemorative display filling the sky. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Celebrating its 100th anniversary, the sponsor offers a century's worth of gratitude in a commemorative display filling the sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000135,
+    "name": "君と花火と約束と",
+    "aliases": [
+      {
+        "name": "映画製作委員会"
+      },
+      {
+        "name": "サプライズ花火"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "君と花火と約束と",
+      "title_en": "君と花火と約束と",
+      "description_ja_long": "長岡花火を舞台にした映画「君と花火と約束と」とのタイアップで贈る、両日最後のサプライズ。映画とタイアップした特別演出の一幕。",
+      "description_ja_short": "映画タイアップの両日最後のサプライズ。サプライズ花火。",
+      "description_en_long": "A surprise finale on both nights, presented in tie-up with the film Kimi to Hanabi to Yakusoku to, set against the Nagaoka fireworks. It is staged as a surprise display tied to a feature film at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "A surprise finale on both nights, presented in tie-up with the film Kimi to Hanabi to Yakusoku to, set against the Nagaoka fireworks.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000136,
+    "name": "上場記念花火アリガトウナガオカ",
+    "aliases": [
+      {
+        "name": "フラー"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "上場記念花火アリガトウナガオカ",
+      "title_en": "上場記念花火アリガトウナガオカ",
+      "description_ja_long": "新潟に本社を置くIT企業フラーが株式上場を記念し、感謝の「アリガトウナガオカ」を夜空に掲げる。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "上場記念、育った街へのアリガトウ。ベスビアス超大型スターマイン。",
+      "description_en_long": "Fuller, an IT company headquartered in Niigata, celebrates its stock listing by firing a heartfelt thank-you, Arigato Nagaoka, into the sky.",
+      "description_en_short": "Fuller, an IT company headquartered in Niigata, celebrates its stock listing by firing a heartfelt thank-you, Arigato Nagaoka, into the sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000137,
+    "name": "マンマのフルーツカーニバル",
+    "aliases": [
+      {
+        "name": "北陸学園"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "マンマのフルーツカーニバル",
+      "title_en": "マンマのフルーツカーニバル",
+      "description_ja_long": "調理や製菓を学ぶ北陸学園が贈る、果物を山盛りにしたようなカラフルで甘い光のカーニバル。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "果物を山盛りにしたようなカラフルな光。超大型スーパーベスビアス。",
+      "description_en_long": "From culinary school Hokuriku Gakuen comes a carnival of sweet, colorful light, like fruit piled high on a platter. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "From culinary school Hokuriku Gakuen comes a carnival of sweet, colorful light, like fruit piled high on a platter.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000138,
+    "name": "水とともに",
+    "aliases": [
+      {
+        "name": "前澤工業ほか"
+      },
+      {
+        "name": "スペシャルスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "水とともに",
+      "title_en": "水とともに",
+      "description_ja_long": "水処理に携わる前澤工業らしく、水とともに生きる街への想いを、流れるような光で描く。テーマに沿った音楽と色彩の演出が光る。",
+      "description_ja_short": "水とともに生きる街への想いを流れる光に。スペシャルスターマイン。",
+      "description_en_long": "True to water-infrastructure firm Maezawa Industries, flowing light expresses a life lived together with water. It is staged as a themed starmine staged with music and color at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "True to water-infrastructure firm Maezawa Industries, flowing light expresses a life lived together with water.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000139,
+    "name": "つながれ！～モノづくりの未来へ～",
+    "aliases": [
+      {
+        "name": "シマキュウグループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "つながれ！～モノづくりの未来へ～",
+      "title_en": "つながれ！～モノづくりの未来へ～",
+      "description_ja_long": "産業を支える協賛社が、モノづくりの未来へ技と想いをつなげという願いを光の連鎖に込める。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "モノづくりの未来へつなぐ光の連鎖。超大型スーパーベスビアス。",
+      "description_en_long": "An industrial sponsor entrusts its wish to pass on craftsmanship to the future through a chain reaction of light. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "An industrial sponsor entrusts its wish to pass on craftsmanship to the future through a chain reaction of light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000140,
+    "name": "千人鮮色、ありがとうの花",
+    "aliases": [
+      {
+        "name": "高田建築事務所と愉快な仲間たち"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "千人鮮色、ありがとうの花",
+      "title_en": "千人鮮色、ありがとうの花",
+      "description_ja_long": "千人の彩りを思わせる色とりどりの光で、支えてくれた人々への「ありがとう」を花にして贈る。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "千人の彩りで咲かせるありがとうの花。ベスビアス超大型スターマイン。",
+      "description_en_long": "Flowers of thanks bloom in the myriad colors of a thousand people, offered to everyone who lent their support. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Flowers of thanks bloom in the myriad colors of a thousand people, offered to everyone who lent their support.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000141,
+    "name": "この空の花",
+    "aliases": [
+      {
+        "name": "協賛企業一同"
+      },
+      {
+        "name": "花火"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "この空の花",
+      "title_en": "この空の花",
+      "description_ja_long": "長岡空襲と花火を描いた映画「この空の花」の名を冠し、鎮魂と再生の想いを継ぐ合同プログラム。多数の協賛により打ち上げられる特別演目。",
+      "description_ja_short": "映画「この空の花」の名を継ぐ祈りの花火、長岡花火の花火。",
+      "description_en_long": "Bearing the name of the film Casting Blossoms to the Sky, which portrayed the Nagaoka air raid and its fireworks, this joint program carries on a prayer of remembrance and rebirth.",
+      "description_en_short": "A special program supported by many sponsors at the Nagaoka Fireworks Show (August 3).",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000142,
+    "name": "燃ゆる華心",
+    "aliases": [
+      {
+        "name": "コロナ"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "燃ゆる華心",
+      "title_en": "燃ゆる華心",
+      "description_ja_long": "燃焼機器を手がける三条のコロナらしい「燃ゆる」の名のもと、華やかな炎の心が夜空に咲く。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "暖房機器の会社らしい「燃ゆる」華の心。ベスビアス大スターマイン。",
+      "description_en_long": "Under the fitting banner of burning from heating-equipment maker Corona, a brilliant heart of flame blossoms in the dark. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Under the fitting banner of burning from heating-equipment maker Corona, a brilliant heart of flame blossoms in the dark.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000143,
+    "name": "アルプスアルパイン・シャイニングスター",
+    "aliases": [
+      {
+        "name": "アルプスアルパイングループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "アルプスアルパイン・シャイニングスター",
+      "title_en": "アルプスアルパイン・シャイニングスター",
+      "description_ja_long": "電子部品のアルプスアルパインが、シャイニングスターの名のとおり星々の瞬きを夜空に散らす。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "星々の瞬きを散らすシャイニングスター。超大型スーパーベスビアス。",
+      "description_en_long": "Electronics maker Alps Alpine scatters the twinkling of countless stars across the sky, true to its Shining Star title. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Electronics maker Alps Alpine scatters the twinkling of countless stars across the sky, true to its Shining Star title.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000144,
+    "name": "信濃川の夕涼み",
+    "aliases": [
+      {
+        "name": "イオン長岡店・専門店街Well"
+      },
+      {
+        "name": "イオン長岡店"
+      },
+      {
+        "name": "専門店街Well"
+      },
+      {
+        "name": "スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "信濃川の夕涼み",
+      "title_en": "信濃川の夕涼み",
+      "description_ja_long": "夕涼みの川辺のように涼やかな色をそろえ、真夏の信濃川に吹く一陣の涼風のような時間を作る。速射連発の花火が途切れなく夜空を彩る。",
+      "description_ja_short": "真夏の川辺に吹く涼風のような花火、長岡花火のスターマイン。",
+      "description_en_long": "Cool colors gather like an evening by the water, bringing a moment of breeze to the midsummer Shinano riverside. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Cool colors gather like an evening by the water, bringing a moment of breeze to the midsummer Shinano riverside.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000145,
+    "name": "あなたとずっとこの空と",
+    "aliases": [
+      {
+        "name": "岡三にいがた証券"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "あなたとずっとこの空と",
+      "title_en": "あなたとずっとこの空と",
+      "description_ja_long": "「あなたとずっとこの空と」の言葉どおり、寄り添う二つの光が並んで夜空をゆっくりと彩る。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "寄り添う二つの光が並んで彩る夜空。超大型スーパーベスビアス。",
+      "description_en_long": "Just as its title promises — you, always, and this sky — paired lights rise side by side and slowly color the night. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Just as its title promises — you, always, and this sky — paired lights rise side by side and slowly color the night.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000146,
+    "name": "金燦、銀燦",
+    "aliases": [
+      {
+        "name": "伊丹自動車ほか"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "金燦、銀燦",
+      "title_en": "金燦、銀燦",
+      "description_ja_long": "金と銀の燦めきだけで構成された、シンプルながら最も花火らしい輝きを味わえる渋い演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "金と銀の燦めきだけで魅せる渋い構成。ベスビアス超大型スターマイン。",
+      "description_en_long": "Composed purely of gold and silver sparkle, a restrained program that savors fireworks at their most essential. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Composed purely of gold and silver sparkle, a restrained program that savors fireworks at their most essential.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000147,
+    "name": "安心と感動に満ちた世界と未来のために",
+    "aliases": [
+      {
+        "name": "日本精機グループ"
+      },
+      {
+        "name": "超大型ワイドスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "安心と感動に満ちた世界と未来のために",
+      "title_en": "安心と感動に満ちた世界と未来のために",
+      "description_ja_long": "長岡に本社を置く計器メーカー日本精機が、安心と感動に満ちた未来への願いを光で計り描く。横一線に広がる光のパノラマが見どころ。",
+      "description_ja_short": "長岡の計器メーカーが描く未来への願い。超大型ワイドスターマイン。",
+      "description_en_long": "Nippon Seiki, the instrument maker headquartered in Nagaoka, charts its wish for a future filled with safety and wonder in light. It is staged as a super-wide starmine spread across a broad launch front at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Nippon Seiki, the instrument maker headquartered in Nagaoka, charts its wish for a future filled with safety and wonder in light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000148,
+    "name": "太陽の輝き",
+    "aliases": [
+      {
+        "name": "太陽工機"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "太陽の輝き",
+      "title_en": "太陽の輝き",
+      "description_ja_long": "工作機械をつくる長岡の太陽工機が、その名のとおり太陽の輝きを真夜中の空に呼び戻す。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "真夜中の空に呼び戻す太陽の輝き。ベスビアス超大型スターマイン。",
+      "description_en_long": "Taiyo Koki, Nagaoka's machine-tool builder, calls the brilliance of the sun back into the midnight sky, true to its name. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Taiyo Koki, Nagaoka's machine-tool builder, calls the brilliance of the sun back into the midnight sky, true to its name.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000149,
+    "name": "子供たちの未来のために",
+    "aliases": [
+      {
+        "name": "スプリックス"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "子供たちの未来のために",
+      "title_en": "子供たちの未来のために",
+      "description_ja_long": "長岡発の教育企業スプリックスが、子供たちの未来を照らすようにあたたかな光を打ち上げる。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "子供たちの未来を照らすあたたかな光。超大型スーパーベスビアス。",
+      "description_en_long": "Sprix, the education company born in Nagaoka, sends up warm light as if to illuminate the future of its children. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Sprix, the education company born in Nagaoka, sends up warm light as if to illuminate the future of its children.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000150,
+    "name": "ともに創る未来へ",
+    "aliases": [
+      {
+        "name": "ヤマト運輸長岡主管支店"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ともに創る未来へ",
+      "title_en": "ともに創る未来へ",
+      "description_ja_long": "暮らしを支える物流のヤマト運輸が、地域とともに創る未来への想いを届け物のように打ち上げる。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "地域とともに創る未来への想いを届ける。ベスビアス超大型スターマイン。",
+      "description_en_long": "Yamato Transport, the delivery company that supports daily life, sends up its wish for a future built together with the region. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Yamato Transport, the delivery company that supports daily life, sends up its wish for a future built together with the region.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000151,
+    "name": "酔火連発 尺玉の響",
+    "aliases": [
+      {
+        "name": "酔火連"
+      },
+      {
+        "name": "10号28発"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "酔火連発 尺玉の響",
+      "title_en": "酔火連発 尺玉の響",
+      "description_ja_long": "花火に酔いしれる愛好家の会「酔火連」が贈る尺玉28連発。玉の響きそのものを味わう通好みの間。大輪の尺玉が連続して夜空に開く。",
+      "description_ja_short": "愛好家の会が贈る尺玉28連発の響き。10号28発。",
+      "description_en_long": "From Suikaren, a circle of fireworks devotees, come 28 giant shells in a row — a connoisseur's interval devoted to the report itself. It is staged as a program of large shells at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "From Suikaren, a circle of fireworks devotees, come 28 giant shells in a row — a connoisseur's interval devoted to the report itself.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000152,
+    "name": "HOPE TO THE FUTURE～未来へ~",
+    "aliases": [
+      {
+        "name": "協賛企業一同"
+      },
+      {
+        "name": "花火"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "HOPE TO THE FUTURE～未来へ~",
+      "title_en": "HOPE TO THE FUTURE～未来へ~",
+      "description_ja_long": "多数の協賛で打ち上げる合同プログラム。希望を未来へつなぐ想いを、明るい光の連なりに込める。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "希望を未来へつなぐ合同プログラム、長岡花火の花火。",
+      "description_en_long": "A joint program backed by many sponsors, entrusting the hope carried toward the future to a bright procession of light. It is staged as a special program supported by many sponsors at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "A joint program backed by many sponsors, entrusting the hope carried toward the future to a bright procession of light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000153,
+    "name": "輝け愛花火",
+    "aliases": [
+      {
+        "name": "崇徳厚生事業団職員有志一同"
+      },
+      {
+        "name": "スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "輝け愛花火",
+      "title_en": "輝け愛花火",
+      "description_ja_long": "福祉に携わる職員有志が持ち寄る「愛花火」。支え合う日々への想いが、小さくも確かに輝く。速射連発の花火が途切れなく夜空を彩る。",
+      "description_ja_short": "職員有志が持ち寄る支え合いの愛花火。スターマイン。",
+      "description_en_long": "A fireworks of love brought together by welfare workers: the spirit of supporting one another shines small but sure. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "A fireworks of love brought together by welfare workers: the spirit of supporting one another shines small but sure.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000154,
+    "name": "天空華宴",
+    "aliases": [
+      {
+        "name": "大石組"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "天空華宴",
+      "title_en": "天空華宴",
+      "description_ja_long": "天空で開く華の宴の名のとおり、夜空の高みに次々と大輪を咲かせて宴のように賑わう演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "天空で開く華の宴のような大輪の連続。ベスビアス超大型スターマイン。",
+      "description_en_long": "As its name — a banquet of flowers in the heavens — suggests, great blooms open one after another high in the night sky. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "As its name — a banquet of flowers in the heavens — suggests, great blooms open one after another high in the night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000155,
+    "name": "mirai",
+    "aliases": [
+      {
+        "name": "扉-tobira-"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "mirai",
+      "title_en": "mirai",
+      "description_ja_long": "小文字の「mirai」に込めた、肩ひじ張らない等身大の未来。やわらかな色の光が静かに寄り添う。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "等身大の未来を描くやわらかな光。ベスビアス大スターマイン。",
+      "description_en_long": "In lowercase mirai lies an everyday, human-sized future: soft colors of light quietly keeping company with the crowd. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "In lowercase mirai lies an everyday, human-sized future: soft colors of light quietly keeping company with the crowd.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000156,
+    "name": "駆け抜ける丙午 60-60",
+    "aliases": [
+      {
+        "name": "長岡高校昭和60年卒還暦花火の会"
+      },
+      {
+        "name": "10号60連発＆ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "駆け抜ける丙午 60-60",
+      "title_en": "駆け抜ける丙午 60-60",
+      "description_ja_long": "丙午生まれの長岡高校昭和60年卒業生が還暦を記念し、尺玉60連発で60年を一気に駆け抜ける。大輪の尺玉が連続して夜空に開く。",
+      "description_ja_short": "還暦記念、尺玉60連発で駆け抜ける60年。超大型スターマイン。",
+      "description_en_long": "Nagaoka High School's class of 1985, born in the year of the fire horse, marks its 60th birthday by racing through 60 years with 60 giant shells.",
+      "description_en_short": "Nagaoka High School's class of 1985, born in the year of the fire horse, marks its 60th birthday by racing through 60 years with 60 giant shells.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000157,
+    "name": "No Attack,No Chance",
+    "aliases": [
+      {
+        "name": "ピカイチ・INSIGHT LAB"
+      },
+      {
+        "name": "ピカイチ"
+      },
+      {
+        "name": "INSIGHT LAB"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "No Attack,No Chance",
+      "title_en": "No Attack,No Chance",
+      "description_ja_long": "「挑まなければ好機はない」の言葉を掲げ、ためらいなく攻める構成で一気に夜空を埋める演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "挑まなければ好機はない、攻めの構成。ベスビアス超大型スターマイン。",
+      "description_en_long": "Under the motto that without attack there is no chance, the display fills the sky in one unhesitating offensive. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Under the motto that without attack there is no chance, the display fills the sky in one unhesitating offensive.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000158,
+    "name": "平和への誓い",
+    "aliases": [
+      {
+        "name": "創価学会"
+      },
+      {
+        "name": "スペシャルスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "平和への誓い",
+      "title_en": "平和への誓い",
+      "description_ja_long": "長岡空襲の記憶を受け継ぐこの大会で、恒久平和への誓いを静かで澄んだ光に託して打ち上げる。テーマに沿った音楽と色彩の演出が光る。",
+      "description_ja_short": "恒久平和への誓いを澄んだ光に託す。スペシャルスターマイン。",
+      "description_en_long": "At a festival that inherits the memory of the Nagaoka air raid, a vow of lasting peace is entrusted to quiet, clear light. It is staged as a themed starmine staged with music and color at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "At a festival that inherits the memory of the Nagaoka air raid, a vow of lasting peace is entrusted to quiet, clear light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000159,
+    "name": "夜空に感謝の花束",
+    "aliases": [
+      {
+        "name": "明治安田"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "夜空に感謝の花束",
+      "title_en": "夜空に感謝の花束",
+      "description_ja_long": "保険を通じて寄り添う明治安田が、地域への感謝を花束にして夜空へ贈るスターマイン。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "地域への感謝を花束にして夜空へ。ベスビアス超大型スターマイン。",
+      "description_en_long": "Meiji Yasuda, standing by the community through the years, sends a bouquet of gratitude up into the night sky. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Meiji Yasuda, standing by the community through the years, sends a bouquet of gratitude up into the night sky.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000160,
+    "name": "世界への躍動",
+    "aliases": [
+      {
+        "name": "ヨネックス"
+      },
+      {
+        "name": "超大型ミラクルスターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "世界への躍動",
+      "title_en": "世界への躍動",
+      "description_ja_long": "新潟生まれのスポーツブランド、ヨネックスが、世界の舞台へ躍動するようなスピード感で魅せる。変化に富んだ多彩な演出が楽しめる。",
+      "description_ja_short": "ヨネックスが魅せる世界への躍動感。超大型ミラクルスターマイン。",
+      "description_en_long": "Yonex, the sports brand born in Niigata, dazzles with the speed and spring of an athlete leaping onto the world stage. It is staged as a super-size starmine with varied, theatrical effects at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Yonex, the sports brand born in Niigata, dazzles with the speed and spring of an athlete leaping onto the world stage.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000161,
+    "name": "大河の夕景",
+    "aliases": [
+      {
+        "name": "高野不動産グループ"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "大河の夕景",
+      "title_en": "大河の夕景",
+      "description_ja_long": "信濃川の夕景をモチーフに、茜から藍へ移ろう空の色を花火のグラデーションで再現する。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "夕暮れの信濃川を光のグラデーションで。ベスビアス超大型スターマイン。",
+      "description_en_long": "Modeled on dusk over the Shinano River, the display recreates a sky shifting from madder red to indigo in gradations of light. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Modeled on dusk over the Shinano River, the display recreates a sky shifting from madder red to indigo in gradations of light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000162,
+    "name": "99年分のありがとうを込めて",
+    "aliases": [
+      {
+        "name": "ナカザワグループ"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "99年分のありがとうを込めて",
+      "title_en": "99年分のありがとうを込めて",
+      "description_ja_long": "創業99年を迎えた協賛社が、100年目を前にした「ありがとう」を99年分まとめて夜空に放つ。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "創業99年分のありがとうを夜空に。超大型スーパーベスビアス。",
+      "description_en_long": "On the eve of its centennial, the 99-year-old sponsor releases ninety-nine years' worth of thanks into the sky at once. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "On the eve of its centennial, the 99-year-old sponsor releases ninety-nine years' worth of thanks into the sky at once.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000163,
+    "name": "ラブラブファイヤー2026",
+    "aliases": [
+      {
+        "name": "アークベルグループ長岡ベルナール"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "ラブラブファイヤー2026",
+      "title_en": "ラブラブファイヤー2026",
+      "description_ja_long": "ブライダルも手がけるアークベルグループが、恋人たちの夏に贈る、愛を祝うにぎやかな花火。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "恋人たちの夏に贈る愛を祝う花火。超大型スーパーベスビアス。",
+      "description_en_long": "From the Arkbell group, whose business includes weddings, comes a merry display celebrating love, a gift for couples in summer. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "From the Arkbell group, whose business includes weddings, comes a merry display celebrating love, a gift for couples in summer.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000164,
+    "name": "アイデアと技術の宝石箱",
+    "aliases": [
+      {
+        "name": "大森機械工業長岡工場"
+      },
+      {
+        "name": "超大型スーパーベスビアス"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "アイデアと技術の宝石箱",
+      "title_en": "アイデアと技術の宝石箱",
+      "description_ja_long": "包装機械の大森機械工業が、アイデアと技術を詰め込んだ宝石箱を開けるように多彩な光を放つ。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "宝石箱を開けたような多彩な光。超大型スーパーベスビアス。",
+      "description_en_long": "Packaging-machine maker Omori opens a jewel box of ideas and engineering, spilling out light of every color. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Packaging-machine maker Omori opens a jewel box of ideas and engineering, spilling out light of every color.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000165,
+    "name": "未来飛翔",
+    "aliases": [
+      {
+        "name": "長岡市共同受注グループ「けやき」"
+      },
+      {
+        "name": "7号12発・10号12発"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "未来飛翔",
+      "title_en": "未来飛翔",
+      "description_ja_long": "地元の事業所が力を合わせる共同受注グループ「けやき」が、未来へ羽ばたく願いを夜空に打ち上げる。大輪の尺玉が連続して夜空に開く。",
+      "description_ja_short": "未来へ羽ばたく願いを込めた花火。7号12発・10号12発。",
+      "description_en_long": "Keyaki, a joint group of local workplaces pooling their strength, launches its shared wish to soar into the future. It is staged as a program of large shells at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Keyaki, a joint group of local workplaces pooling their strength, launches its shared wish to soar into the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000166,
+    "name": "新潟の未来を見つめ続けて",
+    "aliases": [
+      {
+        "name": "ダイア建設新潟"
+      },
+      {
+        "name": "ベスビアス超大型スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "新潟の未来を見つめ続けて",
+      "title_en": "新潟の未来を見つめ続けて",
+      "description_ja_long": "新潟の街づくりに携わる協賛社が、この地の未来を見つめ続ける決意を穏やかな光の連なりに込める。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "新潟の未来を見つめる決意を光に。ベスビアス超大型スターマイン。",
+      "description_en_long": "A sponsor engaged in building Niigata entrusts its resolve to keep watching over the region's future to a calm procession of light. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "A sponsor engaged in building Niigata entrusts its resolve to keep watching over the region's future to a calm procession of light.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000167,
+    "name": "パラダイス・イン・ザ・スカイ",
+    "aliases": [
+      {
+        "name": "スーパーセンタームサシ長岡店"
+      },
+      {
+        "name": "スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "パラダイス・イン・ザ・スカイ",
+      "title_en": "パラダイス・イン・ザ・スカイ",
+      "description_ja_long": "夜空に楽園を出現させるという名のとおり、明るくにぎやかな光が絶え間なく続く楽しい演目。速射連発の花火が途切れなく夜空を彩る。",
+      "description_ja_short": "夜空に楽園を出現させるにぎやかな光。スターマイン。",
+      "description_en_long": "True to its name, a paradise appears in the sky: bright, cheerful light that simply never lets up. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "True to its name, a paradise appears in the sky: bright, cheerful light that simply never lets up.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000168,
+    "name": "支社開設60周年 感謝を空へ 安心を未来へ",
+    "aliases": [
+      {
+        "name": "日本生命"
+      },
+      {
+        "name": "ベスビアス大スターマイン"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 900,
+    "description": {
+      "title_ja": "支社開設60周年 感謝を空へ 安心を未来へ",
+      "title_en": "支社開設60周年 感謝を空へ 安心を未来へ",
+      "description_ja_long": "長岡支社の開設60周年を迎えた日本生命が、感謝を空へ、安心を未来へ届ける記念の演目。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "支社60周年の感謝を空へ、安心を未来へ。ベスビアス大スターマイン。",
+      "description_en_long": "Nippon Life marks the 60th anniversary of its Nagaoka branch, sending gratitude skyward and reassurance on to the future. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Nippon Life marks the 60th anniversary of its Nagaoka branch, sending gratitude skyward and reassurance on to the future.",
+      "tags_ja": [
+        "花火",
+        "長岡花火"
+      ],
+      "tags_en": [
+        "Fireworks",
+        "Nagaoka"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  }
+]

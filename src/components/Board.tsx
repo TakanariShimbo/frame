@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useTranslation } from "react-i18next";
+import { useModeT } from "../lib/useModeT";
 import { IconImage } from "./icons";
 import { oneLineName } from "../lib/labels";
 import type { WorkItem } from "../App";
@@ -16,7 +16,7 @@ type Props = {
 
 // 写真一覧（ハブ画面）: 進み方は自由。好きな写真から順に仕上げる。保存は各写真の仕上げ画面から。
 export default function Board({ items, onOpen, onAdd, onHome }: Props) {
-  const { t } = useTranslation();
+  const { t } = useModeT();
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const saved = items.filter((it) => it.saved);

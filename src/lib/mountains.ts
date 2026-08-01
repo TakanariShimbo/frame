@@ -40,6 +40,49 @@ export type MountainDescription = {
   url?: string; // 参考URL
 };
 
+// フィーチャー（期間限定）エントリ。山以外の題材（花火大会・世界遺産・イベント等）を
+// 一時的に辞書へ混ぜるための仕組み。public/data/featured.json を編集するだけで追加・削除できる。
+// id は辞書（約27,000件）と衝突しないよう 9,000,000 以降を使う。解説はレコードに同梱。
+const FEATURED_ID_BASE = 9_000_000;
+type FeaturedRecord = MountainRecord & { description?: MountainDescription };
+
+let featuredCache: FeaturedRecord[] | null = null;
+let featuredLoading: Promise<FeaturedRecord[]> | null = null;
+
+function loadFeatured(): Promise<FeaturedRecord[]> {
+  if (featuredCache) return Promise.resolve(featuredCache);
+  if (featuredLoading) return featuredLoading;
+  featuredLoading = fetch(`${import.meta.env.BASE_URL}data/featured.json`)
+    .then((r) => (r.ok ? r.json() : []))
+    .then((d: FeaturedRecord[]) => {
+      featuredCache = Array.isArray(d) ? d : [];
+      return featuredCache;
+    })
+    .catch(() => {
+      featuredLoading = null;
+      return [];
+    });
+  return featuredLoading;
+}
+
+function toHit(m: MountainRecord): MountainHit {
+  return {
+    id: m.id,
+    name: m.name,
+    nameEn: m.name_en,
+    lat: m.latitude,
+    lon: m.longitude,
+    elevationM: m.elevation_m,
+    prefecture: m.prefecture,
+  };
+}
+
+/** フィーチャーエントリ一覧（検索前の初期表示用）。無ければ空配列。 */
+export async function getFeaturedHits(): Promise<MountainHit[]> {
+  const list = await loadFeatured();
+  return list.map(toHit);
+}
+
 let cache: MountainRecord[] | null = null;
 let loading: Promise<MountainRecord[]> | null = null;
 
@@ -86,6 +129,17 @@ function loadShard(n: number): Promise<Record<string, MountainDescription>> {
 
 /** 指定した山の解説（id→解説）を読み込む。必要なシャードだけ取得してキャッシュ。 */
 export async function loadDescriptionsFor(ids: number[]): Promise<Map<number, MountainDescription>> {
+  // フィーチャーエントリの解説はレコード同梱なので、シャードを引かず先に解決する。
+  const featuredIds = ids.filter((id) => id >= FEATURED_ID_BASE);
+  const featuredMap = new Map<number, MountainDescription>();
+  if (featuredIds.length > 0) {
+    const featured = await loadFeatured();
+    for (const f of featured) {
+      if (featuredIds.includes(f.id) && f.description?.description_ja_long) featuredMap.set(f.id, f.description);
+    }
+    ids = ids.filter((id) => id < FEATURED_ID_BASE);
+    if (ids.length === 0) return featuredMap;
+  }
   const shardNos = [...new Set(ids.map((id) => Math.floor(id / SHARD_SIZE)))];
   const shards = await Promise.all(shardNos.map(loadShard));
   const map = new Map<number, MountainDescription>();
@@ -95,12 +149,14 @@ export async function loadDescriptionsFor(ids: number[]): Promise<Map<number, Mo
       if (v?.description_ja_long) map.set(id, v);
     }
   }
+  for (const [id, d] of featuredMap) map.set(id, d);
   return map;
 }
 
 /** 名前・読みで部分一致。重要度(priority)→標高の順で並べ、上位 limit 件を返す。 */
 export async function searchMountains(query: string, limit = 12): Promise<MountainHit[]> {
-  const list = await load();
+  const [dict, featured] = await Promise.all([load(), loadFeatured()]);
+  const list = [...featured, ...dict];
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const qh = toHiragana(q);

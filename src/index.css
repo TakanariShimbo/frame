@@ -267,6 +267,21 @@ button {
   background: var(--gold-strong);
   transform: translateY(-1px);
 }
+.pick-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+/* 花火モードのCTA。金の縁取りだけの控えめな見た目で山用と並べる */
+.pick-hero-cta--hanabi {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+.pick-hero-cta--hanabi:hover {
+  background: rgba(216, 182, 114, 0.14);
+}
 .pick-hero-note {
   margin: 0;
   font-size: 11.5px;
