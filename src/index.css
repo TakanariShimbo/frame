@@ -1496,7 +1496,7 @@ button {
   cursor: grabbing;
 }
 .ar-title-over {
-  font-size: calc(1.95cqmax * var(--title-fs, 1));
+  font-size: calc(1.95cqmax * var(--title-fs, 1) * var(--title-side-fs, 1));
   font-weight: var(--title-sub-fw, 500);
   letter-spacing: calc(0.35em * var(--title-ls, 1));
   margin-right: calc(-0.35em * var(--title-ls, 1));
@@ -1512,7 +1512,7 @@ button {
   line-height: 1.02;
 }
 .ar-title-num {
-  font-size: calc(2.25cqmax * var(--title-fs, 1));
+  font-size: calc(2.25cqmax * var(--title-fs, 1) * var(--title-side-fs, 1));
   font-weight: var(--title-sub-fw, 500);
   letter-spacing: calc(0.3em * var(--title-ls, 1));
   margin-right: calc(-0.3em * var(--title-ls, 1));

@@ -213,6 +213,8 @@ export default {
       tagUsageText: "Text",
     },
     title: {
+    sideSize: "Top & bottom size",
+    sideSizeAria: "Size of the top and bottom lines",
       enable: "Add a large centered title",
       language: "Language",
       languageAria: "Title language",

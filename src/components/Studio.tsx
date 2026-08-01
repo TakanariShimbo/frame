@@ -247,6 +247,7 @@ type ExportStyle = {
   titleShowOver: boolean;
   titleShowNum: boolean;
   titleScale: number;
+  titleSideScale?: number; // 上下（小見出し・標高）のサイズ倍率。未指定=1
   titleColor: string;
   titleShadow: boolean;
   titleFont: FontPairId;
@@ -635,6 +636,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleShowOver, setTitleShowOver] = useState(initStyle?.titleShowOver ?? true);
   const [titleShowNum, setTitleShowNum] = useState(initStyle?.titleShowNum ?? true);
   const [titleScale, setTitleScale] = useState(initStyle?.titleScale ?? 1);
+  const [titleSideScale, setTitleSideScale] = useState(initStyle?.titleSideScale ?? 1);
   const [titleColor, setTitleColor] = useState(initStyle?.titleColor ?? "#ffffff");
   const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
   const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
@@ -1571,8 +1573,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           document.fonts.load(`${fwTitleSub} 16px "${p.en}"`).catch(() => {}),
         ]);
         const mainFs = Math.round(L * 0.075 * titleScale);
-        const overFs = Math.max(1, Math.round(mainFs * 0.26));
-        const numFs = Math.max(1, Math.round(mainFs * 0.3));
+        const overFs = Math.max(1, Math.round(mainFs * 0.26 * titleSideScale));
+        const numFs = Math.max(1, Math.round(mainFs * 0.3 * titleSideScale));
         const overGap = Math.round(mainFs * 0.42 * titleLineHeight);
         const numGap = Math.round(mainFs * 0.34 * titleLineHeight);
         const mainLines = tp.main.split("\n");
@@ -1742,6 +1744,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleShowOver(s.titleShowOver);
     setTitleShowNum(s.titleShowNum);
     setTitleScale(s.titleScale);
+    setTitleSideScale(s.titleSideScale ?? 1);
     setTitleColor(s.titleColor);
     setTitleShadow(s.titleShadow);
     setTitleFont(s.titleFont);
@@ -1838,7 +1841,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
     captionTitleScale, captionBodyScale, captionLetterSpace, captionLineHeight, captionPos, captionW, captionSplit,
     tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleSideScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
     roleFonts, roleWeights, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
   });
 
@@ -2678,6 +2681,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         "--title-fw": roleWeightPx("title", titleWeight),
                         "--title-sub-fw": titleSubWeightPx(roleWeightPx("title", titleWeight)),
                         "--title-fs": titleScale,
+                        "--title-side-fs": titleSideScale,
                         "--title-ls": titleLetterSpace,
                         "--title-gap": titleLineHeight,
                         "--title-sh": titleShadow ? contrastShadow(titleColor) : "transparent",
@@ -3153,6 +3157,11 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span className="ar-fs-val">{Math.round(titleScale * 100)}%</span>
                       </div>
                       <FsSlider min={0.3} max={2.0} step={0.05} value={titleScale} onChange={setTitleScale} ariaLabel={t("studio.title.sizeAria")} />
+                      <div className="ar-fs-slider-row">
+                        <span>{t("studio.title.sideSize")}</span>
+                        <span className="ar-fs-val">{Math.round(titleSideScale * 100)}%</span>
+                      </div>
+                      <FsSlider min={0.3} max={2.0} step={0.05} value={titleSideScale} onChange={setTitleSideScale} ariaLabel={t("studio.title.sideSizeAria")} />
                       <div className="ar-fs-row">
                         <span>{t("studio.title.textColor")}</span>
                         <input type="color" className="ar-color-input" value={titleColor} onChange={(e) => setTitleColor(e.target.value)} aria-label={t("studio.title.textColorAria")} />
