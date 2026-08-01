@@ -749,8 +749,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // ドラッグ中にスナップした基準線（フレーム正規化座標）。ガイド線の描画用。
   const [snapGuide, setSnapGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const capResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startW: number; startV: number; boxLeft: number; boxRight: number } | null>(null);
-  // 名札のリサイズ（四辺の丸をドラッグ）。名札は折り返さないので、拡縮＝山名サイズ倍率の変更。
-  const labelResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startScale: number; box: { w: number; h: number }; cu: number; cv: number } | null>(null);
+  // 名札のリサイズ（左右の丸をドラッグ）。文字サイズは変えず、折り返し幅（labelW）を変更する。
+  const labelResizeRef = useRef<{ cu: number } | null>(null);
   const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" } | null>(null);
 
   // 選択中の長さに応じた解説本文（短めが無ければ長めにフォールバック）。
@@ -1237,8 +1237,25 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const { name, sub } = labelContent(lb);
         // 山名は改行(\n)で複数行になる。最下行の基準線を従来の nameBaseline に固定し、
         // 上へ積む（ラベルは下端基準で置かれるため、行が増えても位置がずれない）。
-        const nameLns = nameLines(name);
+        let nameLns = nameLines(name);
         if (nameLns.length === 0) nameLns.push("");
+        // 折り返し幅（labelW）が設定されていれば、プレビューと同じく幅で折り返す。
+        if (lb.labelW) {
+          ctx.font = `${fwName} ${nameFs}px ${ffName}`;
+          setLS(nameFs * labelLetterSpace);
+          const maxW = lb.labelW * OW;
+          const wrapLine = (text: string): string[] => {
+            const out: string[] = [];
+            let cur = "";
+            for (const ch of text) {
+              if (cur && ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; }
+              else cur += ch;
+            }
+            if (cur) out.push(cur);
+            return out.length ? out : [""];
+          };
+          nameLns = nameLns.flatMap(wrapLine);
+        }
         // 行送りはプレビュー(.ar-edit-label の line-height: 1.12)と揃える。
         const nameLineH = Math.round(nameFs * 1.12);
         const subBaseline = cy;
@@ -1979,19 +1996,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const onLabelResizeDown = (i: number) => (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const el = e.currentTarget as HTMLElement;
-    el.setPointerCapture?.(e.pointerId);
-    const cl = el.classList;
-    const side: "l" | "r" | "t" | "b" = cl.contains("ar-cap-handle--l")
-      ? "l"
-      : cl.contains("ar-cap-handle--t")
-        ? "t"
-        : cl.contains("ar-cap-handle--b")
-          ? "b"
-          : "r";
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     const lb = arLabels[i];
-    const c = photoToFrame(lb.labelU, lb.labelV);
-    labelResizeRef.current = { side, startScale: labelNameScale, box: labelBoxes[i] ?? { w: 0.1, h: 0.05 }, cu: c.u, cv: c.v };
+    labelResizeRef.current = { cu: photoToFrame(lb.labelU, lb.labelV).u };
     arDragRef.current = { i, kind: "labelResize" };
   };
   const onCapSplitDown = (e: React.PointerEvent) => {
@@ -2039,14 +2046,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     if (d.kind === "labelResize") {
       const rz = labelResizeRef.current;
       if (!rz) return;
-      // 名札は中央下アンカー（box は [cu±w/2, cv-h..cv]）。掴んだ辺と中心の距離比で倍率を決める。
-      let f = 1;
-      if (rz.side === "r") f = (u - rz.cu) / Math.max(1e-4, rz.box.w / 2);
-      else if (rz.side === "l") f = (rz.cu - u) / Math.max(1e-4, rz.box.w / 2);
-      else if (rz.side === "t") f = (rz.cv - v) / Math.max(1e-4, rz.box.h);
-      else f = (v - (rz.cv - rz.box.h)) / Math.max(1e-4, rz.box.h);
-      // スライダー（山名サイズ 70〜200%）と同じ範囲・刻みにクランプ
-      setLabelNameScale(Math.min(2.0, Math.max(0.7, Math.round(rz.startScale * f * 20) / 20)));
+      // 名札は中央アンカーなので、幅＝中心からドラッグ位置までの距離×2。
+      // 文字サイズは変えず、折り返し幅（labelW）だけを更新する。
+      const w = Math.min(0.98, Math.max(0.06, Math.abs(u - rz.cu) * 2));
+      setArLabels((prev) => prev.map((l, idx) => (idx !== d.i ? l : { ...l, labelW: w })));
       return;
     }
     if (d.kind === "capResize") {
@@ -2541,6 +2544,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           {
                             left: `${lp.u * 100}%`,
                             top: `${lp.v * 100}%`,
+                            ...(lb.labelW ? { width: `${lb.labelW * 100}%` } : {}),
                             color: labelColor,
                             "--label-sh": labelShadow ? contrastShadow(labelColor) : "transparent",
                             ...(labelBg !== "none" ? { "--label-panel-bg": panelRgba(labelPanelColor, labelPanelOpacity) } : {}),
@@ -2554,7 +2558,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         {/* 改行入りの山名は焼き込みと同じ行立て（空行除去）で表示する */}
                         <span className="ar-label-name">{nameLines(lc.name).join("\n")}</span>
                         {lc.sub && <span className="ar-label-sub">{lc.sub}</span>}
-                        {(["l", "r", "t", "b"] as const).map((s2) => (
+                        {(["l", "r"] as const).map((s2) => (
                           <span
                             key={s2}
                             className={`ar-cap-handle ar-cap-handle--${s2}`}

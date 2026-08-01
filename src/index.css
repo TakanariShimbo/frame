@@ -1187,6 +1187,8 @@ button {
 /* --- 山名ラベル（出力と一致させる寸法。変更しない） --- */
 .ar-edit-label {
   position: absolute;
+  /* 幅指定（labelW）が無い限り折り返さない（書き出しは1行描画のため一致させる） */
+  width: max-content;
   transform: translate(-50%, -100%);
   display: flex;
   flex-direction: column;
