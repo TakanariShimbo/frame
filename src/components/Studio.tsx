@@ -248,6 +248,7 @@ type ExportStyle = {
   titleShowNum: boolean;
   titleScale: number;
   titleSideScale?: number; // 上下（小見出し・標高）のサイズ倍率。未指定=1
+  titleW?: number; // 題字の折り返し幅（写真幅比）。未指定は0.98（写真幅いっぱい）
   titleColor: string;
   titleShadow: boolean;
   titleFont: FontPairId;
@@ -637,6 +638,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleShowNum, setTitleShowNum] = useState(initStyle?.titleShowNum ?? true);
   const [titleScale, setTitleScale] = useState(initStyle?.titleScale ?? 1);
   const [titleSideScale, setTitleSideScale] = useState(initStyle?.titleSideScale ?? 1);
+  const [titleW, setTitleW] = useState<number | undefined>(initStyle?.titleW);
   const [titleColor, setTitleColor] = useState(initStyle?.titleColor ?? "#ffffff");
   const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
   const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
@@ -753,7 +755,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const capResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startW: number; startV: number; boxLeft: number; boxRight: number } | null>(null);
   // 名札のリサイズ（左右の丸をドラッグ）。文字サイズは変えず、折り返し幅（labelW）を変更する。
   const labelResizeRef = useRef<{ cu: number } | null>(null);
-  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" } | null>(null);
+  // 題字のリサイズ（左右の丸）。文字サイズは変えず、折り返し幅（titleW）を変更する。
+  const titleResizeRef = useRef<{ cu: number } | null>(null);
+  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" | "titleResize" } | null>(null);
 
   // 選択中の長さに応じた解説本文（短めが無ければ長めにフォールバック）。
   const descJa = (lb: { description?: string; descriptionShort?: string }) =>
@@ -1577,7 +1581,23 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const numFs = Math.max(1, Math.round(mainFs * 0.3 * titleSideScale));
         const overGap = Math.round(mainFs * 0.42 * titleLineHeight);
         const numGap = Math.round(mainFs * 0.34 * titleLineHeight);
-        const mainLines = tp.main.split("\n");
+        let mainLines = tp.main.split("\n");
+        {
+          ctx.font = `${fwTitleMain} ${mainFs}px ${ffTitle}`;
+          setLS(mainFs * 0.04 * titleLetterSpace);
+          const maxW = (titleW ?? 0.98) * OW;
+          const wrapLine = (text: string): string[] => {
+            const out: string[] = [];
+            let cur = "";
+            for (const ch of text) {
+              if (cur && ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; }
+              else cur += ch;
+            }
+            if (cur) out.push(cur);
+            return out.length ? out : [""];
+          };
+          mainLines = mainLines.flatMap(wrapLine);
+        }
         const mainLineH = Math.round(mainFs * 1.02); // プレビュー .ar-title-main の line-height と一致
         const mainBlockH = mainFs + (mainLines.length - 1) * mainLineH;
         const totalH = (tp.over ? overFs + overGap : 0) + mainBlockH + (tp.num ? numGap + numFs : 0);
@@ -1745,6 +1765,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleShowNum(s.titleShowNum);
     setTitleScale(s.titleScale);
     setTitleSideScale(s.titleSideScale ?? 1);
+    setTitleW(s.titleW);
     setTitleColor(s.titleColor);
     setTitleShadow(s.titleShadow);
     setTitleFont(s.titleFont);
@@ -1841,7 +1862,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
     captionTitleScale, captionBodyScale, captionLetterSpace, captionLineHeight, captionPos, captionW, captionSplit,
     tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleSideScale, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleSideScale, titleW, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
     roleFonts, roleWeights, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
   });
 
@@ -2004,6 +2025,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     labelResizeRef.current = { cu: photoToFrame(lb.labelU, lb.labelV).u };
     arDragRef.current = { i, kind: "labelResize" };
   };
+  const onTitleResizeDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    titleResizeRef.current = { cu: photoToFrame(titlePos.u, titlePos.v).u };
+    arDragRef.current = { i: -1, kind: "titleResize" };
+  };
   const onCapSplitDown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -2044,6 +2072,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       const fV = Math.min(1, Math.max(0, sy.pos));
       setSnapGuide({ x: sx.line, y: sy.line });
       setTitlePos(frameToPhoto(fU, fV));
+      return;
+    }
+    if (d.kind === "titleResize") {
+      const rz = titleResizeRef.current;
+      if (!rz) return;
+      // 題字は中央アンカー。幅＝中心からドラッグ位置までの距離×2。
+      setTitleW(Math.min(0.98, Math.max(0.1, Math.abs(u - rz.cu) * 2)));
       return;
     }
     if (d.kind === "labelResize") {
@@ -2676,6 +2711,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       {
                         left: `${tf.u * 100}%`,
                         top: `${tf.v * 100}%`,
+                        width: `${(titleW ?? 0.98) * 100}%`,
                         color: titleColor,
                         "--title-ff": roleFontStack(titleFont),
                         "--title-fw": roleWeightPx("title", titleWeight),
@@ -2695,6 +2731,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     {tp.over && <span className="ar-title-over">{tp.over}</span>}
                     <span className="ar-title-main">{tp.main}</span>
                     {tp.num && <span className="ar-title-num">{tp.num}</span>}
+                    {(["l", "r"] as const).map((s2) => (
+                      <span
+                        key={s2}
+                        className={`ar-cap-handle ar-cap-handle--${s2}`}
+                        title={t("studio.stage.labelResize")}
+                        onPointerDown={onTitleResizeDown}
+                        onPointerMove={onEditMove}
+                        onPointerUp={onEditUp}
+                        onPointerCancel={onEditUp}
+                      />
+                    ))}
                   </div>
                 );
               })()}

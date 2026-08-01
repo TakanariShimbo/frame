@@ -1476,6 +1476,8 @@ button {
 /* --- センタータイトル（出力と一致させる寸法。変更しない） --- */
 .ar-title {
   position: absolute;
+  /* 幅指定（titleW）が無い限り自動折り返しはしない（書き出しと一致させる） */
+  width: max-content;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
