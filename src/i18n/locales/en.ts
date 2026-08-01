@@ -6,6 +6,8 @@ export default {
     heroTitle: "Turn a mountain into a keepsake.",
     heroLead: "Overlay a mountain's name, elevation, and description onto your photo for a poster-like finish. Just pick from a dictionary of about 27,000 peaks — English names and descriptions are added automatically.",
     heroCta: "Choose a photo to start",
+    ctaMountain: "Start with mountains",
+    ctaHanabi: "Start with fireworks",
     heroNote: "Pick several, and you'll finish them one at a time.",
     invalidFile: "Please choose an image file (JPEG, PNG, etc.).",
     worksLabel: "Gallery",
@@ -30,6 +32,7 @@ export default {
     instruction: "Choose the mountains to add to this photo (you can pick more than one).",
     searchPlaceholder: "Search by name (e.g. Mt. Fuji / Fuji)",
     searchLabel: "Search mountains",
+    featuredTag: "Featured",
     added: "Added",
     useAsIs: 'Use "{{query}}" as-is',
     freeInputHint: "Free text · huts, lakes, place names all OK",
@@ -213,8 +216,8 @@ export default {
       tagUsageText: "Text",
     },
     title: {
-    sideSize: "Sub size",
-    sideSizeAria: "Size of the location and elevation lines",
+      sideSize: "Sub size",
+      sideSizeAria: "Size of the location and elevation lines",
       enable: "Add a large centered title",
       language: "Language",
       languageAria: "Title language",
@@ -293,6 +296,59 @@ export default {
       themeTab: "Theme",
       themeTabTitle: "Back to theme selection (your edits are kept)",
       toBoardTitle: "Back to the photo list (your edits are kept)",
+    },
+  },
+  hanabi: {
+    picker: {
+      heroTitle: "Turn fireworks into a keepsake.",
+      heroLead: "Overlay a fireworks program's name and description onto your photo for a poster-like finish. Just pick from the full Nagaoka Fireworks program — English names and descriptions are added automatically.",
+    },
+    board: {
+      statusTodo: "Choose fireworks",
+    },
+    mountainPicker: {
+      heading: "Choose fireworks",
+      instruction: "Choose the fireworks (programs) to place on this photo. You can pick several.",
+      searchPlaceholder: "Search by program name (e.g. Phoenix / Shiragiku)",
+      searchLabel: "Search fireworks programs",
+      freeInputHint: "Free text · program names, venues, anything",
+      selectedHeading: "Fireworks to place",
+      selectedCount: "{{count}} selected",
+      selectedEmpty: "Nothing selected yet. Add fireworks from the search above.",
+      proceedHint: "Choose at least one fireworks program.",
+    },
+    studio: {
+      title: {
+        size: "Program name size",
+        sizeAria: "Title program name size",
+        sideSizeAria: "Size of the location and year lines",
+      },
+      theme: {
+        reselect: "Re-choose fireworks",
+        miyabi: { sub: "Elegant program name", hint: "A serif program name with its English form — the classic finish that suits any photo." },
+        chou: { sub: "One program, center stage", hint: "A poster-style layout with the program name large in the middle of the photo." },
+        katari: { sub: "With the fireworks' story", hint: "A literary finish with the program's description in Japanese and English. You can switch to either language alone." },
+      },
+      data: {
+        heading: "Fireworks info (tap to edit)",
+        showOnPhoto: "Show program name on photo (still usable in captions and titles when off)",
+        subject: "Featured fireworks",
+      },
+      tabs: {
+        label: "Program",
+      },
+      label: {
+        bake: "Place program name on photo",
+        nameSize: "Program name size",
+        letterSpaceAria: "Program name letter spacing",
+        lineHeight: "Line height (name and subtext)",
+        lineHeightAria: "Line height between name and subtext",
+        nameFont: "Program name font",
+      },
+      caption: {
+        jaPlaceholder: "No dictionary description for these fireworks. Write one here to place it on the photo.",
+        tagAddPlaceholder: "Add a tag (e.g. Nagaoka Fireworks)",
+      },
     },
   },
 } as const;

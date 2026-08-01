@@ -6,6 +6,8 @@ export default {
     heroTitle: "山を、作品に。",
     heroLead: "山の写真に山名・標高・解説を美しく重ねて、ポスターのような一枚に。約27,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。",
     heroCta: "写真を選んではじめる",
+    ctaMountain: "山ではじめる",
+    ctaHanabi: "花火ではじめる",
     heroNote: "複数選ぶと、1枚ずつ順に仕上げられます。",
     invalidFile: "画像ファイルを選んでください（JPEG / PNG など）。",
     worksLabel: "作例",
@@ -30,6 +32,7 @@ export default {
     instruction: "この写真にのせる山を選んでください（複数選べます）。",
     searchPlaceholder: "山名・読みで検索（例: 富士山 / ふじ）",
     searchLabel: "山名で検索",
+    featuredTag: "期間限定",
     added: "追加済み",
     useAsIs: "「{{query}}」をそのまま使う",
     freeInputHint: "自由入力 ・ 山小屋・池・地名などもOK",
@@ -212,8 +215,8 @@ export default {
       tagUsageText: "文字",
     },
     title: {
-    sideSize: "補足サイズ",
-    sideSizeAria: "小見出し（場所）と標高のサイズ",
+      sideSize: "補足サイズ",
+      sideSizeAria: "小見出し（場所）と標高のサイズ",
       enable: "中央に大きく題字を入れる",
       language: "言語",
       languageAria: "題字の言語",
@@ -292,6 +295,59 @@ export default {
       themeTab: "テーマ",
       themeTabTitle: "テーマ選択へ戻る（編集内容は保持されます）",
       toBoardTitle: "編集状態を保持して写真一覧へ戻る",
+    },
+  },
+  hanabi: {
+    picker: {
+      heroTitle: "花火を、作品に。",
+      heroLead: "花火の写真に演目名・解説を美しく重ねて、ポスターのような一枚に。長岡花火の全プログラムから選ぶだけで、英語表記や解説も自動で添えられます。",
+    },
+    board: {
+      statusTodo: "花火を選ぶ",
+    },
+    mountainPicker: {
+      heading: "花火を選ぶ",
+      instruction: "この写真にのせる花火（演目）を選んでください（複数選べます）。",
+      searchPlaceholder: "演目名・読みで検索（例: フェニックス / しらぎく）",
+      searchLabel: "演目名で検索",
+      freeInputHint: "自由入力 ・ 演目名や会場名などもOK",
+      selectedHeading: "のせる花火",
+      selectedCount: "{{count}}件",
+      selectedEmpty: "まだ選ばれていません。上の検索から花火を追加してください。",
+      proceedHint: "花火を1つ以上選んでください。",
+    },
+    studio: {
+      title: {
+        size: "演目名サイズ",
+        sizeAria: "題字の演目名サイズ",
+        sideSizeAria: "小見出し（場所）と年号のサイズ",
+      },
+      theme: {
+        reselect: "花火を選び直す",
+        miyabi: { sub: "花火名を美しく", hint: "明朝体の演目名に英語表記を添える、まず選びたい王道の仕上がり。どんな写真にもなじむ。" },
+        chou: { sub: "一演目を主役に", hint: "写真の真ん中に演目名を大きく据えるポスター風。主役の一発を印象的に見せたいときに。" },
+        katari: { sub: "花火の物語を添えて", hint: "花火の解説を日英併記で添える読み物風。言語は日本語のみ・英語のみにも切り替えられる。" },
+      },
+      data: {
+        heading: "花火の情報（タップで編集できます）",
+        showOnPhoto: "写真に演目名を表示（OFFでも解説・題字には使えます）",
+        subject: "取り上げる花火",
+      },
+      tabs: {
+        label: "花火名",
+      },
+      label: {
+        bake: "写真に演目名を入れる",
+        nameSize: "演目名サイズ",
+        letterSpaceAria: "演目名の字間",
+        lineHeight: "行間（演目名と補足）",
+        lineHeightAria: "演目名と補足の行間",
+        nameFont: "演目名フォント",
+      },
+      caption: {
+        jaPlaceholder: "この花火の解説は辞書にありません。ここに書くと写真に載せられます。",
+        tagAddPlaceholder: "タグを追加（例: 長岡花火）",
+      },
     },
   },
 } as const;

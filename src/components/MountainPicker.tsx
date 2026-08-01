@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useModeT } from "../lib/useModeT";
 import { IconSearch, IconMountain, IconPlus } from "./icons";
 import { searchMountains, loadDescriptionsFor, type MountainHit } from "../lib/mountains";
 import { buildLabels, type ArLabel, type PickedPlace } from "../lib/labels";
+import { formatElev } from "../lib/mode";
 
 type Props = {
   // いま仕上げる写真。山を選んだらラベル列を返して仕上げ画面へ。
@@ -17,7 +18,7 @@ type Props = {
 
 // 山選び画面: 写真1枚ごとに通る。ホーム（写真選択）とは独立した専用ステップ。
 export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onStart, onBoard }: Props) {
-  const { t } = useTranslation();
+  const { t } = useModeT();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MountainHit[]>([]);
   const [selected, setSelected] = useState<PickedPlace[]>([]);
@@ -126,7 +127,8 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                   <IconMountain size={16} className="pick-result-ico" />
                   <span className="pick-result-name">{m.name}</span>
                   <span className="pick-result-meta">
-                    {Math.round(m.elevationM).toLocaleString()}m
+                    {m.id >= 9_000_000 ? `${t("mountainPicker.featuredTag")} ・ ` : ""}
+                    {formatElev(m.elevationM)}
                     {m.prefecture ? ` ・ ${m.prefecture.replace(/\//g, "・")}` : ""}
                   </span>
                   <span className="pick-result-add">{isSelected(m.id) ? t("mountainPicker.added") : <IconPlus size={16} />}</span>
@@ -187,7 +189,7 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                     </span>
                   ) : (
                     m.elevationM != null && (
-                      <span className="pick-chip-elev">{Math.round(m.elevationM).toLocaleString()}m</span>
+                      <span className="pick-chip-elev">{formatElev(m.elevationM)}</span>
                     )
                   )}
                   <button
