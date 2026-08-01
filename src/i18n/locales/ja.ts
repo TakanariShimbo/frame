@@ -212,6 +212,8 @@ export default {
       tagUsageText: "文字",
     },
     title: {
+    sideSize: "上下のサイズ",
+    sideSizeAria: "上下（小見出し・標高）のサイズ",
       enable: "中央に大きく題字を入れる",
       language: "言語",
       languageAria: "題字の言語",
