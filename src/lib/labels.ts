@@ -22,6 +22,8 @@ export type ArLabel = {
   dotU: number;
   dotV: number;
   labelU: number;
+  // 名札の折り返し幅（写真幅に対する比率）。未設定なら折り返さない（1行）。
+  labelW?: number;
   labelV: number;
   description?: string; // 解説（日本語・長め）
   descriptionShort?: string; // 解説（日本語・短め）
