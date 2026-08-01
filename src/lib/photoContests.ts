@@ -89,14 +89,15 @@ export type PlatformKey = "x" | "instagram" | "threads";
 // url 未確定なら null（リンクにせず表示名だけ）。アカウント自体が未確定なら値ごと null。
 export type MentionAccount = { label: string; url?: string | null };
 
-export type SponsorLinkType = "instagram" | "official" | "x" | "none";
+export type SponsorLinkType = "instagram" | "official" | "x";
+
+// 協賛ブランド1件のリンク（例 Instagram と 公式サイトを併記できるよう配列で持つ）。
+export type SponsorLink = { type: SponsorLinkType; label: string; url: string };
 
 export type Sponsor = {
   name: string;
   logo?: string | null;
-  linkType: SponsorLinkType;
-  linkLabel: string;
-  url?: string | null; // null ＝ リンクにしない（プレーン表示）
+  links: SponsorLink[]; // 未確定なら空配列（リンクにせず名称だけ表示）
   order: number;
   isPublished: boolean;
 };
@@ -352,7 +353,7 @@ export function loadResult(year: number): Promise<ContestResult | null> {
 // ----------------------------------------------------------------------------
 
 const PLATFORM_KEYS: PlatformKey[] = ["x", "instagram", "threads"];
-const SPONSOR_LINK_TYPES: SponsorLinkType[] = ["instagram", "official", "x", "none"];
+const SPONSOR_LINK_TYPES: SponsorLinkType[] = ["instagram", "official", "x"];
 const STATUS_KEYS: ContestStatus[] = ["scheduled", "open", "closed", "resultsPublished"];
 
 function isValidDate(v: unknown): boolean {
@@ -442,10 +443,21 @@ function validateAnnouncement(json: unknown, file: string): AnnouncementContent 
         return;
       }
       if (!isNonEmptyString(s.name)) issues.push(`${p}.name が必要です`);
-      if (!isNonEmptyString(s.linkLabel)) issues.push(`${p}.linkLabel が必要です`);
-      if (typeof s.linkType !== "string" || !SPONSOR_LINK_TYPES.includes(s.linkType as SponsorLinkType))
-        issues.push(`${p}.linkType は ${SPONSOR_LINK_TYPES.join("/")} のいずれかです`);
-      if (s.url !== null && s.url !== undefined && !isValidUrl(s.url)) issues.push(`${p}.url が有効なURLではありません（未確定なら null）`);
+      if (!Array.isArray(s.links)) {
+        issues.push(`${p}.links は配列で指定してください（未確定なら []）`);
+      } else {
+        s.links.forEach((link, j) => {
+          const lp = `${p}.links[${j}]`;
+          if (!isRecord(link)) {
+            issues.push(`${lp} がオブジェクトではありません`);
+            return;
+          }
+          if (!isNonEmptyString(link.label)) issues.push(`${lp}.label が必要です`);
+          if (typeof link.type !== "string" || !SPONSOR_LINK_TYPES.includes(link.type as SponsorLinkType))
+            issues.push(`${lp}.type は ${SPONSOR_LINK_TYPES.join("/")} のいずれかです`);
+          if (!isValidUrl(link.url)) issues.push(`${lp}.url が有効なURLではありません`);
+        });
+      }
     });
     checkOrders(sponsors.filter(isRecord), "sponsors", issues);
   }

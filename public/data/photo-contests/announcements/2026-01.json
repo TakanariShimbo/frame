@@ -44,13 +44,14 @@
     "mentionAccounts": {
       "x": { "label": "@r_outdoor_photo", "url": "https://x.com/r_outdoor_photo" },
       "instagram": { "label": "yama_frame", "url": "https://www.instagram.com/yama_frame/" },
-      "threads": { "label": "@r_outdoor_photo", "url": "https://www.threads.com/@r_outdoor_photo" }
+      "threads": { "label": "@yama_frame", "url": "https://www.threads.com/@yama_frame" }
     },
     "pendingAccountMessage": "指定アカウントは確定後に掲載します。",
     "platforms": ["x", "instagram", "threads"],
     "requirements": [
       "ヤマフレームを用いて出力された写真であること。",
       "#ヤマフレームフォトコンテスト を付けて投稿すること。",
+      "指定アカウントをフォローすること。",
       "指定アカウントをメンションして応募すること。",
       "山、または山での体験に付随した写真であること。",
       "単写真であること。"
@@ -60,45 +61,50 @@
     {
       "name": "hike junkies",
       "logo": null,
-      "linkType": "instagram",
-      "linkLabel": "Instagram",
-      "url": "https://www.instagram.com/hike_junkies/",
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/hike_junkies/" },
+        { "type": "official", "label": "公式サイト", "url": "https://hikejunkies.base.shop/" }
+      ],
       "order": 1,
       "isPublished": true
     },
     {
       "name": "itomici 山と刺繍",
       "logo": null,
-      "linkType": "instagram",
-      "linkLabel": "Instagram",
-      "url": "https://www.instagram.com/ito_mici/",
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/ito_mici/" },
+        { "type": "official", "label": "公式サイト", "url": "https://minne.com/@itomici/profile" }
+      ],
       "order": 2,
       "isPublished": true
     },
     {
       "name": "MOUNTDOOR",
       "logo": null,
-      "linkType": "instagram",
-      "linkLabel": "Instagram",
-      "url": "https://www.instagram.com/mount_door/",
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mount_door/" },
+        { "type": "official", "label": "公式サイト", "url": "https://mount-door.com/" }
+      ],
       "order": 3,
       "isPublished": true
     },
     {
       "name": "PATISSERIE CAFE VIGO",
       "logo": null,
-      "linkType": "instagram",
-      "linkLabel": "Instagram",
-      "url": "https://www.instagram.com/patisserievigo/",
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/patisserievigo/" },
+        { "type": "official", "label": "公式サイト", "url": "https://www.facebook.com/happy.vigo/" }
+      ],
       "order": 4,
       "isPublished": true
     },
     {
       "name": "鎌倉天幕",
       "logo": null,
-      "linkType": "instagram",
-      "linkLabel": "Instagram",
-      "url": "https://www.instagram.com/ntj_kamakuratenmaku",
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/ntj_kamakuratenmaku" },
+        { "type": "official", "label": "公式サイト", "url": "https://newtecjapan.co.jp/" }
+      ],
       "order": 5,
       "isPublished": true
     }

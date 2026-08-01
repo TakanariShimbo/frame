@@ -8,48 +8,38 @@ function LinkIcon({ type }: { type: SponsorLinkType }) {
   return null;
 }
 
-// 協賛ブランド1件の中身（ロゴ or 名称 ＋ リンク種別ラベル）。
-function SponsorInner({ sponsor }: { sponsor: Sponsor }) {
-  return (
-    <>
-      {sponsor.logo ? (
-        <img className="pcan-sponsor-logo" src={assetUrl(sponsor.logo)} alt={sponsor.name} loading="lazy" decoding="async" />
-      ) : (
-        <span className="pcan-sponsor-name">{sponsor.name}</span>
-      )}
-      {sponsor.linkType !== "none" && (
-        <span className="pcan-sponsor-meta">
-          <LinkIcon type={sponsor.linkType} />
-          <span className="pcan-sponsor-label">{sponsor.linkLabel}</span>
-          <span className="pcan-sponsor-arrow" aria-hidden />
-        </span>
-      )}
-    </>
-  );
-}
-
-// 協賛ブランド一覧。URL 未確定（null）のブランドはリンクにせずプレーン表示する（偽リンクを作らない）。
-// 後から JSON に url を入れるだけでリンク化される。PC は横並び、スマホは縦積み（CSS 側）。
+// 協賛ブランド一覧。各ブランドは Instagram・公式サイトなど複数のリンクを併記できる（links 配列）。
+// リンク未確定（links が空）のブランドは名称だけを表示し、偽リンクは作らない。
+// 後から JSON の links にURLを足すだけでリンクが増える。PC は横並び、スマホは縦積み（CSS 側）。
 export default function SponsorList({ sponsors }: { sponsors: Sponsor[] }) {
   return (
     <ul className="pcan-sponsors">
       {sponsors.map((s, i) => (
         <li key={`${s.name}-${i}`} className="pcan-sponsor">
-          {s.url ? (
-            <a
-              className="pcan-sponsor-body is-link"
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${s.name}の${s.linkLabel}を開く`}
-            >
-              <SponsorInner sponsor={s} />
-            </a>
-          ) : (
-            <div className="pcan-sponsor-body">
-              <SponsorInner sponsor={s} />
-            </div>
-          )}
+          <div className="pcan-sponsor-body">
+            {s.logo ? (
+              <img className="pcan-sponsor-logo" src={assetUrl(s.logo)} alt={s.name} loading="lazy" decoding="async" />
+            ) : (
+              <span className="pcan-sponsor-name">{s.name}</span>
+            )}
+            {s.links.length > 0 && (
+              <div className="pcan-sponsor-links">
+                {s.links.map((link, j) => (
+                  <a
+                    key={j}
+                    className="pcan-sponsor-link"
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${s.name}の${link.label}を開く`}
+                  >
+                    <LinkIcon type={link.type} />
+                    <span className="pcan-sponsor-label">{link.label}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </li>
       ))}
     </ul>

@@ -3902,15 +3902,7 @@ a.pcan-mention-link:hover .pcan-mention-handle {
   min-height: 118px;
   padding: clamp(18px, 2vw, 28px) 12px;
   border: 1px solid var(--pcan-border);
-  text-decoration: none;
   color: inherit;
-  transition:
-    border-color 0.3s ease,
-    background-color 0.3s ease;
-}
-a.pcan-sponsor-body.is-link:hover {
-  border-color: var(--gold-line);
-  background: var(--gold-soft);
 }
 .pcan-sponsor-name {
   font-family: var(--font-display);
@@ -3924,18 +3916,35 @@ a.pcan-sponsor-body.is-link:hover {
   max-height: 40px;
   object-fit: contain;
 }
-.pcan-sponsor-meta {
+.pcan-sponsor-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  font-size: 13px;
+}
+.pcan-sponsor-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--pcan-border);
+  border-radius: 999px;
+  font-size: 12px;
   color: var(--ink-sub);
+  text-decoration: none;
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+.pcan-sponsor-link:hover {
+  border-color: var(--gold-line);
+  background: var(--gold-soft);
+  color: var(--ink);
 }
 .pcan-sponsor-icon {
   color: var(--gold);
-}
-.pcan-sponsor-arrow {
-  display: none;
 }
 
 .pcan-footer {
@@ -4131,16 +4140,9 @@ a.pcan-sponsor-body.is-link:hover {
   .pcan-sponsor-name {
     text-align: left;
   }
-  .pcan-sponsor-meta {
+  .pcan-sponsor-links {
     margin-left: auto;
-  }
-  a.pcan-sponsor-body.is-link .pcan-sponsor-arrow {
-    display: block;
-    width: 7px;
-    height: 7px;
-    border-top: 1px solid var(--gold);
-    border-right: 1px solid var(--gold);
-    transform: rotate(45deg);
+    justify-content: flex-end;
   }
   .pcan-footer {
     margin-right: var(--pcan-mnav-w);

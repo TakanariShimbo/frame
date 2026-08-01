@@ -152,6 +152,7 @@ JSONは「キー」と「値」の集まりです。**値（`"..."` の中身）
 "requirements": [
   "ヤマフレームを用いて出力された写真であること。",
   "#ヤマフレームフォトコンテスト を付けて投稿すること。",
+  "指定アカウントをフォローすること。",
   "指定アカウントをメンションして投稿すること。",
   "山、または山での体験に付随した写真であること。",
   "単写真であること。"
@@ -180,7 +181,7 @@ JSONは「キー」と「値」の集まりです。**値（`"..."` の中身）
 "mentionAccounts": {
   "x": { "label": "@r_outdoor_photo", "url": "https://x.com/r_outdoor_photo" },
   "instagram": { "label": "yama_frame", "url": "https://www.instagram.com/yama_frame/" },
-  "threads": { "label": "@r_outdoor_photo", "url": "https://www.threads.com/@r_outdoor_photo" }
+  "threads": { "label": "@yama_frame", "url": "https://www.threads.com/@yama_frame" }
 },
 "pendingAccountMessage": "指定アカウントは確定後に掲載します。"
 ```
@@ -233,9 +234,10 @@ JSONに `steps` の項目はありません。
   {
     "name": "hike junkies",
     "logo": null,
-    "linkType": "instagram",
-    "linkLabel": "Instagram",
-    "url": null,
+    "links": [
+      { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/hike_junkies/" },
+      { "type": "official", "label": "公式サイト", "url": "https://hikejunkies.base.shop/" }
+    ],
     "order": 1,
     "isPublished": true
   }
@@ -246,16 +248,22 @@ JSONに `steps` の項目はありません。
 |---|---|
 | `name` | ブランド名（ロゴ画像が無いときはこの文字が表示されます） |
 | `logo` | ロゴ画像のパス。無ければ `null` |
-| `linkType` | リンク種別。`"instagram"` / `"official"` / `"x"` / `"none"` |
-| `linkLabel` | リンクの表示名（例 `"Instagram"` / `"Official Site"`） |
-| `url` | リンク先URL。**未確定なら必ず `null`** |
+| `links` | リンクの配列。Instagram と公式サイトなど複数を併記できます（未確定なら `[]`） |
 | `order` | 表示順（小さいほど先。重複させない） |
 | `isPublished` | `false` にするとそのブランドを非表示にできます |
 
+`links` の各要素は次の3つのキーを持ちます。
+
+| キー | 意味 |
+|---|---|
+| `type` | リンク種別。`"instagram"` / `"official"` / `"x"`（種別に応じたアイコンが付きます） |
+| `label` | リンクの表示名（例 `"Instagram"` / `"公式サイト"`） |
+| `url` | リンク先URL（`https://…`）。**有効なURLが必須です** |
+
 - **追加**：`{ ... }` のかたまりをコピーして値を変え、`order` を重複しない数字にします。かたまりの間はカンマ `,` で区切ります。
 - **削除**：不要な `{ ... }` のかたまりを（前後のカンマも含めて）消します。
-- **リンクの有効化**：`url` に正しいURL（`https://…`）を入れると自動でリンクになり、スマホでは右向き矢印が付きます。
-- **URLが未確定のとき**：`url` を `null` のままにします。リンクにはならず、名称とラベルだけが表示されます（後からURLを入れるだけで有効化できます）。
+- **リンクの追加・変更**：`links` 配列に `{ "type": ..., "label": ..., "url": ... }` を足す／書き換えます。要素の間はカンマ `,` で区切り、**最後の要素の末尾にはカンマを付けない**点に注意します。
+- **リンクが未確定のとき**：`links` を `[]`（空の配列）にします。名称だけが表示され、リンクにはなりません（後からリンクを足すだけで有効化できます）。`"#"` や `example.com` などの仮リンクは絶対に入れないでください。
 - **ロゴ画像を使うとき**：画像を `public/images/photo-contests/2026-01/announcement/` に置き、`logo` にそのパスを設定します（例 `/images/photo-contests/2026-01/announcement/sponsor-hike.png`）。高さ40px程度で表示されます。
 
 ---
