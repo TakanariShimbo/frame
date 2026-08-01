@@ -1,0 +1,117 @@
+{
+  "id": "2026-01",
+  "slug": "2026-01",
+  "year": 2026,
+  "edition": 1,
+  "isPublished": true,
+  "status": {
+    "mode": "auto",
+    "override": null,
+    "timeZone": "Asia/Tokyo",
+    "startAt": "2026-08-08T00:00:00+09:00",
+    "endAt": "2026-08-31T23:59:59+09:00",
+    "resultsPublished": false
+  },
+  "statusLabels": {
+    "scheduled": "",
+    "open": "",
+    "closed": "",
+    "resultsPublished": ""
+  },
+  "periodNote": "応募期間中に投稿された作品が対象です。",
+  "routes": {
+    "announcement": "/photo-contest/2026-01/announcement",
+    "results": null
+  },
+  "hero": {
+    "eyebrow": "ANNOUNCEMENT",
+    "titleLines": ["PHOTO", "CONTEST"],
+    "yearLabel": "2026/8",
+    "lead": "山の個性を、あなたの視点で。",
+    "image": {
+      "src": "/images/photo-contests/2026-01/announcement/hero.jpg",
+      "mobileSrc": "/images/photo-contests/2026-01/announcement/hero-mobile.jpg",
+      "alt": "夕日に染まる山の稜線を撮影する登山者",
+      "position": "center 40%"
+    }
+  },
+  "theme": {
+    "title": "山を、もっと自分らしく。",
+    "description": "写真の上手さではなく、アプリを使って出力した山写真の個性を評価するフォトコンテストです。"
+  },
+  "application": {
+    "hashtag": "#ヤマフレームフォトコンテスト",
+    "mentionAccounts": {
+      "x": { "label": "@r_outdoor_photo", "url": "https://x.com/r_outdoor_photo" },
+      "instagram": { "label": "yama_frame", "url": "https://www.instagram.com/yama_frame/" },
+      "threads": { "label": "@yama_frame", "url": "https://www.threads.com/@yama_frame" }
+    },
+    "pendingAccountMessage": "指定アカウントは確定後に掲載します。",
+    "platforms": ["x", "instagram", "threads"],
+    "requirements": [
+      "ヤマフレームを用いて出力された写真であること。",
+      "#ヤマフレームフォトコンテスト を付けて投稿すること。",
+      "指定アカウントをフォローすること。",
+      "指定アカウントをメンションして応募すること。",
+      "山、または山での体験に付随した写真であること。",
+      "単写真であること。"
+    ]
+  },
+  "sponsors": [
+    {
+      "name": "hike junkies",
+      "logo": null,
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/hike_junkies/" },
+        { "type": "official", "label": "公式サイト", "url": "https://hikejunkies.base.shop/" }
+      ],
+      "order": 1,
+      "isPublished": true
+    },
+    {
+      "name": "itomici 山と刺繍",
+      "logo": null,
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/ito_mici/" },
+        { "type": "official", "label": "公式サイト", "url": "https://minne.com/@itomici/profile" }
+      ],
+      "order": 2,
+      "isPublished": true
+    },
+    {
+      "name": "MOUNTDOOR",
+      "logo": null,
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/mount_door/" },
+        { "type": "official", "label": "公式サイト", "url": "https://mount-door.com/" }
+      ],
+      "order": 3,
+      "isPublished": true
+    },
+    {
+      "name": "PATISSERIE CAFE VIGO",
+      "logo": null,
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/patisserievigo/" },
+        { "type": "official", "label": "公式サイト", "url": "https://www.facebook.com/happy.vigo/" }
+      ],
+      "order": 4,
+      "isPublished": true
+    },
+    {
+      "name": "鎌倉天幕",
+      "logo": null,
+      "links": [
+        { "type": "instagram", "label": "Instagram", "url": "https://www.instagram.com/ntj_kamakuratenmaku" },
+        { "type": "official", "label": "公式サイト", "url": "https://newtecjapan.co.jp/" }
+      ],
+      "order": 5,
+      "isPublished": true
+    }
+  ],
+  "seo": {
+    "title": "ヤマフレームフォトコンテスト 2026 開催のお知らせ | YAMA FRAME",
+    "description": "ヤマフレームフォトコンテスト 2026。山を、もっと自分らしく。アプリで出力した山写真の個性を評価するフォトコンテストを開催します。開催期間は2026年8月8日〜8月31日。",
+    "ogImage": "/images/photo-contests/2026-01/announcement/hero.jpg"
+  }
+}

@@ -2397,3 +2397,1772 @@ button {
 .ar-export-toast.is-warn {
   background: rgba(146, 104, 30, 0.95);
 }
+
+/* ============================================================================
+   フォトコンテスト（YAMA FRAME AWARD）
+   /photo-contest（一覧）・/photo-contest/<year>（年度別結果）。
+   漆黒＋金の写真集調エディトリアル。コンテンツは public/data/photo-contests/ のJSON。
+   命名: .pc-*=共通 / .pcn=縦ナビ / .pchn=横ナビ(一覧スマホ) / .pca-*=一覧 /
+         .pcr-*=結果 / .pcw=受賞者 / .pcnf=404
+   ============================================================================ */
+
+.pc-screen {
+  --pc-nav-w: 128px;
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 視覚的に隠すが読み上げには残す（結果ページのh1など） */
+.pc-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* スクロールに応じた控えめなフェードイン（useReveal が .is-in を付与） */
+.pc-screen [data-reveal] {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+.pc-screen [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-screen [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   縦型固定ナビゲーション（.pcn）
+   一覧PC・結果ページ（結果はスマホでも幅を縮めて維持）
+---------------------------------------------------------------------------- */
+.pcn {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--pc-nav-w);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: clamp(18px, 3.5vh, 32px) 0 clamp(14px, 2.5vh, 24px);
+  z-index: 10;
+}
+
+.pcn-logo {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0 0 0 clamp(14px, 1.6vw, 26px);
+  align-self: flex-start;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: clamp(12px, 1vw, 15px);
+  letter-spacing: 0.12em;
+  line-height: 1.55;
+  white-space: nowrap;
+  color: var(--gold);
+}
+.pcn-logo::after {
+  content: "";
+  display: block;
+  width: 30px;
+  height: 1px;
+  margin-top: 9px;
+  background: var(--gold-line);
+}
+
+.pcn-rail {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: clamp(16px, 3.5vh, 34px) 0 clamp(10px, 2vh, 18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* 縦の細いゴールドライン（番号ドット列の中心を貫く） */
+.pcn-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--gold-line) 10%, var(--gold-line) 90%, transparent);
+}
+/* ライン上端の小さなダイヤ */
+.pcn-rail::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--gold-line);
+  background: var(--bg);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* 縦書きの年度（結果ページ）。背景色でラインを一時的に隠す */
+.pcn-year {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(6px, 2vh, 18px);
+  padding: 10px 0;
+  background: var(--bg);
+  writing-mode: vertical-rl;
+  font-family: var(--font-latin);
+  font-size: clamp(11px, 1vw, 14px);
+  letter-spacing: 0.34em;
+  color: var(--gold);
+}
+
+.pcn-list {
+  list-style: none;
+  margin: clamp(10px, 3vh, 30px) 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2.6vh, 26px);
+}
+/* [番号 | ドット | 余白] の3列。中央16px列の中心がちょうどライン(50%)に乗る */
+.pcn-item {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 16px 1fr;
+  align-items: center;
+  padding: 5px 0;
+}
+.pcn-num {
+  grid-column: 1;
+  justify-self: end;
+  padding-right: 10px;
+  font-family: var(--font-latin);
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  transition:
+    color 0.3s ease,
+    font-size 0.3s ease;
+}
+.pcn-dot {
+  grid-column: 2;
+  justify-self: center;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  opacity: 0.55;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    width 0.3s ease,
+    height 0.3s ease,
+    opacity 0.3s ease;
+}
+.pcn-item:hover .pcn-num {
+  color: var(--gold);
+}
+.pcn-item.is-active .pcn-num {
+  color: var(--gold);
+  font-size: clamp(14px, 1.2vw, 17px);
+}
+.pcn-item.is-active .pcn-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(216, 182, 114, 0.9);
+}
+
+.pcn-scroll {
+  align-self: center;
+  writing-mode: vertical-rl;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: clamp(9px, 0.8vw, 11px);
+  letter-spacing: 0.4em;
+  color: var(--ink-faint);
+}
+
+/* ----------------------------------------------------------------------------
+   一覧ページ（.pca）
+---------------------------------------------------------------------------- */
+.pca-main {
+  margin-left: var(--pc-nav-w);
+  padding: 0 clamp(24px, 5vw, 84px);
+}
+.pca-header,
+.pca-list {
+  max-width: 1060px;
+  margin-inline: auto;
+}
+
+.pca-header {
+  padding-top: clamp(26px, 5vh, 54px);
+  text-align: center;
+}
+.pca-mlogo {
+  display: none;
+}
+.pca-heading {
+  margin: 14px 0 0;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: clamp(28px, 3.2vw, 44px);
+  letter-spacing: 0.14em;
+  color: var(--ink);
+}
+.pca-lead {
+  margin: 20px 0 0;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  line-height: 2.2;
+  letter-spacing: 0.06em;
+  color: var(--ink-sub);
+}
+.pca-lead-line {
+  display: block;
+}
+
+.pca-list {
+  margin-top: clamp(30px, 5vh, 60px);
+}
+.pca-item {
+  padding: clamp(38px, 6.5vh, 78px) 0;
+  scroll-margin-top: 8px;
+}
+.pca-item + .pca-item {
+  border-top: 1px solid var(--line);
+}
+.pca-item--latest {
+  padding-top: clamp(10px, 2vh, 22px);
+}
+
+.pca-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(26px, 4vw, 60px);
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+/* 過去年度の交互配置: --flip はテキストが左、画像が右 */
+.pca-item--flip .pca-link {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+}
+.pca-item--flip .pca-media {
+  order: 2;
+}
+
+.pca-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2.35 / 1;
+}
+.pca-item--latest .pca-link {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+.pca-item--latest .pca-media {
+  aspect-ratio: 2 / 1;
+}
+.pca-media picture,
+.pca-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.pca-media img {
+  object-fit: cover;
+}
+.pca-shade {
+  display: none;
+}
+
+.pca-latest {
+  display: inline-block;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: var(--gold);
+}
+.pca-year {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-latin);
+  font-weight: 400;
+  font-size: clamp(38px, 4.2vw, 58px);
+  letter-spacing: 0.06em;
+  line-height: 1.05;
+  color: var(--gold);
+}
+.pca-item--latest .pca-year {
+  font-size: clamp(50px, 5.8vw, 82px);
+}
+.pca-title {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(16px, 1.5vw, 21px);
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+.pca-desc {
+  margin: 16px 0 0;
+  max-width: 32em;
+  font-size: 12.5px;
+  line-height: 2.05;
+  color: var(--ink-sub);
+}
+.pca-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+}
+.pca-arrow {
+  position: relative;
+  width: 46px;
+  height: 1px;
+  background: var(--gold-line);
+  transition: width 0.35s ease;
+}
+.pca-arrow::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 9px;
+  height: 1px;
+  background: var(--gold-line);
+  transform: rotate(28deg);
+  transform-origin: right center;
+}
+.pca-link:hover .pca-arrow,
+.pca-link:focus-visible .pca-arrow {
+  width: 66px;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pca-media img {
+    transition: transform 1.4s ease;
+  }
+  .pca-link:hover .pca-media img {
+    transform: scale(1.025);
+  }
+}
+
+.pca-scrollcue {
+  display: none;
+}
+
+/* ----------------------------------------------------------------------------
+   一覧ページ・スマートフォン横ナビ（.pchn）
+---------------------------------------------------------------------------- */
+.pchn {
+  display: none;
+}
+
+/* ----------------------------------------------------------------------------
+   結果ページ（.pcr）
+---------------------------------------------------------------------------- */
+.pcr-main {
+  margin-left: var(--pc-nav-w);
+  padding: clamp(20px, 4vh, 42px) clamp(24px, 4.5vw, 72px) 36px;
+}
+.pcr-main > * {
+  max-width: 1220px;
+  margin-inline: auto;
+}
+
+.pcr-award {
+  scroll-margin-top: 10px;
+}
+
+/* 賞名見出し（中央、左右へ伸びる細いゴールドライン） */
+.pcr-prize {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 32px);
+  margin: 0 0 clamp(20px, 4vh, 38px);
+}
+.pcr-prize::before,
+.pcr-prize::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, transparent, var(--gold-line));
+}
+.pcr-prize::after {
+  background: linear-gradient(90deg, var(--gold-line), transparent);
+}
+.pcr-prize-name {
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: clamp(14px, 1.35vw, 19px);
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ヒーロー: 左=コンセプト / 中央=写真 / 右=作品情報（DOM順は 写真→情報→コンセプト） */
+.pcr-hero {
+  display: grid;
+  grid-template-columns: minmax(210px, 280px) minmax(0, 1fr) minmax(200px, 250px);
+  grid-template-areas: "concept media detail";
+  gap: clamp(22px, 3vw, 54px);
+  align-items: start;
+}
+.pcr-hero > .pcr-media {
+  grid-area: media;
+}
+.pcr-hero > .pcr-detail {
+  grid-area: detail;
+}
+.pcr-hero > .pcr-concept {
+  grid-area: concept;
+}
+.pcr-award--hero {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: clamp(30px, 6vh, 60px);
+}
+.pcr-award--hero .pcr-media {
+  aspect-ratio: 2.1 / 1;
+}
+.pcr-media {
+  overflow: hidden;
+}
+.pcr-media picture,
+.pcr-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.pcr-media img {
+  object-fit: cover;
+}
+
+.pcr-concept-copy {
+  margin: clamp(6px, 3.5vh, 36px) 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(17px, 1.6vw, 23px);
+  line-height: 2.1;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+.pcr-concept-line {
+  display: block;
+}
+.pcr-concept-desc {
+  margin: 24px 0 0;
+  font-size: 12.5px;
+  line-height: 2.1;
+  color: var(--ink-sub);
+}
+.pcr-goldline {
+  display: block;
+  width: 40px;
+  height: 1px;
+  margin-top: 26px;
+  background: var(--gold-line);
+}
+
+.pcr-eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.pcr-num {
+  display: block;
+  font-family: var(--font-latin);
+  font-weight: 400;
+  font-size: clamp(34px, 3vw, 46px);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+}
+.pcr-numline {
+  display: block;
+  width: 34px;
+  height: 1px;
+  margin-top: 12px;
+  background: var(--gold-line);
+}
+.pcr-title {
+  margin: 18px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(17px, 1.5vw, 21px);
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+.pcr-copy {
+  margin: 12px 0 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 2;
+  letter-spacing: 0.06em;
+  color: var(--ink-sub);
+}
+/* ヒーローの右カラムでは、コピーは左のコンセプトと重複するため出さない */
+.pcr-award--hero .pcr-copy {
+  display: none;
+}
+.pcr-desc {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 2.05;
+  color: var(--ink-sub);
+}
+
+/* 受賞者とSNS（PCは縦積み、スマホは横並び） */
+.pcw {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+.pcw-label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--gold);
+}
+.pcw-name {
+  font-family: var(--font-latin);
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.pcw-sns {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  padding: 2px 0;
+  color: var(--ink-sub);
+  text-decoration: none;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  transition: color 0.3s ease;
+  overflow-wrap: anywhere;
+}
+.pcw-sns:hover,
+.pcw-sns:focus-visible {
+  color: var(--gold);
+}
+.pcw-icon {
+  flex: none;
+  opacity: 0.85;
+}
+
+/* 2作品目以降: 2カラムのグリッド。各セルは [テキスト | 画像]（DOM順は画像が先） */
+.pcr-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(30px, 4.5vw, 70px);
+  padding-top: clamp(30px, 6vh, 60px);
+}
+.pcr-grid > .pcr-award:only-child {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 860px;
+}
+.pcr-body {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: clamp(18px, 2.2vw, 34px);
+  align-items: flex-start;
+}
+.pcr-body .pcr-media {
+  flex: 1.15;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+}
+.pcr-body .pcr-detail {
+  flex: 1;
+  min-width: 0;
+}
+/* 作品ごとの変化: 偶数セルは画像をやや縦長にする */
+.pcr-grid > .pcr-award:nth-child(even) .pcr-body .pcr-media {
+  aspect-ratio: 0.78 / 1;
+}
+/* 3セル目以降（2段目〜）は薄い罫線で区切る */
+.pcr-grid > .pcr-award:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
+  padding-top: clamp(26px, 5vh, 52px);
+}
+
+/* ページ末尾の誘導 */
+.pcr-outro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: clamp(34px, 7vh, 70px) 0 22px;
+}
+.pcr-outro-text {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--ink-sub);
+}
+.pcr-outro-text::before,
+.pcr-outro-text::after {
+  content: "";
+  width: clamp(24px, 4vw, 44px);
+  height: 1px;
+  background: var(--gold-line);
+}
+.pcr-outro-icon {
+  color: var(--gold);
+}
+
+/* ----------------------------------------------------------------------------
+   404・エラー（.pcnf）
+---------------------------------------------------------------------------- */
+.pcnf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+}
+.pcnf-title {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+}
+.pcnf-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 2;
+  color: var(--ink-sub);
+}
+.pcnf-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  min-height: 44px;
+  color: var(--gold);
+  text-decoration: none;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.26em;
+}
+
+/* ----------------------------------------------------------------------------
+   中間幅（721〜1080px）: ナビを細くし、結果ヒーローを2カラムへ
+---------------------------------------------------------------------------- */
+@media (max-width: 1080px) and (min-width: 721px) {
+  .pc-screen {
+    --pc-nav-w: 96px;
+  }
+  .pcr-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(190px, 230px);
+    grid-template-areas:
+      "media detail"
+      "concept detail";
+  }
+  .pcr-concept-copy {
+    margin-top: 4px;
+  }
+}
+
+/* 721〜900px: 2カラムだと窮屈なため、2作品目以降を1カラムで大きく見せる */
+@media (max-width: 900px) and (min-width: 721px) {
+  .pcr-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pcr-grid > .pcr-award:nth-child(n + 2) {
+    border-top: 1px solid var(--line);
+    padding-top: clamp(26px, 5vh, 52px);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   スマートフォン（〜720px）
+   一覧: 左ナビ非表示・横ナビ表示 / 結果: 左ナビを幅を縮めて維持
+---------------------------------------------------------------------------- */
+@media (max-width: 720px) {
+  /* --- 一覧ページ --- */
+  .pcn--archive {
+    display: none;
+  }
+  .pca-main {
+    margin-left: 0;
+    padding: 0 20px;
+  }
+  .pca-header {
+    padding-top: 16px;
+  }
+  .pca-mlogo {
+    display: block;
+    margin: 0 0 24px;
+    text-align: left;
+    font-family: var(--font-latin);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+  }
+  .pca-mlogo::after {
+    content: "";
+    display: block;
+    width: 30px;
+    height: 1px;
+    margin-top: 8px;
+    background: var(--gold-line);
+  }
+  .pca-heading {
+    font-size: 21px;
+    letter-spacing: 0.12em;
+  }
+  .pca-lead {
+    margin-top: 12px;
+    font-size: 11px;
+    line-height: 2;
+  }
+
+  /* 横方向の番号ナビゲーション */
+  .pchn {
+    display: block;
+    margin: 22px 0 4px;
+  }
+  .pchn-list {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pchn-list::-webkit-scrollbar {
+    display: none;
+  }
+  .pchn-cell {
+    flex: 1 0 auto;
+    min-width: 44px;
+  }
+  .pchn-item {
+    appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+    padding: 6px 6px 20px;
+  }
+  .pchn-num {
+    font-family: var(--font-latin);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    transition:
+      color 0.3s ease,
+      font-size 0.3s ease;
+  }
+  .pchn-item.is-active .pchn-num {
+    color: var(--gold);
+    font-size: 15px;
+  }
+  /* 番号列の下を貫く細いライン（各セルの区間がつながって1本に見える） */
+  .pchn-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    height: 1px;
+    background: rgba(216, 182, 114, 0.28);
+  }
+  .pchn-dot {
+    position: absolute;
+    left: 50%;
+    bottom: 9px;
+    transform: translate(-50%, 50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    opacity: 0.55;
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      opacity 0.3s ease;
+  }
+  .pchn-item.is-active .pchn-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--gold);
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(216, 182, 114, 0.9);
+  }
+
+  /* コンテスト一覧: 画像に文字を重ねる縦積み */
+  .pca-list {
+    margin-top: 12px;
+  }
+  .pca-item,
+  .pca-item--latest {
+    padding: 9px 0;
+  }
+  .pca-item + .pca-item {
+    border-top: 0;
+  }
+  .pca-link,
+  .pca-item--flip .pca-link {
+    display: block;
+    position: relative;
+  }
+  .pca-media,
+  .pca-item--latest .pca-media {
+    aspect-ratio: 1.9 / 1;
+  }
+  .pca-item--flip .pca-media {
+    order: 0;
+  }
+  .pca-shade {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7, 7, 8, 0) 42%, rgba(7, 7, 8, 0.85) 100%);
+  }
+  .pca-info {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 10px;
+    /* 明るい写真の上でも文字が沈まないように（薄いグラデーションの補助） */
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+  }
+  .pca-latest {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.36em;
+  }
+  .pca-year,
+  .pca-item--latest .pca-year {
+    display: inline-block;
+    margin-top: 2px;
+    font-size: 34px;
+  }
+  .pca-item--latest .pca-year {
+    font-size: 40px;
+  }
+  .pca-title {
+    display: inline-block;
+    margin: 0 0 0 14px;
+    font-size: 15px;
+    vertical-align: 6px;
+  }
+  .pca-desc {
+    display: none;
+  }
+  .pca-cta {
+    display: flex;
+    margin-top: 4px;
+    font-size: 10px;
+    letter-spacing: 0.28em;
+  }
+  .pca-arrow {
+    width: 36px;
+  }
+
+  .pca-scrollcue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 22px 0 32px;
+    color: var(--gold);
+  }
+  .pca-scrollcue-text {
+    font-family: var(--font-latin);
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.32em;
+  }
+
+  /* --- 結果ページ: 左の縦型ナビを維持し、本文はその右側 --- */
+  .pcr {
+    --pc-nav-w: 68px;
+  }
+  .pcn--result {
+    padding-top: 14px;
+    padding-bottom: 12px;
+  }
+  .pcn--result .pcn-logo {
+    margin-left: 10px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .pcn--result .pcn-logo::after {
+    width: 22px;
+    margin-top: 6px;
+  }
+  .pcn--result .pcn-rail {
+    margin: 12px 0 8px;
+  }
+  .pcn--result .pcn-year {
+    font-size: 11px;
+    padding: 8px 0;
+  }
+  .pcn--result .pcn-num {
+    font-size: 11px;
+    padding-right: 7px;
+  }
+  .pcn--result .pcn-item.is-active .pcn-num {
+    font-size: 13px;
+  }
+  .pcn--result .pcn-scroll {
+    font-size: 9px;
+  }
+
+  .pcr-main {
+    margin-left: var(--pc-nav-w);
+    padding: 12px 18px 28px 8px;
+  }
+  .pcr-prize {
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .pcr-prize-name {
+    font-size: 12px;
+    letter-spacing: 0.36em;
+  }
+  .pcr-hero {
+    display: block;
+  }
+  .pcr-concept {
+    display: none;
+  }
+  .pcr-award--hero .pcr-media {
+    aspect-ratio: 2.05 / 1;
+  }
+
+  /* 作品詳細: 左=大きな番号 / 右=タイトル・コピー・解説、受賞者行は全幅 */
+  .pcr-detail {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 16px;
+  }
+  .pcr-eyebrow {
+    grid-column: 1 / -1;
+    margin-bottom: 12px;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+  }
+  .pcr-numblock {
+    grid-column: 1;
+    min-width: 52px;
+  }
+  .pcr-num {
+    font-size: 40px;
+  }
+  .pcr-numline {
+    width: 26px;
+    margin-top: 10px;
+  }
+  .pcr-text {
+    grid-column: 2;
+    min-width: 0;
+  }
+  .pcr-title {
+    margin-top: 2px;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+  }
+  .pcr-copy,
+  .pcr-award--hero .pcr-copy {
+    display: block;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .pcr-desc {
+    font-size: 11.5px;
+    line-height: 2;
+    margin-top: 10px;
+  }
+  .pcw {
+    grid-column: 1 / -1;
+    margin-top: 18px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 18px;
+    row-gap: 2px;
+  }
+  .pcw-name {
+    font-size: 15px;
+  }
+  .pcw-sns {
+    font-size: 11.5px;
+    min-height: 36px;
+  }
+
+  /* 作品の縦積みと、作品末尾の細い区切り線 */
+  .pcr-award,
+  .pcr-award--hero {
+    border-bottom: 1px solid rgba(216, 182, 114, 0.22);
+    padding-bottom: 30px;
+  }
+  .pcr-grid {
+    display: block;
+    padding-top: 0;
+  }
+  .pcr-grid > .pcr-award {
+    margin-top: 34px;
+  }
+  .pcr-grid > .pcr-award:nth-child(n + 3) {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .pcr-body {
+    display: block;
+  }
+  .pcr-body .pcr-media,
+  .pcr-grid > .pcr-award:nth-child(even) .pcr-body .pcr-media {
+    aspect-ratio: 2.05 / 1;
+  }
+  .pcr-outro {
+    padding: 30px 0 20px;
+  }
+  .pcr-outro-text {
+    font-size: 11px;
+    gap: 14px;
+  }
+}
+
+/* 375px級では一覧ページ説明文の1行がわずかに収まらないため、
+   行ごとの改行指定をやめて自然に折り返す（1文字だけの孤立行を防ぐ） */
+@media (max-width: 380px) {
+  .pca-lead {
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+  }
+  .pca-lead-line {
+    display: inline;
+  }
+}
+
+/* ============================================================
+   フォトコンテスト開催告知（/photo-contest/<id>/announcement）
+   漆黒＋金の写真集調。PC=左の装飾ナビ＋外枠付きメイン、スマホ=右の番号ナビ。
+   状態（scheduled/open/closed/resultsPublished）はヒーローのラベルで切替。
+   ============================================================ */
+.pcan {
+  --pcan-side-w: clamp(96px, 9.5vw, 140px);
+  --pcan-mnav-w: 46px;
+  --pcan-border: rgba(216, 182, 114, 0.22);
+}
+
+/* --- PC 左サイド装飾ナビ（操作なし・aria-hidden） --- */
+.pcan-side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--pcan-side-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(22px, 3.5vh, 40px) 0;
+  z-index: 10;
+}
+.pcan-side-logo {
+  align-self: flex-start;
+  margin-left: clamp(16px, 1.4vw, 26px);
+  font-family: var(--font-latin);
+  font-weight: 600;
+  font-size: clamp(11px, 0.95vw, 14px);
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  color: var(--gold);
+}
+.pcan-side-logo::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 1px;
+  margin-top: 9px;
+  background: var(--gold-line);
+}
+.pcan-side-rail {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: clamp(24px, 4vh, 48px) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pcan-side-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--gold-line) 12%, var(--gold-line) 88%, transparent);
+}
+.pcan-side-vtext {
+  position: relative;
+  z-index: 1;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin-top: clamp(6px, 3vh, 24px);
+  padding: 8px 0;
+  background: var(--bg);
+  font-family: var(--font-latin);
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.42em;
+  color: var(--ink-sub);
+}
+.pcan-side-year {
+  position: relative;
+  z-index: 1;
+  writing-mode: vertical-rl;
+  margin-top: clamp(12px, 2vh, 22px);
+  padding: 8px 0;
+  background: var(--bg);
+  font-family: var(--font-latin);
+  font-size: clamp(11px, 0.95vw, 13px);
+  letter-spacing: 0.3em;
+  color: var(--gold);
+}
+.pcan-side-dot {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(12px, 2vh, 22px);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--gold-soft);
+}
+.pcan-side-scroll {
+  writing-mode: vertical-rl;
+  font-family: var(--font-latin);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  color: var(--ink-faint);
+}
+
+/* --- メイン（外枠付きコンテナ） --- */
+.pcan-main {
+  margin: clamp(24px, 5vh, 60px) clamp(24px, 3.5vw, 60px) clamp(24px, 5vh, 60px) calc(var(--pcan-side-w) + clamp(4px, 1.5vw, 28px));
+  border: 1px solid var(--pcan-border);
+  background: var(--bg);
+}
+
+/* スマホ用ヘッダー・右ナビはPCでは非表示 */
+.pcan-mheader,
+.pcan-mnav {
+  display: none;
+}
+
+/* --- 01 メインビジュアル --- */
+.pcan-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: clamp(460px, 56vh, 660px);
+  overflow: hidden;
+}
+.pcan-hero-media {
+  position: absolute;
+  inset: 0;
+}
+.pcan-hero-media picture,
+.pcan-hero-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pcan-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 7, 8, 0.92), rgba(7, 7, 8, 0.5) 40%, rgba(7, 7, 8, 0) 72%);
+}
+.pcan-hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: min(58%, 620px);
+  padding: clamp(28px, 4vw, 64px);
+}
+.pcan-eyebrow {
+  margin: 0;
+  font-family: var(--font-latin);
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.pcan-hero-title {
+  margin: clamp(10px, 1.4vw, 18px) 0 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-latin);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  font-size: clamp(44px, 7vw, 104px);
+}
+.pcan-hero-year {
+  color: var(--gold);
+}
+.pcan-goldline {
+  display: block;
+  width: 54px;
+  height: 1px;
+  margin: clamp(18px, 2.2vw, 30px) 0 clamp(14px, 1.8vw, 22px);
+  background: var(--gold);
+}
+.pcan-hero-lead {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(17px, 1.9vw, 26px);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.pcan-hero-desc {
+  margin: 8px 0 0;
+  font-size: clamp(12px, 1vw, 14px);
+  line-height: 1.7;
+  color: var(--ink-sub);
+}
+.pcan-hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: clamp(14px, 1.6vw, 20px) 0 0;
+  font-size: clamp(12px, 1vw, 14px);
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+.pcan-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--gold-soft);
+}
+
+/* 共通の小見出し（テーマ / 開催期間 / 応募条件 …） */
+.pcan-sec-label {
+  margin: 0 0 clamp(12px, 1.4vw, 18px);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+}
+
+/* --- テーマ ＋ 開催期間（外枠を縦線で分割） --- */
+.pcan-themebox {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  margin: clamp(20px, 3vw, 44px);
+  border: 1px solid var(--pcan-border);
+}
+.pcan-theme {
+  padding: clamp(22px, 2.8vw, 44px);
+}
+.pcan-period {
+  padding: clamp(22px, 2.8vw, 44px);
+  border-left: 1px solid var(--pcan-border);
+}
+.pcan-theme-title {
+  margin: 0 0 clamp(12px, 1.4vw, 18px);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(23px, 3vw, 40px);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.pcan-theme-desc {
+  margin: 0;
+  font-size: clamp(12.5px, 1vw, 14px);
+  line-height: 1.9;
+  color: var(--ink-sub);
+}
+.pcan-period-date {
+  margin: 0;
+  font-family: var(--font-latin);
+  font-size: clamp(24px, 3.2vw, 44px);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.pcan-period-dash {
+  color: var(--gold);
+}
+.pcan-period-note {
+  margin: clamp(12px, 1.4vw, 18px) 0 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--ink-sub);
+}
+
+/* --- 応募条件 / 応募プラットフォーム（＋指定アカウント）（2カラム） --- */
+.pcan-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 72px);
+  padding: clamp(22px, 3vw, 44px) clamp(20px, 3vw, 44px) clamp(28px, 3.5vw, 52px);
+  border-top: 1px solid var(--pcan-border);
+  margin: 0 clamp(20px, 3vw, 44px);
+}
+.pcan-req {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.2vw, 14px);
+}
+.pcan-req-item {
+  display: flex;
+  gap: 12px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink-sub);
+}
+.pcan-req-mark {
+  flex: 0 0 auto;
+  margin-top: 0.55em;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+/* 指定アカウント（メンション先）。url があればリンク、無ければ表示名のみ／未確定は pending 文。 */
+.pcan-mention {
+  margin: clamp(18px, 2vw, 26px) 0 0;
+}
+.pcan-mention-pending {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-faint);
+}
+.pcan-mention-label {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+.pcan-mention-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pcan-mention-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 28px;
+  font-size: 13.5px;
+  color: var(--ink-sub);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.pcan-mention-icon {
+  flex: 0 0 auto;
+  color: var(--gold);
+}
+a.pcan-mention-link:hover .pcan-mention-handle {
+  color: var(--gold);
+}
+.pcan-mention-handle {
+  transition: color 0.3s ease;
+}
+.pcan-platforms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.pcan-platform {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+.pcan-platform-icon {
+  color: var(--gold);
+}
+.pcan-platform-name {
+  font-family: var(--font-latin);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+/* --- 協賛ブランド --- */
+.pcan-sponsors-sec {
+  padding: clamp(26px, 3.5vw, 50px) clamp(20px, 3vw, 44px);
+  border-top: 1px solid var(--pcan-border);
+}
+.pcan-sponsors-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 0 0 clamp(20px, 2.5vw, 36px);
+}
+.pcan-sponsors-line {
+  flex: 1;
+  max-width: 180px;
+  height: 1px;
+  background: var(--gold-line);
+}
+.pcan-sponsors-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(16px, 1.6vw, 22px);
+  letter-spacing: 0.1em;
+  color: var(--ink);
+}
+.pcan-sponsors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(12px, 1.5vw, 20px);
+}
+.pcan-sponsor-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 118px;
+  padding: clamp(18px, 2vw, 28px) 12px;
+  border: 1px solid var(--pcan-border);
+  color: inherit;
+}
+.pcan-sponsor-name {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.4vw, 19px);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-align: center;
+}
+.pcan-sponsor-logo {
+  max-width: 100%;
+  max-height: 40px;
+  object-fit: contain;
+}
+.pcan-sponsor-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.pcan-sponsor-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--pcan-border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink-sub);
+  text-decoration: none;
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+.pcan-sponsor-link:hover {
+  border-color: var(--gold-line);
+  background: var(--gold-soft);
+  color: var(--ink);
+}
+.pcan-sponsor-icon {
+  color: var(--gold);
+}
+
+.pcan-footer {
+  padding: clamp(18px, 3vw, 34px);
+  text-align: center;
+  font-family: var(--font-latin);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--ink-faint);
+  border-top: 1px solid var(--pcan-border);
+}
+
+.pcan a:focus-visible,
+.pcan button:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* --- タブレット（3カラムが窮屈になる手前で調整） --- */
+@media (max-width: 1080px) and (min-width: 721px) {
+  .pcan-hero-copy {
+    max-width: min(66%, 560px);
+  }
+}
+
+/* --- スマホ（右側の縦型番号ナビ＋縦積み） --- */
+@media (max-width: 720px) {
+  .pcan-side {
+    display: none;
+  }
+  .pcan-main {
+    margin: 0;
+    border: 0;
+    padding-right: var(--pcan-mnav-w);
+  }
+  .pcan-mheader {
+    display: flex;
+    align-items: center;
+    padding: 15px 18px;
+    margin-right: var(--pcan-mnav-w);
+    border-bottom: 1px solid var(--pcan-border);
+  }
+  .pcan-mlogo {
+    font-family: var(--font-latin);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+  }
+
+  .pcan-mnav {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--pcan-mnav-w);
+    z-index: 10;
+  }
+  .pcan-mnav::before {
+    content: "";
+    position: absolute;
+    top: 14%;
+    bottom: 14%;
+    right: 16px;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--gold-line) 12%, var(--gold-line) 88%, transparent);
+  }
+  .pcan-mnav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    left: 0;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: clamp(10px, 2.4vh, 22px);
+    padding-right: 14px;
+  }
+  .pcan-mnav-item {
+    appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+  }
+  .pcan-mnav-num {
+    width: 16px;
+    text-align: right;
+    font-family: var(--font-latin);
+    font-size: 12px;
+    color: var(--ink-faint);
+    transition: color 0.3s ease;
+  }
+  .pcan-mnav-dot {
+    flex: 0 0 auto;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    opacity: 0.5;
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      width 0.3s ease,
+      height 0.3s ease,
+      opacity 0.3s ease;
+  }
+  .pcan-mnav-item.is-active .pcan-mnav-num {
+    color: var(--gold);
+  }
+  .pcan-mnav-item.is-active .pcan-mnav-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    opacity: 1;
+    box-shadow: 0 0 0 3px var(--gold-soft);
+  }
+
+  /* ヒーロー: 画像を上、テキストは下の黒地へ */
+  .pcan-hero {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .pcan-hero-media {
+    position: relative;
+    inset: auto;
+    height: clamp(200px, 34vh, 300px);
+  }
+  .pcan-hero-shade {
+    background: linear-gradient(0deg, var(--bg), rgba(7, 7, 8, 0) 55%);
+  }
+  .pcan-hero-copy {
+    max-width: none;
+    padding: 20px 18px 6px;
+  }
+  .pcan-hero-title {
+    font-size: clamp(30px, 9vw, 46px);
+  }
+
+  /* テーマ＋期間: 1カラム（縦線→横線） */
+  .pcan-themebox {
+    grid-template-columns: 1fr;
+    margin: 18px;
+  }
+  .pcan-period {
+    border-left: 0;
+    border-top: 1px solid var(--pcan-border);
+  }
+  .pcan-period-date {
+    font-size: clamp(22px, 6.4vw, 30px);
+    white-space: normal; /* 枠内に収まらない日付は " — " で折り返す */
+  }
+
+  /* 情報3カラム→縦積み */
+  .pcan-info {
+    grid-template-columns: 1fr;
+    gap: clamp(24px, 6vw, 34px);
+    margin: 0 18px;
+    padding: 22px 0 30px;
+  }
+
+  /* 協賛: 縦積みの行（名称 ＋ アイコン ＋ ラベル ＋ 右矢印） */
+  .pcan-sponsors-sec {
+    padding: 26px 18px;
+  }
+  .pcan-sponsors-line {
+    max-width: 60px;
+  }
+  .pcan-sponsors {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .pcan-sponsor + .pcan-sponsor .pcan-sponsor-body {
+    border-top: 0;
+  }
+  .pcan-sponsor-body {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 0;
+    padding: 16px 6px;
+  }
+  .pcan-sponsor-name {
+    text-align: left;
+  }
+  .pcan-sponsor-links {
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+  .pcan-footer {
+    margin-right: var(--pcan-mnav-w);
+  }
+}
+
+/* --- 極小画面 --- */
+@media (max-width: 380px) {
+  .pcan {
+    --pcan-mnav-w: 40px;
+  }
+  .pcan-hero-title {
+    font-size: clamp(28px, 10vw, 38px);
+  }
+  .pcan-hero-copy {
+    padding: 18px 14px 6px;
+  }
+  .pcan-themebox,
+  .pcan-info {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+}

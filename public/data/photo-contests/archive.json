@@ -1,0 +1,33 @@
+{
+  "heading": {
+    "eyebrow": "YAMA FRAME AWARD",
+    "title": "PHOTO CONTEST",
+    "description": [
+      "山を楽しむ人、それぞれの一枚を。",
+      "YAMA FRAMEのフォトコンテストをご紹介します。"
+    ]
+  },
+  "seo": {
+    "title": "PHOTO CONTEST | YAMA FRAME AWARD",
+    "description": "YAMA FRAME AWARDのフォトコンテスト。開催中・開催予定のコンテストをご案内します。",
+    "ogImage": "/images/photo-contests/2026-01/announcement/hero.jpg"
+  },
+  "contests": [
+    {
+      "year": 2026,
+      "yearLabel": "2026/8",
+      "title": "山を、もっと自分らしく。",
+      "description": "アプリを使って出力した山写真の個性を評価するフォトコンテスト。2026年8月開催予定。開催概要と応募方法をご案内します。",
+      "coverImage": {
+        "src": "/images/photo-contests/2026-01/announcement/hero.jpg",
+        "mobileSrc": "/images/photo-contests/2026-01/announcement/hero-mobile.jpg",
+        "alt": "夕日に染まる山の稜線を撮影する登山者",
+        "position": "center 40%"
+      },
+      "isLatest": true,
+      "isPublished": true,
+      "order": 1,
+      "link": { "href": "/photo-contest/2026-01/announcement", "cta": "開催概要を見る" }
+    }
+  ]
+}

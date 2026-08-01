@@ -16,6 +16,23 @@
     </script>
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8" />
+    <script>
+      // GitHub Pages SPA用: 404.html が「/?/photo-contest/2026」形式へ変換したURLを
+      // History API で元のパスへ復元する（spa-github-pages方式）。
+      (function () {
+        var l = window.location;
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(null, "", l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <meta
