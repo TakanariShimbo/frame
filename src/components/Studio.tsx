@@ -749,7 +749,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // ドラッグ中にスナップした基準線（フレーム正規化座標）。ガイド線の描画用。
   const [snapGuide, setSnapGuide] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
   const capResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startW: number; startV: number; boxLeft: number; boxRight: number } | null>(null);
-  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" } | null>(null);
+  // 名札のリサイズ（四辺の丸をドラッグ）。名札は折り返さないので、拡縮＝山名サイズ倍率の変更。
+  const labelResizeRef = useRef<{ side: "l" | "r" | "t" | "b"; startScale: number; box: { w: number; h: number }; cu: number; cv: number } | null>(null);
+  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" } | null>(null);
 
   // 選択中の長さに応じた解説本文（短めが無ければ長めにフォールバック）。
   const descJa = (lb: { description?: string; descriptionShort?: string }) =>
@@ -1974,6 +1976,24 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     };
     arDragRef.current = { i: -1, kind: "capResize" };
   };
+  const onLabelResizeDown = (i: number) => (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const el = e.currentTarget as HTMLElement;
+    el.setPointerCapture?.(e.pointerId);
+    const cl = el.classList;
+    const side: "l" | "r" | "t" | "b" = cl.contains("ar-cap-handle--l")
+      ? "l"
+      : cl.contains("ar-cap-handle--t")
+        ? "t"
+        : cl.contains("ar-cap-handle--b")
+          ? "b"
+          : "r";
+    const lb = arLabels[i];
+    const c = photoToFrame(lb.labelU, lb.labelV);
+    labelResizeRef.current = { side, startScale: labelNameScale, box: labelBoxes[i] ?? { w: 0.1, h: 0.05 }, cu: c.u, cv: c.v };
+    arDragRef.current = { i, kind: "labelResize" };
+  };
   const onCapSplitDown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -2014,6 +2034,19 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       const fV = Math.min(1, Math.max(0, sy.pos));
       setSnapGuide({ x: sx.line, y: sy.line });
       setTitlePos(frameToPhoto(fU, fV));
+      return;
+    }
+    if (d.kind === "labelResize") {
+      const rz = labelResizeRef.current;
+      if (!rz) return;
+      // 名札は中央下アンカー（box は [cu±w/2, cv-h..cv]）。掴んだ辺と中心の距離比で倍率を決める。
+      let f = 1;
+      if (rz.side === "r") f = (u - rz.cu) / Math.max(1e-4, rz.box.w / 2);
+      else if (rz.side === "l") f = (rz.cu - u) / Math.max(1e-4, rz.box.w / 2);
+      else if (rz.side === "t") f = (rz.cv - v) / Math.max(1e-4, rz.box.h);
+      else f = (v - (rz.cv - rz.box.h)) / Math.max(1e-4, rz.box.h);
+      // スライダー（山名サイズ 70〜200%）と同じ範囲・刻みにクランプ
+      setLabelNameScale(Math.min(2.0, Math.max(0.7, Math.round(rz.startScale * f * 20) / 20)));
       return;
     }
     if (d.kind === "capResize") {
@@ -2521,6 +2554,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         {/* 改行入りの山名は焼き込みと同じ行立て（空行除去）で表示する */}
                         <span className="ar-label-name">{nameLines(lc.name).join("\n")}</span>
                         {lc.sub && <span className="ar-label-sub">{lc.sub}</span>}
+                        {(["l", "r", "t", "b"] as const).map((s2) => (
+                          <span
+                            key={s2}
+                            className={`ar-cap-handle ar-cap-handle--${s2}`}
+                            title={t("studio.stage.labelResize")}
+                            onPointerDown={onLabelResizeDown(i)}
+                            onPointerMove={onEditMove}
+                            onPointerUp={onEditUp}
+                            onPointerCancel={onEditUp}
+                          />
+                        ))}
                       </div>
                     );
                   })}

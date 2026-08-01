@@ -108,6 +108,7 @@ export default {
       expand: "開く",
       export: "書き出す",
       capDividerTitle: "日英の境界を動かす",
+      labelResize: "ドラッグでサイズ変更",
       capResizeWidth: "幅を変える",
       capResizeHeight: "縦に伸ばす（幅が狭まる）",
     },

@@ -109,6 +109,7 @@ export default {
       expand: "Expand",
       export: "Export",
       capDividerTitle: "Move the JA/EN boundary",
+      labelResize: "Drag to resize",
       capResizeWidth: "Resize width",
       capResizeHeight: "Stretch vertically (narrows width)",
     },
