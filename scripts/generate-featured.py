@@ -400,7 +400,10 @@ def ja_long(days, time, typ, title, sponsor):
     story = STORIES[title][0]
     fill = TYPE_FILL.get(typ, "大輪の尺玉が連続して夜空に開く。")
     # ストーリーを主文に、足りなければ補足文の組み合わせで60〜80字に合わせる
-    tails = ["", f"{days}打上げ。", f"長岡花火{days}の演目。", fill, PADS[0], PADS[1], PADS[2]]
+    # ストーリーと内容が重複する穴埋め文は使わない（先頭4字が含まれていたら重複とみなす）
+    def fresh(t):
+        return t and t[:4] not in story
+    tails = [""] + [t for t in (fill, PADS[0], PADS[1], PADS[2]) if fresh(t)] + [f"長岡花火{days}の演目。", f"{days}打上げ。"]
     from itertools import permutations
     cands = [story + a for a in tails] + [story + a + b for a, b in permutations(tails, 2) if a and b]
     for t in cands:
@@ -411,12 +414,13 @@ def ja_long(days, time, typ, title, sponsor):
 def ja_short(days, time, typ, title, sponsor):
     hook = STORIES[title][1]
     typs = typ if len(typ) <= 14 else "超大型スターマイン"
+    fill = TYPE_FILL.get(typ, "大輪の尺玉が連続して夜空に開く。")
+    # 短めは長めの要約。フック＋種別で構成し、日付は入れない
     cands = [
-        f"{hook}。{days}打上げ。",
-        f"{hook}、{days}打上げの{typs}。",
-        f"{hook}、{days}打上げの演目。",
-        f"{hook}。長岡花火{days}の{typs}。",
         f"{hook}。",
+        f"{hook}。{typs}。",
+        f"{hook}、長岡花火の{typs}。",
+        f"{hook}。{fill}",
     ]
     for t in cands:
         if 25 <= len(t) <= 50:
