@@ -4192,3 +4192,31 @@ a.pcan-mention-link:hover .pcan-mention-handle {
     margin-right: 14px;
   }
 }
+
+/* --- 擬似太字（1ウェイト書体: 和筆・旅ノート・手書きペン） ---
+   書き出しの strokeText と同量の縁取りをプレビューにも付ける。
+   font-synthesis: none でブラウザの勝手な疑似ボールドを止め、量を自前で管理する。 */
+.ar-label-name,
+.ar-label-sub,
+.ar-caption-title,
+.ar-caption-text,
+.ar-title-over,
+.ar-title-main,
+.ar-title-num {
+  font-synthesis: none;
+}
+.ar-label-name {
+  -webkit-text-stroke: calc(var(--label-name-synth, 0) * 1em) currentColor;
+}
+.ar-label-sub {
+  -webkit-text-stroke: calc(var(--label-sub-synth, 0) * 1em) currentColor;
+}
+.ar-caption-title {
+  -webkit-text-stroke: calc(var(--cap-title-synth, 0) * 1em) currentColor;
+}
+.ar-caption-text {
+  -webkit-text-stroke: calc(var(--cap-body-synth, 0) * 1em) currentColor;
+}
+.ar-title-main {
+  -webkit-text-stroke: calc(var(--title-synth, 0) * 1em) currentColor;
+}

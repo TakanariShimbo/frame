@@ -160,23 +160,34 @@ type FontPairId =
   | "handPen"
   | "maruMoji"
   | "decoMincho";
-type FontPair = { label: string; jp: string; en: string; description: string };
+type FontPair = {
+  label: string;
+  jp: string;
+  en: string;
+  description: string;
+  // 細い/太いで使う実ウェイト（フォントごとに持てる最小・最大へ割り当てる）。
+  // 中くらいは従来どおり 500（本文のみ400）で、既定の見た目を変えない。
+  wLight: number;
+  wBold: number;
+  // 1ウェイトしか存在しない書体（筆記系）。太字/細字は縁取り・エロージョンで擬似的に作る。
+  synth?: boolean;
+};
 type RoleFonts = Record<FontRole, FontPairId>;
 
 // 選べるフォントペア（和文＋欧文のセット。index.html で Google Fonts を読み込み）。
 // label はUI言語によらず常にこの表記のまま（山名同様、フォント名は翻訳しない）。
 // description はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
 const FONT_PAIRS: Record<FontPairId, FontPair> = {
-  gothic: { label: "ベーシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description" },
-  roundedGothic: { label: "やわらか", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description" },
-  modernGothic: { label: "モダン", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description" },
-  mincho: { label: "上品", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description" },
-  posterMincho: { label: "クラシック", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description" },
-  brush: { label: "和筆", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description" },
-  travelNote: { label: "旅ノート", jp: "Yomogi", en: "Caveat", description: "studio.font.travelNote.description" },
-  handPen: { label: "手書きペン", jp: "Zen Kurenaido", en: "Patrick Hand", description: "studio.font.handPen.description" },
-  maruMoji: { label: "まる文字", jp: "Zen Maru Gothic", en: "Quicksand", description: "studio.font.maruMoji.description" },
-  decoMincho: { label: "デコ明朝", jp: "Kaisei Decol", en: "Cormorant Infant", description: "studio.font.decoMincho.description" },
+  gothic: { label: "ベーシック", jp: "Noto Sans JP", en: "Inter", description: "studio.font.gothic.description", wLight: 200, wBold: 900 },
+  roundedGothic: { label: "やわらか", jp: "M PLUS Rounded 1c", en: "Nunito", description: "studio.font.roundedGothic.description", wLight: 300, wBold: 900 },
+  modernGothic: { label: "モダン", jp: "Zen Kaku Gothic New", en: "Montserrat", description: "studio.font.modernGothic.description", wLight: 300, wBold: 900 },
+  mincho: { label: "上品", jp: "Noto Serif JP", en: "Noto Serif", description: "studio.font.mincho.description", wLight: 200, wBold: 900 },
+  posterMincho: { label: "クラシック", jp: "Shippori Mincho", en: "Cormorant Garamond", description: "studio.font.posterMincho.description", wLight: 400, wBold: 800 },
+  brush: { label: "和筆", jp: "Yuji Syuku", en: "Great Vibes", description: "studio.font.brush.description", wLight: 300, wBold: 700, synth: true },
+  travelNote: { label: "旅ノート", jp: "Yomogi", en: "Caveat", description: "studio.font.travelNote.description", wLight: 300, wBold: 700, synth: true },
+  handPen: { label: "手書きペン", jp: "Zen Kurenaido", en: "Patrick Hand", description: "studio.font.handPen.description", wLight: 300, wBold: 700, synth: true },
+  maruMoji: { label: "まる文字", jp: "Zen Maru Gothic", en: "Quicksand", description: "studio.font.maruMoji.description", wLight: 300, wBold: 900 },
+  decoMincho: { label: "デコ明朝", jp: "Kaisei Decol", en: "Cormorant Infant", description: "studio.font.decoMincho.description", wLight: 400, wBold: 700 },
 };
 const FONT_PAIR_IDS = Object.keys(FONT_PAIRS) as FontPairId[];
 const DEFAULT_ROLE_FONTS: RoleFonts = {
@@ -191,10 +202,8 @@ const roleFontStack = (id: FontPairId) => {
   return `"${p.en}", "${p.jp}", system-ui, sans-serif`;
 };
 
-// 文字の太さ（細い/中くらい/太いの3段階）。実ウェイトは 300/500/700 で、
-// 「中くらい」だけ本文は従来既定の 400 に合わせる（既定の見た目を変えないため）。
-// 300 を持たないフォント（クラシック・デコ明朝・筆記系）はブラウザが
-// 読み込み済みの最も近いウェイト（400 など）で描画される。
+// 文字の太さ（細い/中くらい/太いの3段階）。実ウェイトはフォントごとの
+// wLight/wBold を使い、「中くらい」は従来どおり 500（本文のみ400）を維持する。
 type FontWeightLevel = "light" | "medium" | "bold";
 const FONT_WEIGHT_LEVELS: FontWeightLevel[] = ["light", "medium", "bold"];
 type RoleWeights = Record<FontRole, FontWeightLevel>;
@@ -204,8 +213,16 @@ const DEFAULT_ROLE_WEIGHTS: RoleWeights = {
   captionTitle: "bold",
   captionBody: "medium",
 };
-const roleWeightPx = (role: FontRole | "title", level: FontWeightLevel): number =>
-  level === "light" ? 300 : level === "bold" ? 700 : role === "captionBody" ? 400 : 500;
+const pairWeightPx = (id: FontPairId, role: FontRole | "title", level: FontWeightLevel): number => {
+  const p = FONT_PAIRS[id];
+  return level === "light" ? p.wLight : level === "bold" ? p.wBold : role === "captionBody" ? 400 : 500;
+};
+// 擬似太字の縁取り量（フォントサイズに対する比）。1ウェイト書体の太字だけ >0。
+const pairSynthBold = (id: FontPairId, level: FontWeightLevel): number =>
+  FONT_PAIRS[id].synth && level === "bold" ? 0.028 : 0;
+// 擬似細字（エロージョン半径のフォントサイズ比）。まず題字のみで使う実験機能。
+const pairSynthLight = (id: FontPairId, level: FontWeightLevel): number =>
+  FONT_PAIRS[id].synth && level === "light" ? 0.016 : 0;
 // 題字の副行（場所・標高）は主行より一段細くする（従来: 主700/副500 の関係を保つ）。
 const titleSubWeightPx = (main: number): number => (main >= 700 ? 500 : main >= 500 ? 400 : 300);
 
@@ -646,6 +663,19 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleShadow, setTitleShadow] = useState(initStyle?.titleShadow ?? true);
   const [titleFont, setTitleFont] = useState<FontPairId>(initStyle?.titleFont ?? "posterMincho");
   const [titleWeight, setTitleWeight] = useState<FontWeightLevel>(initStyle?.titleWeight ?? "bold");
+  // 擬似細字（題字・実験）: プレビューは feMorphology(erode) で書き出しと同率の半径をかける
+  const titleLightSynth = pairSynthLight(titleFont, titleWeight) > 0;
+  const [titleErodePx, setTitleErodePx] = useState(0);
+  useEffect(() => {
+    if (!titleLightSynth) return;
+    const measure = () => {
+      const el = arFrameRef.current?.querySelector<HTMLElement>(".ar-title-main");
+      if (el) setTitleErodePx(Math.max(0.4, parseFloat(getComputedStyle(el).fontSize) * 0.016));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  });
   const [titleLetterSpace, setTitleLetterSpace] = useState(initStyle?.titleLetterSpace ?? 1);
   const [titleLineHeight, setTitleLineHeight] = useState(initStyle?.titleLineHeight ?? 1);
   const [titlePos, setTitlePos] = useState(initStyle?.titlePos ?? ({ u: 0.5, v: 0.44 }));
@@ -1194,10 +1224,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const ffSub = roleFontStack(roleFonts.labelSub);
     const ffTitle = roleFontStack(roleFonts.captionTitle);
     const ffBody = roleFontStack(roleFonts.captionBody);
-    const fwName = roleWeightPx("labelName", roleWeights.labelName);
-    const fwSub = roleWeightPx("labelSub", roleWeights.labelSub);
-    const fwCapTitle = roleWeightPx("captionTitle", roleWeights.captionTitle);
-    const fwCapBody = roleWeightPx("captionBody", roleWeights.captionBody);
+    const fwName = pairWeightPx(roleFonts.labelName, "labelName", roleWeights.labelName);
+    const fwSub = pairWeightPx(roleFonts.labelSub, "labelSub", roleWeights.labelSub);
+    const fwCapTitle = pairWeightPx(roleFonts.captionTitle, "captionTitle", roleWeights.captionTitle);
+    const fwCapBody = pairWeightPx(roleFonts.captionBody, "captionBody", roleWeights.captionBody);
     const drawPanel = (x: number, y: number, w: number, h: number, r: number, fill: string) => {
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.26)";
@@ -1235,6 +1265,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     // measureText も letterSpacing を反映するので、必ず計測の前に設定すること。
     const setLS = (px: number) => {
       (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${px}px`;
+    };
+    // 擬似太字: 1ウェイト書体（FONT_PAIRS.synth）は太いウェイトが存在しないため、
+    // 太字(>=600)が要求されたときだけ同色の縁取り（strokeText）を重ねて太らせる。
+    // ctx.font から書体・サイズを読むので、以降のすべての fillText に自動で効く。
+    // プレビュー側は -webkit-text-stroke で同量を付けており、書き出しと一致する。
+    const SYNTH_FAMILIES = new Set(
+      FONT_PAIR_IDS.filter((id) => FONT_PAIRS[id].synth).flatMap((id) => [FONT_PAIRS[id].jp, FONT_PAIRS[id].en]),
+    );
+    const rawFillText = ctx.fillText.bind(ctx);
+    ctx.fillText = (text: string, x: number, y: number, maxWidth?: number) => {
+      const fm = /(\d{3,4})\s+(\d+(?:\.\d+)?)px\s+(.+)$/.exec(ctx.font);
+      if (fm && Number(fm[1]) >= 600) {
+        const fam = fm[3].split(",")[0].trim().replace(/^"|"$/g, "");
+        if (SYNTH_FAMILIES.has(fam)) {
+          ctx.save();
+          ctx.strokeStyle = ctx.fillStyle as string;
+          ctx.lineWidth = Number(fm[2]) * 0.028 * 2; // 縁取りは線幅の半分が外側に出る
+          ctx.lineJoin = "round";
+          ctx.miterLimit = 2;
+          if (maxWidth !== undefined) ctx.strokeText(text, x, y, maxWidth);
+          else ctx.strokeText(text, x, y);
+          ctx.restore();
+        }
+      }
+      if (maxWidth !== undefined) rawFillText(text, x, y, maxWidth);
+      else rawFillText(text, x, y);
     };
     if (bakeLabels) {
       for (const lb of arLabels) {
@@ -1571,7 +1627,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const cy = pfy(titlePos.v);
         const ffTitle = roleFontStack(titleFont);
         const p = FONT_PAIRS[titleFont];
-        const fwTitleMain = roleWeightPx("title", titleWeight);
+        const fwTitleMain = pairWeightPx(titleFont, "title", titleWeight);
         const fwTitleSub = titleSubWeightPx(fwTitleMain);
         await Promise.all([
           document.fonts.load(`${fwTitleMain} 16px "${p.jp}"`).catch(() => {}),
@@ -1604,15 +1660,34 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         const mainLineH = Math.round(mainFs * 1.02); // プレビュー .ar-title-main の line-height と一致
         const mainBlockH = mainFs + (mainLines.length - 1) * mainLineH;
         const totalH = (tp.over ? overFs + overGap : 0) + mainBlockH + (tp.num ? numGap + numFs : 0);
+        // 擬似細字（実験・題字のみ）: 1ウェイト書体で「細い」を選んだときは、
+        // いったん透明レイヤーへ描き、輪郭を内側に削って（エロージョン）から本紙へ合成する。
+        // プレビュー側は SVG の feMorphology(erode) で同じ半径をかけており、見た目が一致する。
+        const erodeR = Math.max(0, Math.round(pairSynthLight(titleFont, titleWeight) * mainFs));
+        const tcv = erodeR > 0 ? document.createElement("canvas") : null;
+        if (tcv) { tcv.width = canvas.width; tcv.height = canvas.height; }
+        const tctx = tcv ? tcv.getContext("2d")! : ctx;
+        if (tcv) tctx.setTransform(ctx.getTransform());
+        const setTLS = (px: number) => {
+          (tctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${px}px`;
+        };
+        // 小見出し・標高は小さくエロージョンに弱いため本紙(ctx)に直接描き、主行だけレイヤーで削る
+        const applyTitleStyle = (c: CanvasRenderingContext2D) => {
+          c.textAlign = "center";
+          c.textBaseline = "top";
+          c.fillStyle = titleColor;
+          if (titleShadow) {
+            c.shadowColor = contrastShadow(titleColor);
+            c.shadowBlur = Math.round(L * 0.006);
+            c.shadowOffsetY = Math.max(1, Math.round(L * 0.0015));
+          }
+        };
         let y = cy - totalH / 2;
         ctx.save();
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillStyle = titleColor;
-        if (titleShadow) {
-          ctx.shadowColor = contrastShadow(titleColor);
-          ctx.shadowBlur = Math.round(L * 0.006);
-          ctx.shadowOffsetY = Math.max(1, Math.round(L * 0.0015));
+        applyTitleStyle(ctx);
+        if (tcv) {
+          tctx.save();
+          applyTitleStyle(tctx);
         }
         if (tp.over) {
           ctx.font = `${fwTitleSub} ${overFs}px ${ffTitle}`;
@@ -1620,10 +1695,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.fillText(tp.over, cx, y);
           y += overFs + overGap;
         }
-        ctx.font = `${fwTitleMain} ${mainFs}px ${ffTitle}`;
-        setLS(mainFs * 0.04 * titleLetterSpace);
+        tctx.font = `${fwTitleMain} ${mainFs}px ${ffTitle}`;
+        setTLS(mainFs * 0.04 * titleLetterSpace);
         for (let li = 0; li < mainLines.length; li++) {
-          ctx.fillText(mainLines[li], cx, y + li * mainLineH);
+          tctx.fillText(mainLines[li], cx, y + li * mainLineH);
         }
         y += mainBlockH;
         if (tp.num) {
@@ -1633,7 +1708,28 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.fillText(tp.num, cx, y);
         }
         setLS(0);
+        setTLS(0);
+        if (tcv) tctx.restore();
         ctx.restore();
+        if (tcv) {
+          // エロージョン: 元画像を r ずらした8方向と destination-in で交差させ、内側だけ残す
+          const pristine = document.createElement("canvas");
+          pristine.width = tcv.width;
+          pristine.height = tcv.height;
+          pristine.getContext("2d")!.drawImage(tcv, 0, 0);
+          tctx.save();
+          tctx.setTransform(1, 0, 0, 1, 0, 0);
+          tctx.globalCompositeOperation = "destination-in";
+          const dd = Math.max(1, Math.round(erodeR * 0.7071));
+          for (const [dx, dy] of [[erodeR, 0], [-erodeR, 0], [0, erodeR], [0, -erodeR], [dd, dd], [dd, -dd], [-dd, dd], [-dd, -dd]] as const) {
+            tctx.drawImage(pristine, dx, dy);
+          }
+          tctx.restore();
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.drawImage(tcv, 0, 0);
+          ctx.restore();
+        }
       }
     }
     // 記録の帯（外側フレーム下部の中央に2行。camera=Shot on 表記 / free=自由入力）。
@@ -2455,10 +2551,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 "--label-sub-ff": roleFontStack(roleFonts.labelSub), // 補足フォント
                 "--cap-title-ff": roleFontStack(roleFonts.captionTitle), // 見出しフォント
                 "--cap-body-ff": roleFontStack(roleFonts.captionBody), // 本文フォント
-                "--label-name-fw": roleWeightPx("labelName", roleWeights.labelName), // 山名の太さ
-                "--label-sub-fw": roleWeightPx("labelSub", roleWeights.labelSub), // 補足の太さ
-                "--cap-title-fw": roleWeightPx("captionTitle", roleWeights.captionTitle), // 見出しの太さ
-                "--cap-body-fw": roleWeightPx("captionBody", roleWeights.captionBody), // 本文の太さ
+                "--label-name-fw": pairWeightPx(roleFonts.labelName, "labelName", roleWeights.labelName), // 山名の太さ
+                "--label-name-synth": pairSynthBold(roleFonts.labelName, roleWeights.labelName),
+                "--label-sub-fw": pairWeightPx(roleFonts.labelSub, "labelSub", roleWeights.labelSub), // 補足の太さ
+                "--label-sub-synth": pairSynthBold(roleFonts.labelSub, roleWeights.labelSub),
+                "--cap-title-fw": pairWeightPx(roleFonts.captionTitle, "captionTitle", roleWeights.captionTitle), // 見出しの太さ
+                "--cap-title-synth": pairSynthBold(roleFonts.captionTitle, roleWeights.captionTitle),
+                "--cap-body-fw": pairWeightPx(roleFonts.captionBody, "captionBody", roleWeights.captionBody), // 本文の太さ
+                "--cap-body-synth": pairSynthBold(roleFonts.captionBody, roleWeights.captionBody),
               } as React.CSSProperties
             }
           >
@@ -2717,8 +2817,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         width: `${(titleW ?? 0.98) * 100}%`,
                         color: titleColor,
                         "--title-ff": roleFontStack(titleFont),
-                        "--title-fw": roleWeightPx("title", titleWeight),
-                        "--title-sub-fw": titleSubWeightPx(roleWeightPx("title", titleWeight)),
+                        "--title-fw": pairWeightPx(titleFont, "title", titleWeight),
+                        "--title-sub-fw": titleSubWeightPx(pairWeightPx(titleFont, "title", titleWeight)),
+                        "--title-synth": pairSynthBold(titleFont, titleWeight),
                         "--title-fs": titleScale,
                         "--title-side-fs": titleSideScale,
                         "--title-ls": titleLetterSpace,
@@ -2731,8 +2832,22 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     onPointerUp={onEditUp}
                     onPointerCancel={onEditUp}
                   >
+                    {titleLightSynth && titleErodePx > 0 && (
+                      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+                        <defs>
+                          <filter id="ar-title-erode">
+                            <feMorphology operator="erode" radius={titleErodePx} />
+                          </filter>
+                        </defs>
+                      </svg>
+                    )}
                     {tp.over && <span className="ar-title-over">{tp.over}</span>}
-                    <span className="ar-title-main">{tp.main}</span>
+                    <span
+                      className="ar-title-main"
+                      style={titleLightSynth && titleErodePx > 0 ? { filter: "url(#ar-title-erode)" } : undefined}
+                    >
+                      {tp.main}
+                    </span>
                     {tp.num && <span className="ar-title-num">{tp.num}</span>}
                     {(["l", "r"] as const).map((s2) => (
                       <span
