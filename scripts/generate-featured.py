@@ -93,9 +93,9 @@ STORIES = {
   "カノンの旋律とナイアガラで夜空を開く開幕の共演",
   "An opening collaboration that pairs the Niagara cascade on the Ohte Bridge with a starmine set to Pachelbel's Canon, carrying a wish for the road to the future."),
  "純金箔24K 黄金の輝き": (
-  "タイトルに掲げた純金箔のように、黄金一色の光が夜空を染め上げる豪華な一幕。",
-  "純金箔のような黄金一色が夜空を染める",
-  "A luxurious display in which the night sky is dyed in a single shade of gold, evoking the pure gold leaf of its title."),
+  "タイトルに掲げた純金箔のように、黄金一色の光が夜空を染める様をイメージさせる演目。",
+  "純金箔のような黄金一色をイメージさせる演目名",
+  "Its title of pure 24-karat gold leaf evokes an image of the night sky dyed in a single luxurious shade of gold."),
  "ガラスが拓く未来のとびら": (
   "ガラスの精密加工を手がける協賛社にちなみ、透明感のある光が未来の扉を開くように広がる。",
   "ガラス加工の協賛社にちなむ透明感ある光",
@@ -137,9 +137,9 @@ STORIES = {
   "20号玉3発とともに平和への願いを込める",
   "Three massive 20-gou shells join the giant shells in a program that entrusts its prayer for peace and the future to a chain of great blooms."),
  "ふるさとの四季": (
-  "新潟の米菓メーカー岩塚製菓が、ふるさとの春夏秋冬を四つの表情の光で描く横長の絵巻。",
-  "ふるさとの春夏秋冬を光で描く絵巻",
-  "Rice-cracker maker Iwatsuka Confectionery paints the four seasons of its hometown in a wide scroll of changing light."),
+  "新潟の米菓メーカー岩塚製菓が贈る、ふるさとの春夏秋冬をイメージさせる横長の光の絵巻。",
+  "ふるさとの四季をイメージさせる光の絵巻",
+  "Rice-cracker maker Iwatsuka Confectionery presents a wide scroll of light evoking the four seasons of its hometown."),
  "福田グループスピリット～100年先も誠実～": (
   "「100年先も誠実」を掲げる建設の福田グループが、その精神を貫くようにまっすぐな光を上げる。",
   "「100年先も誠実」の精神を光に込めて",
@@ -189,9 +189,9 @@ STORIES = {
   "家族で見上げたい夏の思い出の大輪",
   "Komeri, the home-center chain born in Niigata, offers a scene for summer memories: honest, generous blooms for families looking up together."),
  "スプラッシュファイヤー炎の舞": (
-  "水しぶきのように弾ける光と炎の舞をテーマにした、動きの大きな演出が見どころのスターマイン。",
-  "水しぶきのような光と炎の舞",
-  "A starmine built around dancing flames and light that bursts like flying spray, with big, sweeping motion as its highlight."),
+  "水しぶきと炎の舞を名に掲げ、弾ける光と動きの大きな演出をイメージさせるスターマイン。",
+  "炎の舞の名が弾ける光をイメージさせる",
+  "Splash Fire: the name evokes dancing flames and light that bursts like flying spray, with big sweeping motion."),
  "ホテルニューオータニ長岡感謝の大輪": (
   "長岡駅前に立つ地元のホテルが、日頃の感謝を込めて打ち上げる、まっすぐで大ぶりな感謝の大輪。",
   "地元ホテルが贈る感謝の大輪",
@@ -213,9 +213,9 @@ STORIES = {
   "鉄の街の誇りを力強い光で示す",
   "Hokuetsu Metal, Nagaoka's steelmaker, shows its pride in breathing life into iron through powerful, unbending light."),
  "龍華～未来へ続く日の光～": (
-  "龍が咲かせる華をイメージした演目。未来へ続く日の光のように、金色の尾を引いて立ち上る。",
-  "龍の華のように金色の尾を引いて立ち上る",
-  "Imagined as flowers blooming from a dragon, the shells climb with golden tails like sunlight stretching into the future."),
+  "龍が咲かせる華という名から、金色の尾を引いて立ち上る光をイメージさせる演目。",
+  "龍の華の名が立ち上る光をイメージさせる",
+  "Its name, flowers blooming from a dragon, evokes an image of shells climbing skyward with golden tails like light stretching into the future."),
  "感謝": (
   "ただ一言「感謝」を掲げた演目。飾らない言葉のとおり、まっすぐな光が静かに夜空へ立ち上る。",
   "「感謝」の一言をまっすぐな光に込めて",
@@ -261,17 +261,17 @@ STORIES = {
   "星々の瞬きを散らすシャイニングスター",
   "Electronics maker Alps Alpine scatters the twinkling of countless stars across the sky, true to its Shining Star title."),
  "信濃川の夕涼み": (
-  "夕涼みの川辺のように涼やかな色をそろえ、真夏の信濃川に吹く一陣の涼風のような時間を作る。",
-  "真夏の川辺に吹く涼風のような花火",
-  "Cool colors gather like an evening by the water, bringing a moment of breeze to the midsummer Shinano riverside."),
+  "川辺の夕涼みを名に掲げ、真夏の信濃川に吹く涼風のような時間をイメージさせる演目。",
+  "夕涼みの涼風をイメージさせる演目名",
+  "Named for a cool evening by the water, the title evokes a moment of breeze drifting over the midsummer Shinano riverside."),
  "あなたとずっとこの空と": (
-  "「あなたとずっとこの空と」の言葉どおり、寄り添う二つの光が並んで夜空をゆっくりと彩る。",
-  "寄り添う二つの光が並んで彩る夜空",
-  "Just as its title promises — you, always, and this sky — paired lights rise side by side and slowly color the night."),
+  "「あなたとずっとこの空と」の名を掲げ、寄り添う光をイメージさせる演目。大切な人と見上げたい。",
+  "寄り添う光をイメージさせる演目名",
+  "Bearing the title You, Always, and This Sky, the program evokes an image of lights nestling close together, made to be watched with someone dear."),
  "金燦、銀燦": (
-  "金と銀の燦めきだけで構成された、シンプルながら最も花火らしい輝きを味わえる渋い演目。",
-  "金と銀の燦めきだけで魅せる渋い構成",
-  "Composed purely of gold and silver sparkle, a restrained program that savors fireworks at their most essential."),
+  "金と銀の燦めきを名に掲げた演目。余計な色を削ぎ、輝きそのものを味わう構成をイメージさせる。",
+  "金と銀の燦めきを名に掲げた演目",
+  "Named for the sparkle of gold and silver, the title evokes fireworks at their most essential, with brilliance savored for its own sake."),
  "安心と感動に満ちた世界と未来のために": (
   "長岡に本社を置く計器メーカー日本精機が、安心と感動に満ちた未来への願いを光で計り描く。",
   "長岡の計器メーカーが描く未来への願い",
@@ -301,13 +301,13 @@ STORIES = {
   "職員有志が持ち寄る支え合いの愛花火",
   "A fireworks of love brought together by welfare workers: the spirit of supporting one another shines small but sure."),
  "天空華宴": (
-  "天空で開く華の宴の名のとおり、夜空の高みに次々と大輪を咲かせて宴のように賑わう演目。",
-  "天空で開く華の宴のような大輪の連続",
-  "As its name — a banquet of flowers in the heavens — suggests, great blooms open one after another high in the night sky."),
+  "天空で開く華の宴という名のとおり、夜空の高みでにぎわう大輪の宴をイメージさせる演目。",
+  "天空の華の宴をイメージさせる演目名",
+  "A banquet of flowers in the heavens: the name evokes an image of great blooms reveling high in the night sky."),
  "mirai": (
-  "小文字の「mirai」に込めた、肩ひじ張らない等身大の未来。やわらかな色の光が静かに寄り添う。",
-  "等身大の未来を描くやわらかな光",
-  "In lowercase mirai lies an everyday, human-sized future: soft colors of light quietly keeping company with the crowd."),
+  "小文字の「mirai」に込めた等身大の未来という名から、やわらかな色の光をイメージさせる。",
+  "等身大のmiraiをイメージさせる演目名",
+  "In lowercase mirai lies an everyday, human-sized future; the name evokes soft, gentle colors of light keeping company with the crowd."),
  "駆け抜ける丙午 60-60": (
   "丙午生まれの長岡高校昭和60年卒業生が還暦を記念し、尺玉60連発で60年を一気に駆け抜ける。",
   "還暦記念、尺玉60連発で駆け抜ける60年",
@@ -329,9 +329,9 @@ STORIES = {
   "ヨネックスが魅せる世界への躍動感",
   "Yonex, the sports brand born in Niigata, dazzles with the speed and spring of an athlete leaping onto the world stage."),
  "大河の夕景": (
-  "信濃川の夕景をモチーフに、茜から藍へ移ろう空の色を花火のグラデーションで再現する。",
-  "夕暮れの信濃川を光のグラデーションで",
-  "Modeled on dusk over the Shinano River, the display recreates a sky shifting from madder red to indigo in gradations of light."),
+  "信濃川の夕景を名に掲げ、暮れゆく大河の空の色合いをイメージさせる演目。",
+  "信濃川の夕景をイメージさせる演目名",
+  "Titled Evening on the Great River, the name evokes the colors of dusk settling slowly over the Shinano."),
  "99年分のありがとうを込めて": (
   "創業99年を迎えた協賛社が、100年目を前にした「ありがとう」を99年分まとめて夜空に放つ。",
   "創業99年分のありがとうを夜空に",
@@ -353,9 +353,9 @@ STORIES = {
   "新潟の未来を見つめる決意を光に",
   "A sponsor engaged in building Niigata entrusts its resolve to keep watching over the region's future to a calm procession of light."),
  "パラダイス・イン・ザ・スカイ": (
-  "夜空に楽園を出現させるという名のとおり、明るくにぎやかな光が絶え間なく続く楽しい演目。",
-  "夜空に楽園を出現させるにぎやかな光",
-  "True to its name, a paradise appears in the sky: bright, cheerful light that simply never lets up."),
+  "夜空の楽園を名に掲げ、明るくにぎやかな光が絶え間なく続くひとときをイメージさせる演目。",
+  "夜空の楽園をイメージさせる演目名",
+  "Paradise in the Sky: the name evokes a bright, cheerful stretch of light that simply never lets up."),
  "支社開設60周年 感謝を空へ 安心を未来へ": (
   "長岡支社の開設60周年を迎えた日本生命が、感謝を空へ、安心を未来へ届ける記念の演目。",
   "支社60周年の感謝を空へ、安心を未来へ",
@@ -549,7 +549,8 @@ for title, m in merged.items():
             "description_ja_short": ja_short(days, m["time"], typ, title, sponsor),
             "description_en_long": en_l, "description_en_short": en_s,
             "tags_ja": ["花火", "長岡花火"], "tags_en": ["Fireworks", "Nagaoka"],
-            "quality": "good", "url": URL,
+            # 協賛演目は演目名・協賛情報をもとにした紹介文（実演出は未確認）のため inferred
+            "quality": "inferred", "url": URL,
         },
     })
     nid += 1
@@ -563,7 +564,10 @@ os.makedirs("docs/nagaoka-hanabi", exist_ok=True)
 by_name = {e["name"]: e for e in entries}
 md = ["# 長岡花火 解説一覧（日本語）", "",
       "`public/data/featured.json` の解説を演目ごとにまとめたもの。",
-      "`python3 scripts/generate-featured.py` で featured.json とあわせて再生成される。", ""]
+      "`python3 scripts/generate-featured.py` で featured.json とあわせて再生成される。",
+      "",
+      "> 協賛演目（quality: inferred）の解説は、演目名・協賛社の公開情報をもとにした紹介文で、",
+      "> 実際の演出内容を保証するものではありません。主要演目（quality: good）は事実ベース。", ""]
 
 md += ["## 主要演目", ""]
 for e in entries[:9]:

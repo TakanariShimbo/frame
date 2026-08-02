@@ -413,7 +413,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -436,10 +436,10 @@
     "description": {
       "title_ja": "純金箔24K 黄金の輝き",
       "title_en": "純金箔24K 黄金の輝き",
-      "description_ja_long": "タイトルに掲げた純金箔のように、黄金一色の光が夜空を染め上げる豪華な一幕。湧き上がる光の奔流が夜空を焦がす伝統の型。信濃川の夜空を彩る演目の一つ。",
-      "description_ja_short": "純金箔のような黄金一色が夜空を染める。ベスビアス超大型スターマイン。",
-      "description_en_long": "A luxurious display in which the night sky is dyed in a single shade of gold, evoking the pure gold leaf of its title. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
-      "description_en_short": "A luxurious display in which the night sky is dyed in a single shade of gold, evoking the pure gold leaf of its title.",
+      "description_ja_long": "タイトルに掲げた純金箔のように、黄金一色の光が夜空を染める様をイメージさせる演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "純金箔のような黄金一色をイメージさせる演目名。ベスビアス超大型スターマイン。",
+      "description_en_long": "Its title of pure 24-karat gold leaf evokes an image of the night sky dyed in a single luxurious shade of gold. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Its title of pure 24-karat gold leaf evokes an image of the night sky dyed in a single luxurious shade of gold.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -448,7 +448,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -483,7 +483,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -524,7 +524,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -559,7 +559,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -594,7 +594,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -629,7 +629,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -664,7 +664,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -699,7 +699,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -734,7 +734,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -769,7 +769,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -813,7 +813,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -836,10 +836,10 @@
     "description": {
       "title_ja": "ふるさとの四季",
       "title_en": "ふるさとの四季",
-      "description_ja_long": "新潟の米菓メーカー岩塚製菓が、ふるさとの春夏秋冬を四つの表情の光で描く横長の絵巻。横一線に広がる光のパノラマが見どころ。",
-      "description_ja_short": "ふるさとの春夏秋冬を光で描く絵巻。超大型ワイドスターマイン。",
-      "description_en_long": "Rice-cracker maker Iwatsuka Confectionery paints the four seasons of its hometown in a wide scroll of changing light. It is staged as a super-wide starmine spread across a broad launch front at the Nagaoka Fireworks Show on August 2.",
-      "description_en_short": "Rice-cracker maker Iwatsuka Confectionery paints the four seasons of its hometown in a wide scroll of changing light.",
+      "description_ja_long": "新潟の米菓メーカー岩塚製菓が贈る、ふるさとの春夏秋冬をイメージさせる横長の光の絵巻。横一線に広がる光のパノラマが見どころ。",
+      "description_ja_short": "ふるさとの四季をイメージさせる光の絵巻。超大型ワイドスターマイン。",
+      "description_en_long": "Rice-cracker maker Iwatsuka Confectionery presents a wide scroll of light evoking the four seasons of its hometown. It is staged as a super-wide starmine spread across a broad launch front at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Rice-cracker maker Iwatsuka Confectionery presents a wide scroll of light evoking the four seasons of its hometown.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -848,7 +848,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -883,7 +883,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -918,7 +918,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -959,7 +959,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -994,7 +994,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1029,7 +1029,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1064,7 +1064,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1105,7 +1105,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1146,7 +1146,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1187,7 +1187,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1222,7 +1222,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1257,7 +1257,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1292,7 +1292,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1315,10 +1315,10 @@
     "description": {
       "title_ja": "スプラッシュファイヤー炎の舞",
       "title_en": "スプラッシュファイヤー炎の舞",
-      "description_ja_long": "水しぶきのように弾ける光と炎の舞をテーマにした、動きの大きな演出が見どころのスターマイン。変化に富んだ多彩な演出が楽しめる。",
-      "description_ja_short": "水しぶきのような光と炎の舞。超大型ミラクルスターマイン。",
-      "description_en_long": "A starmine built around dancing flames and light that bursts like flying spray, with big, sweeping motion as its highlight. It is staged as a super-size starmine with varied, theatrical effects at the Nagaoka Fireworks Show on August 2.",
-      "description_en_short": "A starmine built around dancing flames and light that bursts like flying spray, with big, sweeping motion as its highlight.",
+      "description_ja_long": "水しぶきと炎の舞を名に掲げ、弾ける光と動きの大きな演出をイメージさせるスターマイン。慰霊と復興の祈りを受け継ぐ大会を彩る。",
+      "description_ja_short": "炎の舞の名が弾ける光をイメージさせる。超大型ミラクルスターマイン。",
+      "description_en_long": "Splash Fire: the name evokes dancing flames and light that bursts like flying spray, with big sweeping motion. It is staged as a super-size starmine with varied, theatrical effects at the Nagaoka Fireworks Show on August 2.",
+      "description_en_short": "Splash Fire: the name evokes dancing flames and light that bursts like flying spray, with big sweeping motion.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -1327,7 +1327,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1362,7 +1362,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1397,7 +1397,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1432,7 +1432,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1467,7 +1467,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1502,7 +1502,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1525,10 +1525,10 @@
     "description": {
       "title_ja": "龍華～未来へ続く日の光～",
       "title_en": "龍華～未来へ続く日の光～",
-      "description_ja_long": "龍が咲かせる華をイメージした演目。未来へ続く日の光のように、金色の尾を引いて立ち上る。連射の花火が大きな光の柱を夜空に描く。",
-      "description_ja_short": "龍の華のように金色の尾を引いて立ち上る。ベスビアス大スターマイン。",
-      "description_en_long": "Imagined as flowers blooming from a dragon, the shells climb with golden tails like sunlight stretching into the future. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 2.",
-      "description_en_short": "Imagined as flowers blooming from a dragon, the shells climb with golden tails like sunlight stretching into the future.",
+      "description_ja_long": "龍が咲かせる華という名から、金色の尾を引いて立ち上る光をイメージさせる演目。連射の花火が大きな光の柱を夜空に描く。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "龍の華の名が立ち上る光をイメージさせる。ベスビアス大スターマイン。",
+      "description_en_long": "Its name, flowers blooming from a dragon, evokes an image of shells climbing skyward with golden tails like light stretching into the future.",
+      "description_en_short": "Its name, flowers blooming from a dragon, evokes an image of shells climbing skyward with golden tails like light stretching into the future.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -1537,7 +1537,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1578,7 +1578,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1613,7 +1613,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1648,7 +1648,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1683,7 +1683,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1718,7 +1718,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1753,7 +1753,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1788,7 +1788,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1823,7 +1823,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1858,7 +1858,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1893,7 +1893,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1928,7 +1928,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1957,10 +1957,10 @@
     "description": {
       "title_ja": "信濃川の夕涼み",
       "title_en": "信濃川の夕涼み",
-      "description_ja_long": "夕涼みの川辺のように涼やかな色をそろえ、真夏の信濃川に吹く一陣の涼風のような時間を作る。速射連発の花火が途切れなく夜空を彩る。",
-      "description_ja_short": "真夏の川辺に吹く涼風のような花火、長岡花火のスターマイン。",
-      "description_en_long": "Cool colors gather like an evening by the water, bringing a moment of breeze to the midsummer Shinano riverside. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "Cool colors gather like an evening by the water, bringing a moment of breeze to the midsummer Shinano riverside.",
+      "description_ja_long": "川辺の夕涼みを名に掲げ、真夏の信濃川に吹く涼風のような時間をイメージさせる演目。速射連発の花火が途切れなく夜空を彩る。信濃川の夜空を彩る演目の一つ。",
+      "description_ja_short": "夕涼みの涼風をイメージさせる演目名。スターマイン。",
+      "description_en_long": "Named for a cool evening by the water, the title evokes a moment of breeze drifting over the midsummer Shinano riverside. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Named for a cool evening by the water, the title evokes a moment of breeze drifting over the midsummer Shinano riverside.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -1969,7 +1969,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -1992,10 +1992,10 @@
     "description": {
       "title_ja": "あなたとずっとこの空と",
       "title_en": "あなたとずっとこの空と",
-      "description_ja_long": "「あなたとずっとこの空と」の言葉どおり、寄り添う二つの光が並んで夜空をゆっくりと彩る。ベスビアス最大級の打上げ規模を誇る演目。",
-      "description_ja_short": "寄り添う二つの光が並んで彩る夜空。超大型スーパーベスビアス。",
-      "description_en_long": "Just as its title promises — you, always, and this sky — paired lights rise side by side and slowly color the night. It is staged as the largest class of Vesuvius starmine, filling the whole field of view at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "Just as its title promises — you, always, and this sky — paired lights rise side by side and slowly color the night.",
+      "description_ja_long": "「あなたとずっとこの空と」の名を掲げ、寄り添う光をイメージさせる演目。大切な人と見上げたい。ベスビアス最大級の打上げ規模を誇る演目。",
+      "description_ja_short": "寄り添う光をイメージさせる演目名。超大型スーパーベスビアス。",
+      "description_en_long": "Bearing the title You, Always, and This Sky, the program evokes an image of lights nestling close together, made to be watched with someone dear.",
+      "description_en_short": "Bearing the title You, Always, and This Sky, the program evokes an image of lights nestling close together, made to be watched with someone dear.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2004,7 +2004,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2027,10 +2027,10 @@
     "description": {
       "title_ja": "金燦、銀燦",
       "title_en": "金燦、銀燦",
-      "description_ja_long": "金と銀の燦めきだけで構成された、シンプルながら最も花火らしい輝きを味わえる渋い演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
-      "description_ja_short": "金と銀の燦めきだけで魅せる渋い構成。ベスビアス超大型スターマイン。",
-      "description_en_long": "Composed purely of gold and silver sparkle, a restrained program that savors fireworks at their most essential. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "Composed purely of gold and silver sparkle, a restrained program that savors fireworks at their most essential.",
+      "description_ja_long": "金と銀の燦めきを名に掲げた演目。余計な色を削ぎ、輝きそのものを味わう構成をイメージさせる。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "金と銀の燦めきを名に掲げた演目。ベスビアス超大型スターマイン。",
+      "description_en_long": "Named for the sparkle of gold and silver, the title evokes fireworks at their most essential, with brilliance savored for its own sake. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Named for the sparkle of gold and silver, the title evokes fireworks at their most essential, with brilliance savored for its own sake.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2039,7 +2039,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2074,7 +2074,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2109,7 +2109,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2144,7 +2144,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2179,7 +2179,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2214,7 +2214,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2249,7 +2249,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2284,7 +2284,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2307,10 +2307,10 @@
     "description": {
       "title_ja": "天空華宴",
       "title_en": "天空華宴",
-      "description_ja_long": "天空で開く華の宴の名のとおり、夜空の高みに次々と大輪を咲かせて宴のように賑わう演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
-      "description_ja_short": "天空で開く華の宴のような大輪の連続。ベスビアス超大型スターマイン。",
-      "description_en_long": "As its name — a banquet of flowers in the heavens — suggests, great blooms open one after another high in the night sky. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "As its name — a banquet of flowers in the heavens — suggests, great blooms open one after another high in the night sky.",
+      "description_ja_long": "天空で開く華の宴という名のとおり、夜空の高みでにぎわう大輪の宴をイメージさせる演目。湧き上がる光の奔流が夜空を焦がす伝統の型。",
+      "description_ja_short": "天空の華の宴をイメージさせる演目名。ベスビアス超大型スターマイン。",
+      "description_en_long": "A banquet of flowers in the heavens: the name evokes an image of great blooms reveling high in the night sky. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "A banquet of flowers in the heavens: the name evokes an image of great blooms reveling high in the night sky.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2319,7 +2319,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2342,10 +2342,10 @@
     "description": {
       "title_ja": "mirai",
       "title_en": "mirai",
-      "description_ja_long": "小文字の「mirai」に込めた、肩ひじ張らない等身大の未来。やわらかな色の光が静かに寄り添う。連射の花火が大きな光の柱を夜空に描く。",
-      "description_ja_short": "等身大の未来を描くやわらかな光。ベスビアス大スターマイン。",
-      "description_en_long": "In lowercase mirai lies an everyday, human-sized future: soft colors of light quietly keeping company with the crowd. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "In lowercase mirai lies an everyday, human-sized future: soft colors of light quietly keeping company with the crowd.",
+      "description_ja_long": "小文字の「mirai」に込めた等身大の未来という名から、やわらかな色の光をイメージさせる。連射の花火が大きな光の柱を夜空に描く。",
+      "description_ja_short": "等身大のmiraiをイメージさせる演目名。ベスビアス大スターマイン。",
+      "description_en_long": "In lowercase mirai lies an everyday, human-sized future; the name evokes soft, gentle colors of light keeping company with the crowd. It is staged as a traditional Vesuvius-style grand starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "In lowercase mirai lies an everyday, human-sized future; the name evokes soft, gentle colors of light keeping company with the crowd.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2354,7 +2354,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2389,7 +2389,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2430,7 +2430,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2465,7 +2465,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2500,7 +2500,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2535,7 +2535,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2558,10 +2558,10 @@
     "description": {
       "title_ja": "大河の夕景",
       "title_en": "大河の夕景",
-      "description_ja_long": "信濃川の夕景をモチーフに、茜から藍へ移ろう空の色を花火のグラデーションで再現する。湧き上がる光の奔流が夜空を焦がす伝統の型。",
-      "description_ja_short": "夕暮れの信濃川を光のグラデーションで。ベスビアス超大型スターマイン。",
-      "description_en_long": "Modeled on dusk over the Shinano River, the display recreates a sky shifting from madder red to indigo in gradations of light. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "Modeled on dusk over the Shinano River, the display recreates a sky shifting from madder red to indigo in gradations of light.",
+      "description_ja_long": "信濃川の夕景を名に掲げ、暮れゆく大河の空の色合いをイメージさせる演目。湧き上がる光の奔流が夜空を焦がす伝統の型。慰霊と復興の祈りを受け継ぐ大会を彩る。",
+      "description_ja_short": "信濃川の夕景をイメージさせる演目名。ベスビアス超大型スターマイン。",
+      "description_en_long": "Titled Evening on the Great River, the name evokes the colors of dusk settling slowly over the Shinano. It is staged as a traditional Vesuvius super starmine, a volcanic torrent of light at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Titled Evening on the Great River, the name evokes the colors of dusk settling slowly over the Shinano.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2570,7 +2570,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2605,7 +2605,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2640,7 +2640,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2675,7 +2675,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2710,7 +2710,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2745,7 +2745,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2768,10 +2768,10 @@
     "description": {
       "title_ja": "パラダイス・イン・ザ・スカイ",
       "title_en": "パラダイス・イン・ザ・スカイ",
-      "description_ja_long": "夜空に楽園を出現させるという名のとおり、明るくにぎやかな光が絶え間なく続く楽しい演目。速射連発の花火が途切れなく夜空を彩る。",
-      "description_ja_short": "夜空に楽園を出現させるにぎやかな光。スターマイン。",
-      "description_en_long": "True to its name, a paradise appears in the sky: bright, cheerful light that simply never lets up. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
-      "description_en_short": "True to its name, a paradise appears in the sky: bright, cheerful light that simply never lets up.",
+      "description_ja_long": "夜空の楽園を名に掲げ、明るくにぎやかな光が絶え間なく続くひとときをイメージさせる演目。速射連発の花火が途切れなく夜空を彩る。",
+      "description_ja_short": "夜空の楽園をイメージさせる演目名、長岡花火のスターマイン。",
+      "description_en_long": "Paradise in the Sky: the name evokes a bright, cheerful stretch of light that simply never lets up. It is staged as a rapid-fire starmine at the Nagaoka Fireworks Show on August 3.",
+      "description_en_short": "Paradise in the Sky: the name evokes a bright, cheerful stretch of light that simply never lets up.",
       "tags_ja": [
         "花火",
         "長岡花火"
@@ -2780,7 +2780,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   },
@@ -2815,7 +2815,7 @@
         "Fireworks",
         "Nagaoka"
       ],
-      "quality": "good",
+      "quality": "inferred",
       "url": "https://nagaokamatsuri.com/"
     }
   }
