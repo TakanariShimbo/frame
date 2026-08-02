@@ -32,6 +32,8 @@ for (const e of entries) {
   if (typeof e.elevation_m !== "number") errs.push("elevation_m が数値でない");
   if (typeof e.latitude !== "number" || typeof e.longitude !== "number") errs.push("座標がない");
   if (typeof e.priority !== "number") errs.push("priority がない");
+  if (e.category != null && !["hanabi", "peace_festival"].includes(e.category)) errs.push(`category ${e.category} が不正`);
+  if (e.event_day != null && !/^08-\d{2}(\/08-\d{2})?$/.test(e.event_day)) errs.push(`event_day ${e.event_day} が不正`);
   const d = e.description;
   if (!d) errs.push("description がない");
   else {

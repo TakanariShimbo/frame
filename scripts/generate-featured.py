@@ -443,11 +443,16 @@ def en_pair(title, days_en, time, typ, sponsor):
     return long, short
 
 # --- 主要演目（手書き解説） ---
-def curated(id, name, kana, en, aliases, priority, ja_l, ja_s, en_l, en_s, tags_ja, tags_en, prefecture="長岡花火"):
+def curated(id, name, kana, en, aliases, priority, ja_l, ja_s, en_l, en_s, tags_ja, tags_en,
+            prefecture="長岡花火", category="hanabi", event_day="08-02/08-03", venue="信濃川河川敷",
+            recurring=True, year=None):
     return {
         "id": id, "name": name, "name_kana": kana, "name_en": en,
         "aliases": [{"name": a} for a in aliases],
         **{**BASE, "prefecture": prefecture}, "priority": priority,
+        # 分類メタデータ（アプリは未使用。将来のカテゴリ表示・年度入替のための構造）
+        "category": category, "event_day": event_day, "venue": venue,
+        "recurring": recurring, "year": year,
         "description": {
             "title_ja": name, "title_en": en,
             "description_ja_long": ja_l, "description_ja_short": ja_s,
@@ -479,7 +484,7 @@ entries = [
         "Nagaoka's iconic giant shell, blooming about 650 meters across high above the Shinano River.",
         ["花火", "長岡花火", "三尺玉"], ["Fireworks", "Nagaoka", "Giant shell"]),
     curated(9000004, "白菊", "しらぎく", "Shiragiku",
-        ["慰霊の白菊", "嘉瀬煙火工業", "長岡花火財団"], 997,
+        ["慰霊の白菊", "嘉瀬煙火工業", "長岡花火財団", "平和祭の白菊", "前夜祭の白菊", "慰霊花火"], 997,
         "白一色で静かに開く慰霊の花火。花火師・嘉瀬誠次氏がシベリア抑留の戦友に捧げたことに始まり、戦災と災害の犠牲者への祈りとして大会の冒頭を飾る。",
         "白一色で開く慰霊の花火。犠牲者への鎮魂を込め、大会の冒頭に静かに打ち上げられる。",
         "The Shiragiku is a pure-white memorial shell first fired by pyrotechnician Seiji Kase in mourning for comrades lost in Siberian internment. It now opens the festival as a prayer for all victims of war and disaster.",
@@ -521,6 +526,68 @@ entries = [
         "A connoisseur's program devoted to the artisan's craft, one carefully judged shell at a time.",
         ["花火", "長岡花火", "花火師"], ["Fireworks", "Nagaoka", "Artisan"]),
 ]
+
+# --- 長岡まつり平和祭（8月1日・大手通周辺）。2018年度に「前夜祭」から名称変更 ---
+PJA = ["平和祭", "長岡まつり", "8月1日"]
+PEN = ["Peace Festival", "Nagaoka", "August 1st"]
+entries += [
+    curated(9000011, "長岡まつり平和祭", "ながおかまつりへいわさい", "Nagaoka Peace Festival",
+        ["前夜祭", "長岡まつり前夜祭", "平和祭", "8月1日"], 991,
+        "1945年の長岡空襲翌年に始まった復興祭を前身とする、長岡まつり初日の行事。慰霊と感謝、恒久平和への願いを受け継ぎ、大民踊流しや慰霊神輿が大手通を彩る。",
+        "慰霊と復興、平和への願いを受け継ぐ長岡まつり初日の行事。8月1日、大手通周辺で開催。",
+        "The Peace Festival opens the Nagaoka Festival on August 1st. Descended from the recovery festival first held the year after the 1945 air raid, it fills Ote-dori with folk dances, a memorial mikoshi, drums and parades.",
+        "The Peace Festival opens the Nagaoka Festival on August 1st, carrying prayers for remembrance, recovery and lasting peace.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通周辺"),
+    curated(9000012, "大民踊流し", "だいみんようながし", "Great Folk Dance Procession",
+        ["民踊流し", "民謡流し", "長岡甚句", "大花火音頭", "踊り流し", "盆踊り"], 990,
+        "長岡甚句や大花火音頭に合わせ、大勢の踊り手が大手通などを踊り流す平和祭の名物行事。浴衣の列が夏の宵の街をゆっくりと進んでいく。",
+        "長岡甚句・大花火音頭に合わせて大手通を踊り流す平和祭の名物行事。",
+        "The Great Folk Dance Procession is a signature event of the Peace Festival, in which crowds of dancers flow along Ote-dori to the folk tunes of Nagaoka Jinku and the Ohanabi Ondo through the summer evening.",
+        "Crowds of dancers in yukata flow down Ote-dori to Nagaoka's folk tunes at the Peace Festival.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通・すずらん通り"),
+    curated(9000013, "柿川灯籠流し", "かきがわとうろうながし", "Kakigawa Lantern Floating",
+        ["灯籠流し", "柿川", "平和の灯籠", "一之橋", "追廻橋", "とうろう流し"], 989,
+        "慰霊と恒久平和への願いを灯籠に込め、柿川の水面へ静かに送り出す8月1日の行事。一之橋から追廻橋のあたりを、ゆらめく灯りがゆっくり流れてゆく。",
+        "慰霊と平和への願いを込めた灯籠を柿川に流す、8月1日の静かな行事。",
+        "Lanterns bearing prayers for the war dead and for lasting peace are set adrift on the Kakigawa river on August 1st, their flickering lights drifting slowly between the Ichinohashi and Oimawashi bridges.",
+        "Lanterns carrying prayers for remembrance and peace drift quietly down the Kakigawa on August 1st.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="柿川（一之橋〜追廻橋）"),
+    curated(9000014, "越後長岡慰霊神輿渡御", "えちごながおかいれいみこしとぎょ", "Memorial Mikoshi Procession",
+        ["慰霊神輿", "長岡慰霊神輿", "神輿渡御", "みこし", "神輿"], 988,
+        "長岡空襲の犠牲者を慰霊し、復興と平和への願いをつないで大手通を進む神輿渡御。平和祭の夜、大民踊流しに続いて力強く練り歩く。",
+        "空襲犠牲者の慰霊と平和への願いを載せ、大手通を進む神輿渡御。",
+        "The memorial mikoshi procession advances along Ote-dori in remembrance of the victims of the Nagaoka air raid, carrying prayers for recovery and lasting peace through the night of the Peace Festival.",
+        "A memorial mikoshi carried down Ote-dori in remembrance of the air-raid victims, bearing prayers for peace.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通"),
+    curated(9000015, "悠久太鼓", "ゆうきゅうだいこ", "Yukyu Daiko",
+        ["長岡悠久太鼓", "和太鼓", "太鼓演奏", "太鼓"], 987,
+        "長岡の歴史と大河信濃川を思わせる、力強い響きが特徴の郷土芸能。平和祭の街なかに勇壮な太鼓の音を響かせ、祭りの夜をいっそう沸かせる。",
+        "力強い響きが特徴の長岡の郷土芸能。平和祭の街に太鼓の音を響かせる。",
+        "Yukyu Daiko is Nagaoka's homegrown taiko drumming, its powerful sound evoking the city's history and the great Shinano River as it rings through the streets on the night of the Peace Festival.",
+        "Nagaoka's own taiko drumming, ringing powerfully through the streets of the Peace Festival.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="ミライエ長岡前ほか"),
+    curated(9000016, "越路の祭り屋台曳き回しとシャギリ", "こしじのまつりやたいひきまわしとしゃぎり", "Koshiji Festival Floats",
+        ["越路の祭り屋台", "祭り屋台", "屋台曳き回し", "シャギリ", "お囃子", "山車"], 986,
+        "越路地域に伝わる祭り屋台を曳き回し、笛や太鼓のお囃子「シャギリ」を響かせる伝統行事。華やかな屋台が平和祭の大手通に彩りを添える。",
+        "越路の祭り屋台を曳き回し、シャギリのお囃子を響かせる伝統行事。",
+        "Festival floats handed down in the Koshiji district are hauled through the streets to the piping and drumming of shagiri musicians, adding traditional color to the Peace Festival on Ote-dori.",
+        "Koshiji's festival floats parade to the lively sound of shagiri flutes and drums.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通"),
+    curated(9000017, "平和祭パレード", "へいわさいぱれーど", "Peace Festival Parade",
+        ["長岡まつりパレード", "大手通パレード", "消防音楽隊", "バトントワリング", "パレード"], 985,
+        "消防音楽隊やバトントワリングなどが大手通を進み、長岡まつりの開幕を華やかに告げる平和祭のパレード。沿道の歓声とともに祭りの3日間が始まる。",
+        "音楽隊やバトンが大手通を進み、長岡まつりの開幕を告げるパレード。",
+        "Marching bands, baton twirlers and more parade down Ote-dori, joyfully announcing the opening of the Nagaoka Festival as cheers rise along the street on the evening of the Peace Festival.",
+        "A parade of bands and baton twirlers down Ote-dori, announcing the opening of the Nagaoka Festival.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通"),
+    curated(9000018, "バルーンリリース", "ばるーんりりーす", "Balloon Release",
+        ["風船飛ばし", "平和のバルーン", "オープニングセレモニー"], 984,
+        "慰霊と復興、恒久平和への願いを託し、色とりどりのバルーンを長岡の空へ放つ平和祭のセレモニー。夕空に浮かぶ色彩が、祭りの始まりを静かに告げる。",
+        "平和への願いを託したバルーンを長岡の空へ放つ、平和祭のセレモニー。",
+        "In the opening ceremony of the Peace Festival, colorful balloons carrying prayers for remembrance, recovery and lasting peace are released into the evening sky over Nagaoka.",
+        "Colorful balloons carrying prayers for peace rise into the evening sky over Nagaoka.",
+        PJA, PEN, category="peace_festival", event_day="08-01", venue="大手通", recurring=False, year=2026),
+]
 have_names = {e["name"] for e in entries}
 
 # --- プログラム演目（テンプレート生成・同名は両日統合） ---
@@ -543,6 +610,9 @@ for title, m in merged.items():
     en_l, en_s = en_pair(title, days_en, m["time"], typ, sponsor)
     entries.append({
         "id": nid, "name": title, "aliases": aliases, **BASE, "priority": 900,
+        "category": "hanabi",
+        "event_day": "08-02/08-03" if both else f"08-0{m['days'][0]}",
+        "venue": "信濃川河川敷", "recurring": False, "year": 2026,
         "description": {
             "title_ja": title, "title_en": title,
             "description_ja_long": ja_long(days, m["time"], typ, title, sponsor),
@@ -584,6 +654,15 @@ def day_section(day_label, items):
                 f"- **長め**: {d['description_ja_long']}",
                 f"- **短め**: {d['description_ja_short']}", ""]
     return out
+
+md += ["## 8月1日 平和祭", ""]
+for e in entries:
+    if e.get("category") != "peace_festival": continue
+    d = e["description"]
+    md += [f"### {e['name']}", "",
+           f"- 会場: {e.get('venue', '')}",
+           f"- **長め**: {d['description_ja_long']}",
+           f"- **短め**: {d['description_ja_short']}", ""]
 
 md += day_section("8月2日", P2)
 md += day_section("8月3日", [x for x in P3 if x[3] not in {t for _,_,_,t,_ in P2}])
