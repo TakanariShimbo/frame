@@ -163,6 +163,10 @@ type FontPairId =
 type FontPair = { label: string; jp: string; en: string; description: string };
 type RoleFonts = Record<FontRole, FontPairId>;
 
+// 高さの表示テキスト。elevText があればそのまま、無ければ elevM からモードに応じて生成。
+const elevDisplay = (lb: { elevM?: number; elevText?: string }, en = false): string =>
+  lb.elevText !== undefined ? lb.elevText : lb.elevM != null ? formatElev(lb.elevM, en) : "";
+
 // 選べるフォントペア（和文＋欧文のセット。index.html で Google Fonts を読み込み）。
 // label はUI言語によらず常にこの表記のまま（山名同様、フォント名は翻訳しない）。
 // description はUI言語で切り替えるため、ここには i18n キーを入れ、参照側で t() する。
@@ -771,7 +775,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 指定言語のチップ文字列（高さ→場所→選択タグの順）。
   const capChips = (lb: ArLabel, lang: "ja" | "en"): string[] => {
     const chips: string[] = [];
-    if (capShowElev && lb.elevM != null) chips.push(formatElev(lb.elevM, lang === "en"));
+    const et = elevDisplay(lb, lang === "en");
+    if (capShowElev && et) chips.push(et);
     if (capShowLoc && lb.prefecture)
       chips.push(lang === "en" ? prefEn(lb.prefecture) : lb.prefecture.replace(/\//g, "・"));
     const tj = lb.tagsJa ?? [];
@@ -804,10 +809,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, name: value } : l)));
   const setLabelNameEn = (i: number, value: string) =>
     setArLabels((p) => p.map((l, idx) => (idx === i ? { ...l, nameEn: value.trim() || undefined } : l)));
+  // 高さはテキストで自由編集（既定はモードに応じた「3,776m」「2026y」がプレフィルされる）。
+  // 空にすると elevM ごと消して全箇所で非表示に戻す。
   const setLabelElev = (i: number, raw: string) => {
-    const v = raw.trim() === "" ? undefined : Number(raw);
     setArLabels((p) =>
-      p.map((l, idx) => (idx === i ? { ...l, elevM: v != null && Number.isFinite(v) ? v : undefined } : l)),
+      p.map((l, idx) =>
+        idx !== i ? l : raw.trim() === "" ? { ...l, elevText: undefined, elevM: undefined } : { ...l, elevText: raw },
+      ),
     );
   };
 
@@ -897,20 +905,26 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       titleShowOver && it.prefecture
         ? up(en ? prefEn(it.prefecture) : it.prefecture.replace(/\//g, "・"))
         : "";
-    const num = titleShowNum && it.elevM != null ? formatElevTitle(it.elevM, en) : "";
+    const num = !titleShowNum
+      ? ""
+      : it.elevText !== undefined
+        ? up(it.elevText)
+        : it.elevM != null
+          ? formatElevTitle(it.elevM, en)
+          : "";
     return { over, main, num };
   };
 
   // ラベルの1段目(name)と2段目(sub)の文字列を labelMode から決める。
   // name には編集で入れた改行(\n)がそのまま残り、名札の描画側で複数行に折り返す。
   // 2段目(sub)と英名は1行に畳む。
-  const labelContent = (lb: { name: string; nameEn?: string; elevM?: number }) => {
+  const labelContent = (lb: { name: string; nameEn?: string; elevM?: number; elevText?: string }) => {
     const ja = lb.name;
     // name欄に使う英名は改行(\n)を維持し、sub欄に使うときだけ1行に畳む。
     const en = nameLines(lb.nameEn || lb.name).join("\n");
     const enSub = oneLineName(lb.nameEn || lb.name);
     // 標高なし（自由入力）の場合は標高部分だけ省いて表示する。
-    const elev = lb.elevM != null ? formatElev(lb.elevM) : "";
+    const elev = elevDisplay(lb);
     switch (labelMode) {
       case "jaOnly":
         return { name: ja, sub: "" };
@@ -2207,15 +2221,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           />
           <span className="studio-data-elev">
             <input
-              type="number"
-              inputMode="numeric"
+              type="text"
               className="studio-data-input studio-data-input--elev"
-              value={lb.elevM ?? ""}
+              value={elevDisplay(lb)}
               onChange={(e) => setLabelElev(i, e.target.value)}
               placeholder={t("studio.data.elevationPlaceholder")}
               aria-label={t("studio.data.elevationLabel", { name: oneLineName(lb.name) })}
+              autoComplete="off"
             />
-            m
           </span>
           <button
             type="button"

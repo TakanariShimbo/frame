@@ -61,11 +61,9 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
     setSelected((p) => p.map((m) => (m.id === id ? { ...m, nameEn: v } : m)));
   };
   // 自由入力チップの標高（任意）。空にすれば未設定＝標高表示なしに戻る。
+  // 高さはテキストで自由入力（「650m」「2026y」など単位ごと書ける。空なら表示なし）。
   const setCustomElev = (id: number, raw: string) => {
-    const v = raw.trim() === "" ? undefined : Number(raw);
-    setSelected((p) =>
-      p.map((m) => (m.id === id ? { ...m, elevationM: v != null && Number.isFinite(v) ? v : undefined } : m)),
-    );
+    setSelected((p) => p.map((m) => (m.id === id ? { ...m, elevText: raw.trim() === "" ? undefined : raw } : m)));
   };
   const removeMountain = (id: number) => setSelected((p) => p.filter((m) => m.id !== id));
 
@@ -176,15 +174,14 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
                       />
                       <span className="pick-chip-elev pick-chip-elev--input">
                         <input
-                          type="number"
+                          type="text"
                           className="pick-chip-input"
-                          inputMode="numeric"
                           placeholder={t("mountainPicker.elevationPlaceholder")}
-                          value={m.elevationM ?? ""}
+                          value={m.elevText ?? ""}
                           onChange={(e) => setCustomElev(m.id, e.target.value)}
                           aria-label={t("mountainPicker.elevationLabel", { name: m.name })}
+                          autoComplete="off"
                         />
-                        m
                       </span>
                     </span>
                   ) : (
