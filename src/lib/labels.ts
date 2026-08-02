@@ -10,6 +10,7 @@ export type PickedPlace = {
   name: string;
   nameEn?: string;
   elevationM?: number;
+  elevText?: string; // 高さの表示テキスト（自由入力。未設定なら elevationM から自動生成）
   prefecture?: string;
   custom?: boolean;
 };
@@ -19,6 +20,9 @@ export type ArLabel = {
   id: number;
   name: string;
   elevM?: number; // 標高。自由入力（山小屋・池・地名など）では未設定になり、標高表示は全箇所で自動非表示
+  // 高さの表示テキスト。未設定なら elevM からモードに応じて「3,776m」「2026y」を自動生成。
+  // ユーザーが編集すると（単位を消す・書き換えるなど）その文字列がそのまま表示される。
+  elevText?: string;
   dotU: number;
   dotV: number;
   labelU: number;
@@ -76,6 +80,7 @@ export function buildLabels(
       id: m.id,
       name: m.name,
       elevM: m.elevationM,
+      elevText: m.elevText,
       dotU: t,
       dotV,
       labelU: t,
