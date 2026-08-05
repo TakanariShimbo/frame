@@ -273,13 +273,14 @@ button {
   justify-content: center;
   gap: 12px;
 }
-/* 花火モードのCTA。金の縁取りだけの控えめな見た目で山用と並べる */
-.pick-hero-cta--hanabi {
+/* フォトコンテストへのリンク。金の縁取りだけの控えめな見た目で山用CTAと並べる */
+.pick-hero-cta--contest {
   background: transparent;
   border: 1px solid var(--gold);
   color: var(--gold);
+  text-decoration: none;
 }
-.pick-hero-cta--hanabi:hover {
+.pick-hero-cta--contest:hover {
   background: rgba(216, 182, 114, 0.14);
 }
 .pick-hero-note {

@@ -7,7 +7,7 @@ export default {
     heroLead: "Overlay a mountain's name, elevation, and description onto your photo for a poster-like finish. Just pick from a dictionary of about 27,000 peaks — English names and descriptions are added automatically.",
     heroCta: "Choose a photo to start",
     ctaMountain: "Start with mountains",
-    ctaHanabi: "Start with fireworks",
+    ctaContest: "See the photo contest",
     heroNote: "Pick several, and you'll finish them one at a time.",
     invalidFile: "Please choose an image file (JPEG, PNG, etc.).",
     worksLabel: "Gallery",
