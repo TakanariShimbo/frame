@@ -7,7 +7,7 @@ export default {
     heroLead: "山の写真に山名・標高・解説を美しく重ねて、ポスターのような一枚に。約27,000座の山岳辞書から選ぶだけで、英名や解説も自動で添えられます。",
     heroCta: "写真を選んではじめる",
     ctaMountain: "山ではじめる",
-    ctaHanabi: "花火ではじめる",
+    ctaContest: "フォトコンテストを見る",
     heroNote: "複数選ぶと、1枚ずつ順に仕上げられます。",
     invalidFile: "画像ファイルを選んでください（JPEG / PNG など）。",
     worksLabel: "作例",
