@@ -9,6 +9,7 @@ import AnnouncementMobileNav from "./AnnouncementMobileNav";
 import PlatformLinks from "./PlatformLinks";
 import MentionAccounts from "./MentionAccounts";
 import SponsorList from "./SponsorList";
+import PrizeList from "./PrizeList";
 import ContestNotFound from "./ContestNotFound";
 
 type State =
@@ -47,11 +48,20 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
 
   const data = state.status === "ready" ? state.data : null;
 
-  // 表示するセクション（協賛が無ければ 6 番目は出さない）。番号はこの並びから動的生成。
-  const sections = useMemo(() => {
+  // 表示するセクション（協賛・景品は無ければ出さない）。番号はこの並びから動的生成。
+  const { sections, sponsorsIndex, prizesIndex } = useMemo(() => {
     const base = ["メインビジュアル", "テーマ", "開催期間", "応募条件", "応募プラットフォーム"];
-    if (data && data.sponsors.length > 0) base.push("協賛ブランド");
-    return base;
+    let sponsorsIndex = -1;
+    let prizesIndex = -1;
+    if (data && data.sponsors.length > 0) {
+      sponsorsIndex = base.length;
+      base.push("協賛ブランド");
+    }
+    if (data && data.prizes.items.length > 0) {
+      prizesIndex = base.length;
+      base.push(data.prizes.title);
+    }
+    return { sections: base, sponsorsIndex, prizesIndex };
   }, [data]);
 
   const { containerRef, setSectionRef, active, scrollTo } = useSectionNav(sections.length);
@@ -76,7 +86,6 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
   const start = formatDate(status.startAt, status.timeZone);
   const end = formatDate(status.endAt, status.timeZone);
   const navItems = sections.map((label, i) => ({ number: String(i + 1).padStart(2, "0"), label }));
-  const sponsorsIndex = 5;
 
   return (
     <div className="pc-screen pcan" ref={containerRef}>
@@ -166,6 +175,20 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
               <span className="pcan-sponsors-line" aria-hidden />
             </p>
             <SponsorList sponsors={data.sponsors} />
+          </section>
+        )}
+
+        {/* 景品 */}
+        {data.prizes.items.length > 0 && (
+          <section className="pcan-prizes-sec" ref={setSectionRef(prizesIndex)} data-reveal aria-labelledby="pcan-prizes-heading">
+            <div className="pcan-prizes-head">
+              <span className="pcan-prizes-eyebrow">{data.prizes.eyebrow}</span>
+              <span className="pcan-prizes-line" aria-hidden />
+              <h2 id="pcan-prizes-heading" className="pcan-prizes-title">
+                {data.prizes.title}
+              </h2>
+            </div>
+            <PrizeList prizes={data.prizes.items} sourceLinkLabel={data.prizes.sourceLinkLabel} />
           </section>
         )}
 

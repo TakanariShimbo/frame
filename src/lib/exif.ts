@@ -73,3 +73,35 @@ export async function readShootingInfo(url: string): Promise<ShootingInfo | null
   if (!model && !maker && !spec) return null;
   return { model, maker, spec };
 }
+
+// ============================================================================
+// GPS座標（イベントフレームのフィールドノート表示用）: 度分秒の表示文字列で返す。
+// 例: 36°20'31"N\n137°38'51"E（2行。写真上では行ごとに描画される）。
+// ============================================================================
+// 緯度経度 → 度分秒の表示テキスト（2行）。写真のEXIF由来・山岳辞書の山頂座標のどちらにも使う。
+export function gpsToText(lat: number, lon: number): string {
+  const dms = (deg: number, pos: string, neg: string): string => {
+    const hemi = deg < 0 ? neg : pos;
+    const a = Math.abs(deg);
+    const d = Math.floor(a);
+    const m = Math.floor((a - d) * 60);
+    const s = Math.round(((a - d) * 60 - m) * 60);
+    return `${d}°${m}'${s}"${hemi}`;
+  };
+  return `${dms(lat, "N", "S")}\n${dms(lon, "E", "W")}`;
+}
+
+export async function readGpsText(url: string): Promise<string | null> {
+  let data: Record<string, unknown> | undefined;
+  try {
+    const blob = await (await fetch(url)).blob();
+    data = await exifr.parse(blob, { tiff: true, gps: true });
+  } catch {
+    data = undefined;
+  }
+  const num = (v: unknown): number | null => (typeof v === "number" && isFinite(v) ? v : null);
+  const lat = num(data?.latitude);
+  const lon = num(data?.longitude);
+  if (lat == null || lon == null) return null;
+  return gpsToText(lat, lon);
+}

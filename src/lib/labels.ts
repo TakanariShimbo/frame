@@ -12,6 +12,8 @@ export type PickedPlace = {
   elevationM?: number;
   elevText?: string; // 高さの表示テキスト（自由入力。未設定なら elevationM から自動生成）
   prefecture?: string;
+  lat?: number; // 山頂座標（辞書由来。自由入力では未設定）
+  lon?: number;
   custom?: boolean;
 };
 
@@ -40,6 +42,8 @@ export type ArLabel = {
   tagsEn?: string[]; // タグ（英語。tagsJa と同じ並び）
   source?: string; // 参考URL
   hidden?: boolean; // 写真上に名札・引き出し線を描かない（解説・題字の題材候補には残る）
+  lat?: number; // 山頂座標（辞書由来。記念日フレームの座標行のプレフィルに使う）
+  lon?: number;
 };
 
 // 山名は編集で任意の位置に改行(\n)を入れられる。改行を反映するのは写真上の名札のみで、
@@ -91,6 +95,8 @@ export function buildLabels(
       descriptionEnShort: d?.description_en_short,
       nameEn: d?.title_en ?? m.nameEn, // 解説DBの英名を優先、無ければ機械生成ローマ字
       prefecture: m.prefecture,
+      lat: m.lat,
+      lon: m.lon,
       tagsJa: d?.tags_ja,
       tagsEn: d?.tags_en,
       source: d?.url,

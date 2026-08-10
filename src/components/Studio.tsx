@@ -4,7 +4,7 @@ import { formatElev, formatElevTitle, getAppMode } from "../lib/mode";
 import { IconDownload, IconCaret, IconChevron, IconEye, IconEyeOff } from "./icons";
 import { nameLines, oneLineName, type ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
-import { readShootingInfo } from "../lib/exif";
+import { readShootingInfo, readGpsText, gpsToText } from "../lib/exif";
 import FsSlider from "./FsSlider";
 
 // ============================================================================
@@ -263,6 +263,8 @@ type ExportStyle = {
   titleLineHeight: number; // 3段（場所/山名/標高）の行間（倍率。1=標準）
   titlePos: { u: number; v: number };
   titleWeight: FontWeightLevel;
+  titleTagline: string; // 題字の下に添える一言（空=非表示）
+  titleAlign: "center" | "left"; // 揃え。left は titlePos を左端アンカーとして描く
   roleFonts: RoleFonts;
   roleWeights: RoleWeights;
   frameMargin: { t: number; r: number; b: number; l: number };
@@ -270,8 +272,28 @@ type ExportStyle = {
   frameMarginAuto: boolean;
   cropInset: { l: number; t: number; r: number; b: number };
   frameFade: number;
+  // イベントフレーム（山の日など記念日向けの見出しブロック）。
+  // editorial=日付＋大見出しを上部いっぱいに / fieldnote=見出し＋日付＋情報リスト /
+  // minimal=隅に日付と名前を小さく。文言はすべて自由編集できる（空=その行は非表示）。
+  eventOn: boolean;
+  eventVariant: EventVariant;
+  eventColor: string;
+  eventShadow: boolean;
+  eventFont: FontPairId;
+  eventScale: number;
+  eventPos: { u: number; v: number };
+  eventTitle: string; // 大見出し（例: MOUNTAIN DAY。改行可）
+  eventJa: string; // 和文の名前（例: 山の日。minimal で使用）
+  eventDate: string; // 日付（例: 08.11.2026。改行可）
+  eventInfoName: string; // fieldnote: 山名の行
+  eventInfoElev: string; // fieldnote: 標高の行
+  eventInfoCoords: string; // fieldnote: 座標の行（改行可）
 };
-type ExportTemplate = { id: string; name: string; sub: string; hint: string; style: ExportStyle };
+type EventVariant = "editorial" | "fieldnote" | "minimal";
+// テンプレ適用時に日付プレフィル内の {year} を今の年へ置き換える。
+const fillYear = (s: string): string => s.replace(/\{year\}/g, String(new Date().getFullYear()));
+// mountainOnly=山モード専用（花火モードのテーマ一覧には出さない）。
+type ExportTemplate = { id: string; name: string; sub: string; hint: string; style: ExportStyle; mountainOnly?: boolean };
 
 const GOLD = "#d6b46a";
 const NO_MARGIN = { t: 0, r: 0, b: 0, l: 0 };
@@ -323,6 +345,8 @@ const BASE_STYLE: ExportStyle = {
   titleLineHeight: 1,
   titlePos: { u: 0.5, v: 0.44 },
   titleWeight: "bold",
+  titleTagline: "",
+  titleAlign: "center",
   roleFonts: DEFAULT_ROLE_FONTS,
   roleWeights: DEFAULT_ROLE_WEIGHTS,
   frameMargin: NO_MARGIN,
@@ -330,6 +354,19 @@ const BASE_STYLE: ExportStyle = {
   frameMarginAuto: false,
   cropInset: NO_CROP,
   frameFade: 0,
+  eventOn: false,
+  eventVariant: "editorial",
+  eventColor: "#ffffff",
+  eventShadow: true,
+  eventFont: "modernGothic",
+  eventScale: 1,
+  eventPos: { u: 0.045, v: 0.05 },
+  eventTitle: "",
+  eventJa: "",
+  eventDate: "",
+  eventInfoName: "",
+  eventInfoElev: "",
+  eventInfoCoords: "",
 };
 // テンプレートは「図(zu)」=3Dミニマップ入りを除いた5種（栞・双は「語」に統合）。
 // name は漢字のままUI言語によらず不変（山名同様、テーマ名は翻訳しない）。
@@ -450,6 +487,71 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
       frameFade: 0.26,
     },
   },
+  // --- 山の日（8/11）記念テンプレ3種。イベントフレーム（eventOn）を使う --- //
+  {
+    id: "hare",
+    name: "祝",
+    sub: "studio.theme.hare.sub",
+    hint: "studio.theme.hare.hint",
+    mountainOnly: true,
+    style: {
+      ...BASE_STYLE,
+      bakeLabels: false,
+      titleOn: true,
+      titleLang: "ja",
+      titleShowOver: false,
+      titleShowNum: false,
+      titleScale: 1.05,
+      titleWeight: "light",
+      titleFont: "mincho",
+      titleLetterSpace: 3,
+      // 左端は editorial の日付列（eventPos.u=0.04）と揃える。
+      titlePos: { u: 0.04, v: 0.34 },
+      titleTagline: "A day to celebrate the mountains.",
+      titleAlign: "left",
+      eventOn: true,
+      eventVariant: "editorial",
+      eventFont: "modernGothic",
+      eventTitle: "MOUNTAIN\nDAY",
+      eventDate: "08.11\n{year}",
+      eventPos: { u: 0.04, v: 0.055 },
+    },
+  },
+  {
+    id: "roku",
+    name: "録",
+    sub: "studio.theme.roku.sub",
+    hint: "studio.theme.roku.hint",
+    mountainOnly: true,
+    style: {
+      ...BASE_STYLE,
+      bakeLabels: false,
+      eventOn: true,
+      eventVariant: "fieldnote",
+      eventFont: "modernGothic",
+      eventTitle: "MOUNTAIN DAY",
+      eventDate: "08.11.{year}",
+      eventPos: { u: 0.05, v: 0.07 },
+    },
+  },
+  {
+    id: "shizu",
+    name: "静",
+    sub: "studio.theme.shizu.sub",
+    hint: "studio.theme.shizu.hint",
+    mountainOnly: true,
+    style: {
+      ...BASE_STYLE,
+      bakeLabels: false,
+      eventOn: true,
+      eventVariant: "minimal",
+      eventFont: "mincho",
+      eventTitle: "Mountain Day",
+      eventJa: "山の日",
+      eventDate: "08.11",
+      eventPos: { u: 0.05, v: 0.07 },
+    },
+  },
 ];
 
 // テンプレを写真の向きに合わせて回す（横長基準。縦長は辺を入れ替える）。
@@ -457,11 +559,20 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
 type TplItem = { id: string; name: string; sub: string; hint: string; tpl: ExportTemplate | null };
 // プレビュー画像のキャッシュバスター。同名のまま画像を差し替えたら数字を上げること
 // （public/ 配下はハッシュ付与されず、GitHub Pages 等でブラウザキャッシュが残るため）。
-const TPL_PREVIEW_VER = "?v=4";
+const TPL_PREVIEW_VER = "?v=7";
 const TPL_ITEMS: TplItem[] = [
   ...EXPORT_TEMPLATES.map((t) => ({ id: t.id, name: t.name, sub: t.sub, hint: t.hint, tpl: t as ExportTemplate | null })),
   { id: "custom", name: "素", sub: "studio.theme.custom.sub", hint: "studio.theme.custom.hint", tpl: null },
 ];
+
+// イベントフレーム（fieldnote）の行アイコン。24×24のSVGパス（| 区切りで複数パス）。
+// DOMプレビューとCanvas焼き込み（Path2D）で同じパスを使い、見た目を一致させる。
+const EVENT_ICONS: Record<"mountain" | "elev" | "pin", string> = {
+  mountain: "M2.5 17.5 L9 8 L12.5 12.5 L15.5 9 L21.5 17.5 Z",
+  elev: "M12 5 L20 18 H4 Z",
+  pin: "M12 21 C12 21 5.5 14.5 5.5 9.5 C5.5 5.9 8.4 3 12 3 C15.6 3 18.5 5.9 18.5 9.5 C18.5 14.5 12 21 12 21 Z|M12 7.3 A2.2 2.2 0 1 0 12 11.7 A2.2 2.2 0 1 0 12 7.3 Z",
+};
+const EVENT_ICON_KEYS = ["mountain", "elev", "pin"] as const;
 
 // スマホ判定（テーマ選択をスワイプ式に切り替える）。
 function useIsNarrow(): boolean {
@@ -505,20 +616,21 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
 // タブの役割分担: 「余白」(frame) は空・間などポスター的な見た目づくり（余白・切り抜き・
 // ふち）、「記録」(note) は下の帯に載せる情報（撮影情報や山行記録）。どちらも余白を使うが
 // 前者は「形の自由度」、後者は「内容」を編集する。
-type PanelTab = "label" | "caption" | "title" | "frame" | "note";
+type PanelTab = "label" | "caption" | "title" | "event" | "frame" | "note";
 // 「記録」はまだ本番未公開のフィーチャーフラグ付き。コード自体は本番にも入るが、
 // ビルド時に VITE_FEATURE_NOTE=1 を渡したとき（と開発サーバー）だけタブを見せる。
 // OFF のとき exifOn は常に false のままなので、書き出し・保存への影響もない。
 const NOTE_ENABLED = import.meta.env.VITE_FEATURE_NOTE === "1" || import.meta.env.DEV;
 const PANEL_TABS: PanelTab[] = NOTE_ENABLED
-  ? ["label", "caption", "title", "frame", "note"]
-  : ["label", "caption", "title", "frame"];
+  ? ["label", "caption", "title", "event", "frame", "note"]
+  : ["label", "caption", "title", "event", "frame"];
 // テンプレが実際に使う機能からタブを導出する（シンプルモードの表示対象）。
 const templateTabs = (s: ExportStyle): PanelTab[] => {
   const tabs: PanelTab[] = [];
   if (s.bakeLabels) tabs.push("label");
   if (s.captionLang !== "none") tabs.push("caption");
   if (s.titleOn) tabs.push("title");
+  if (s.eventOn) tabs.push("event");
   const m = s.frameMargin;
   const c = s.cropInset;
   if (m.t > 0 || m.r > 0 || m.b > 0 || m.l > 0 || s.frameFade > 0 || c.l > 0 || c.t > 0 || c.r > 0 || c.b > 0)
@@ -653,7 +765,39 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [titleLetterSpace, setTitleLetterSpace] = useState(initStyle?.titleLetterSpace ?? 1);
   const [titleLineHeight, setTitleLineHeight] = useState(initStyle?.titleLineHeight ?? 1);
   const [titlePos, setTitlePos] = useState(initStyle?.titlePos ?? ({ u: 0.5, v: 0.44 }));
+  const [titleTagline, setTitleTagline] = useState(initStyle?.titleTagline ?? "");
+  const [titleAlign, setTitleAlign] = useState<"center" | "left">(initStyle?.titleAlign ?? "center");
   const titleDragRef = useRef<{ offU: number; offV: number; w: number; h: number } | null>(null);
+
+  // --- イベントフレーム（山の日など） --- //
+  const [eventOn, setEventOn] = useState(initStyle?.eventOn ?? false);
+  const [eventVariant, setEventVariant] = useState<EventVariant>(initStyle?.eventVariant ?? "editorial");
+  const [eventColor, setEventColor] = useState(initStyle?.eventColor ?? "#ffffff");
+  const [eventShadow, setEventShadow] = useState(initStyle?.eventShadow ?? true);
+  const [eventFont, setEventFont] = useState<FontPairId>(initStyle?.eventFont ?? "modernGothic");
+  const [eventScale, setEventScale] = useState(initStyle?.eventScale ?? 1);
+  const [eventPos, setEventPos] = useState(initStyle?.eventPos ?? ({ u: 0.045, v: 0.05 }));
+  const [eventTitle, setEventTitle] = useState(initStyle?.eventTitle ?? "");
+  const [eventJa, setEventJa] = useState(initStyle?.eventJa ?? "");
+  const [eventDate, setEventDate] = useState(initStyle?.eventDate ?? "");
+  const [eventInfoName, setEventInfoName] = useState(initStyle?.eventInfoName ?? "");
+  const [eventInfoElev, setEventInfoElev] = useState(initStyle?.eventInfoElev ?? "");
+  const [eventInfoCoords, setEventInfoCoords] = useState(initStyle?.eventInfoCoords ?? "");
+  const eventDragRef = useRef<{ offU: number; offV: number } | null>(null);
+  // 写真の EXIF から GPS 座標（度分秒テキスト）を読んでおく。fieldnote の座標行の
+  // プレフィルに使う（手で入力済み・編集済みの欄は上書きしない）。
+  const gpsTextRef = useRef<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    readGpsText(photoUrl).then((gps) => {
+      if (!live || !gps) return;
+      gpsTextRef.current = gps;
+      setEventInfoCoords((v) => v || gps);
+    });
+    return () => {
+      live = false;
+    };
+  }, [photoUrl]);
 
   // --- フォント（役割ごと） --- //
   const [roleFonts, setRoleFonts] = useState<RoleFonts>(initStyle?.roleFonts ?? DEFAULT_ROLE_FONTS);
@@ -729,9 +873,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [panelOpen, setPanelOpen] = useState(true);
   // 操作パネルのタブ（縦一列の設定を4分類に整理）。復元時はそのスタイルが使う先頭タブ。
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
+  // このモードで見せるテーマ（山モード専用テンプレは花火モードの一覧から外す）。
+  // モードは画面に入る前に確定しているため、レンダー中に固定値として参照してよい。
+  const tplItems = TPL_ITEMS.filter((x) => !(x.tpl?.mountainOnly && getAppMode() === "hanabi"));
   // テーマ選択カルーセルの現在位置（スマホ=スワイプ / PC=カバーフロー共通）。
   const [tplIdx, setTplIdx] = useState(() => {
-    const i = TPL_ITEMS.findIndex((x) => x.id === activeTemplateId);
+    const i = tplItems.findIndex((x) => x.id === activeTemplateId);
     return i >= 0 ? i : 0;
   });
   const tplSwipeRef = useRef<HTMLDivElement | null>(null);
@@ -764,7 +911,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const labelResizeRef = useRef<{ cu: number } | null>(null);
   // 題字のリサイズ（左右の丸）。文字サイズは変えず、折り返し幅（titleW）を変更する。
   const titleResizeRef = useRef<{ cu: number } | null>(null);
-  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" | "titleResize" } | null>(null);
+  const arDragRef = useRef<{ i: number; kind: "dot" | "label" | "labelAnchor" | "caption" | "capResize" | "capSplit" | "title" | "labelResize" | "titleResize" | "event" } | null>(null);
 
   // 選択中の長さに応じた解説本文（短めが無ければ長めにフォールバック）。
   const descJa = (lb: { description?: string; descriptionShort?: string }) =>
@@ -1617,10 +1764,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
         }
         const mainLineH = Math.round(mainFs * 1.02); // プレビュー .ar-title-main の line-height と一致
         const mainBlockH = mainFs + (mainLines.length - 1) * mainLineH;
-        const totalH = (tp.over ? overFs + overGap : 0) + mainBlockH + (tp.num ? numGap + numFs : 0);
+        // サブテキスト（題字の下の一言。空=なし）。
+        const tagLines = titleTagline.split("\n").map((x) => x.trim()).filter(Boolean);
+        const tagFs = Math.max(1, Math.round(mainFs * 0.2 * titleSideScale));
+        const tagGap = Math.round(mainFs * 0.4 * titleLineHeight);
+        const tagLineH = Math.round(tagFs * 1.4);
+        const tagBlockH = tagLines.length ? tagGap + tagFs + tagLineH * (tagLines.length - 1) : 0;
+        const totalH = (tp.over ? overFs + overGap : 0) + mainBlockH + (tp.num ? numGap + numFs : 0) + tagBlockH;
         let y = cy - totalH / 2;
         ctx.save();
-        ctx.textAlign = "center";
+        // 左揃え（titleAlign=left）では titlePos を左端アンカーとして各行を左詰めに描く。
+        ctx.textAlign = titleAlign === "left" ? "left" : "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = titleColor;
         if (titleShadow) {
@@ -1645,10 +1799,141 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           ctx.font = `${fwTitleSub} ${numFs}px ${ffTitle}`;
           setLS(numFs * 0.3 * titleLetterSpace);
           ctx.fillText(tp.num, cx, y);
+          y += numFs;
+        }
+        if (tagLines.length) {
+          y += tagGap;
+          ctx.font = `${fwTitleSub} ${tagFs}px ${ffTitle}`;
+          setLS(tagFs * 0.12);
+          tagLines.forEach((ln, li) => ctx.fillText(ln, cx, y + li * tagLineH));
         }
         setLS(0);
         ctx.restore();
       }
+    }
+    // イベントフレーム（山の日など）。プレビュー（.ar-event）と同じ寸法・配置で描く。
+    if (eventOn) {
+      const pE = FONT_PAIRS[eventFont];
+      const evLoads: Promise<unknown>[] = [];
+      for (const w of [400, 500, 700]) {
+        evLoads.push(document.fonts.load(`${w} 16px "${pE.jp}"`).catch(() => {}));
+        evLoads.push(document.fonts.load(`${w} 16px "${pE.en}"`).catch(() => {}));
+      }
+      await Promise.all(evLoads);
+      const ffEvent = roleFontStack(eventFont);
+      const es = eventScale;
+      const ex = pfx(eventPos.u);
+      const ey = pfy(eventPos.v);
+      const lines = (v: string) => v.split("\n").map((x) => x.trim()).filter(Boolean);
+      ctx.save();
+      ctx.fillStyle = eventColor;
+      ctx.strokeStyle = eventColor;
+      if (eventShadow) {
+        ctx.shadowColor = contrastShadow(eventColor);
+        ctx.shadowBlur = Math.round(L * 0.004);
+        ctx.shadowOffsetY = Math.max(1, Math.round(L * 0.001));
+      }
+      ctx.textBaseline = "top";
+      ctx.textAlign = "left";
+      const drawIcon = (paths: string, x: number, y: number, size: number) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(size / 24, size / 24);
+        ctx.lineWidth = 1.7;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        for (const p of paths.split("|")) ctx.stroke(new Path2D(p));
+        ctx.restore();
+      };
+      const rule = (x: number, y: number, w: number, h: number) => ctx.fillRect(x, y, w, Math.max(1, h));
+      if (eventVariant === "editorial") {
+        // 上部いっぱいの帯: 左に日付＋下線、右に大見出し（右揃え）。
+        const bandW = Math.round(OW * 0.92);
+        const bx = Math.min(Math.max(0, Math.round(ex)), Math.max(0, OW - bandW));
+        const by = Math.round(ey);
+        const dFs = Math.round(L * 0.023 * es);
+        const dLineH = Math.round(dFs * 1.7);
+        const dl = lines(eventDate);
+        ctx.font = `500 ${dFs}px ${ffEvent}`;
+        setLS(dFs * 0.32);
+        dl.forEach((ln, i) => ctx.fillText(ln, bx, by + dFs * 0.35 + i * dLineH));
+        if (dl.length) rule(bx, by + dFs * 0.35 + (dl.length - 1) * dLineH + dFs + dFs * 0.7, dFs * 3.2, L * 0.001);
+        // 大見出しは日付より一回り大きい程度（参照デザインに合わせて控えめに）。
+        const tFs = Math.round(L * 0.028 * es);
+        const tLineH = Math.round(tFs * 1.45);
+        const tls = lines(eventTitle);
+        ctx.font = `500 ${tFs}px ${ffEvent}`;
+        setLS(tFs * 0.28);
+        ctx.textAlign = "right";
+        // 右揃えは末尾の字間ぶん左へ寄るので、その分だけ右へ戻して端を揃える。
+        tls.forEach((ln, i) => ctx.fillText(ln, bx + bandW + tFs * 0.28, by + tFs * 0.22 + i * tLineH));
+        ctx.textAlign = "left";
+        // 見出しの下線（右端揃え。日付側と同じ長さ・太さ）。
+        if (tls.length) rule(bx + bandW - tFs * 3.2, by + tls.length * tLineH + tFs * 0.35, tFs * 3.2, L * 0.001);
+      } else if (eventVariant === "fieldnote") {
+        // 見出し＋日付＋情報リスト（アイコン付き）。
+        const x = Math.round(ex);
+        const hFs = Math.round(L * 0.042 * es);
+        const hLineH = Math.round(hFs * 1.2);
+        const hls = lines(eventTitle);
+        ctx.font = `700 ${hFs}px ${ffEvent}`;
+        setLS(hFs * 0.04);
+        hls.forEach((ln, i) => ctx.fillText(ln, x, Math.round(ey) + hFs * 0.1 + i * hLineH));
+        let yy = Math.round(ey) + hFs * 0.1 + (hls.length ? (hls.length - 1) * hLineH + hFs : 0);
+        if (eventDate.trim()) {
+          const dFs = Math.round(L * 0.019 * es);
+          yy += Math.round(hFs * 0.45);
+          ctx.font = `500 ${dFs}px ${ffEvent}`;
+          setLS(dFs * 0.28);
+          ctx.fillText(lines(eventDate).join(" "), x, yy);
+          yy += dFs;
+        }
+        const rFs = Math.round(L * 0.0165 * es);
+        const rLineH = Math.round(rFs * 1.45);
+        const icon = Math.round(rFs * 1.35);
+        const rowTexts = { mountain: eventInfoName, elev: eventInfoElev, pin: eventInfoCoords } as const;
+        const rows = EVENT_ICON_KEYS.filter((k) => rowTexts[k].trim());
+        yy += Math.round(hFs * 0.8);
+        for (const k of rows) {
+          const rls = lines(rowTexts[k]);
+          // アイコンは行ブロック全体（複数行の座標など）の縦中央（プレビューの align-items: center と一致）。
+          drawIcon(EVENT_ICONS[k], x, yy + (rls.length * rLineH - icon) / 2, icon);
+          ctx.font = `500 ${rFs}px ${ffEvent}`;
+          setLS(rFs * 0.06);
+          // 行の描画位置はプレビュー（line-height 1.45 の半レディング 0.22em）に合わせる。
+          rls.forEach((ln, i) => ctx.fillText(ln, x + icon + rFs * 0.75, yy + rFs * 0.22 + i * rLineH));
+          yy += rls.length * rLineH + Math.round(rFs * 1.6);
+        }
+      } else {
+        // minimal: 日付・和文名・欧文名を小さく縦に積み、細い下線で締める。
+        const x = Math.round(ex);
+        let yy = Math.round(ey);
+        const dFs = Math.round(L * 0.03 * es);
+        if (eventDate.trim()) {
+          ctx.font = `400 ${dFs}px ${ffEvent}`;
+          setLS(dFs * 0.28);
+          ctx.fillText(lines(eventDate).join(" "), x, yy);
+          yy += dFs + Math.round(dFs * 0.75);
+        }
+        if (eventJa.trim()) {
+          const jFs = Math.round(L * 0.024 * es);
+          ctx.font = `500 ${jFs}px ${ffEvent}`;
+          setLS(jFs * 0.32);
+          ctx.fillText(eventJa.trim(), x, yy);
+          yy += jFs + Math.round(jFs * 0.7);
+        }
+        if (eventTitle.trim()) {
+          const eFs = Math.round(L * 0.015 * es);
+          ctx.font = `400 ${eFs}px ${ffEvent}`;
+          setLS(eFs * 0.14);
+          ctx.fillText(eventTitle.trim(), x, yy);
+          yy += eFs;
+        }
+        yy += Math.round(dFs * 1.0);
+        rule(x, yy, dFs * 1.6, L * 0.0008);
+      }
+      setLS(0);
+      ctx.restore();
     }
     // 記録の帯（外側フレーム下部の中央に2行。camera=Shot on 表記 / free=自由入力）。
     if (exifOn && nBand > 0) {
@@ -1790,6 +2075,32 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setTitleLetterSpace(s.titleLetterSpace);
     setTitleLineHeight(s.titleLineHeight);
     setTitlePos(s.titlePos);
+    setTitleTagline(s.titleTagline);
+    setTitleAlign(s.titleAlign);
+    setEventOn(s.eventOn);
+    setEventVariant(s.eventVariant);
+    setEventColor(s.eventColor);
+    setEventShadow(s.eventShadow);
+    setEventFont(s.eventFont);
+    setEventScale(s.eventScale);
+    setEventPos(s.eventPos);
+    setEventTitle(fillYear(s.eventTitle));
+    setEventJa(s.eventJa);
+    setEventDate(fillYear(s.eventDate));
+    // fieldnote は「取り上げる山」と写真のGPSから情報行をプレフィルする。
+    if (s.eventOn && s.eventVariant === "fieldnote") {
+      const it = arLabels[captionIdx];
+      const ja = it ? oneLineName(it.name) : "";
+      const en = it ? oneLineName(it.nameEn || "") : "";
+      setEventInfoName(en && en !== ja ? `${en}（${ja}）` : ja);
+      setEventInfoElev(it ? elevDisplay(it) : "");
+      // 座標は「取り上げる山」の山頂座標（辞書由来）を優先し、無ければ写真のGPS。
+      setEventInfoCoords(it?.lat != null && it?.lon != null ? gpsToText(it.lat, it.lon) : gpsTextRef.current ?? "");
+    } else {
+      setEventInfoName(s.eventInfoName);
+      setEventInfoElev(s.eventInfoElev);
+      setEventInfoCoords(s.eventInfoCoords);
+    }
     setRoleFonts(s.roleFonts);
     setRoleWeights(s.roleWeights);
     setFrameMargin(s.frameMargin);
@@ -1830,13 +2141,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const slide = el?.firstElementChild as HTMLElement | null;
     if (!el || !slide) return;
     const w = slide.offsetWidth + 2; // 2 = gap
-    setTplIdx(Math.max(0, Math.min(TPL_ITEMS.length - 1, Math.round(el.scrollLeft / w))));
+    setTplIdx(Math.max(0, Math.min(tplItems.length - 1, Math.round(el.scrollLeft / w))));
   };
 
   // PCカバーフローのスワイプ。ドラッグ中は100pxごとに1枚送り、短いフリックでも1枚動かす。
   // 8px以上動いたらポインタをキャプチャ（＝カードの click は発火しなくなる）。
   const stepTpl = (delta: number) =>
-    setTplIdx((i) => Math.max(0, Math.min(TPL_ITEMS.length - 1, i + delta)));
+    setTplIdx((i) => Math.max(0, Math.min(tplItems.length - 1, i + delta)));
   const onFlowPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     flowDragRef.current = { id: e.pointerId, startX: e.clientX, lastX: e.clientX, steps: 0, moved: false };
   };
@@ -1879,8 +2190,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     captionLang, captionLayout, captionTitleMode, captionLength, captionBg, captionPanelColor, captionPanelOpacity, captionColor, captionShadow,
     captionTitleScale, captionBodyScale, captionLetterSpace, captionLineHeight, captionPos, captionW, captionSplit,
     tagColor, tagColorTarget, capShowElev, capShowLoc, capSelectedTags,
-    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleSideScale, titleW, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight,
+    titleOn, titleLang, titleShowOver, titleShowNum, titleScale, titleSideScale, titleW, titleColor, titleShadow, titleFont, titleLetterSpace, titleLineHeight, titlePos, titleWeight, titleTagline, titleAlign,
     roleFonts, roleWeights, frameMargin, frameMarginColor, frameMarginAuto, cropInset, frameFade,
+    eventOn, eventVariant, eventColor, eventShadow, eventFont, eventScale, eventPos,
+    eventTitle, eventJa, eventDate, eventInfoName, eventInfoElev, eventInfoCoords,
   });
 
   // 一覧へ渡す編集状態。一度も編集に入っていなければ null。
@@ -2010,6 +2323,20 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     }
     arDragRef.current = { i: -1, kind: "title" };
   };
+  const onEventDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    const stage = arFrameRef.current;
+    if (stage) {
+      const r = stage.getBoundingClientRect();
+      const pu = (e.clientX - r.left) / r.width;
+      const pv = (e.clientY - r.top) / r.height;
+      const ef = photoToFrame(eventPos.u, eventPos.v);
+      eventDragRef.current = { offU: pu - ef.u, offV: pv - ef.v };
+    }
+    arDragRef.current = { i: -1, kind: "event" };
+  };
   const onCapResizeDown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -2089,6 +2416,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       const fV = Math.min(1, Math.max(0, sy.pos));
       setSnapGuide({ x: sx.line, y: sy.line });
       setTitlePos(frameToPhoto(fU, fV));
+      return;
+    }
+    if (d.kind === "event") {
+      const off = eventDragRef.current ?? { offU: 0, offV: 0 };
+      // 左上アンカー。端でスナップして四隅に置きやすくする。
+      const sx = snapAxis(u - off.offU, [0]);
+      const sy = snapAxis(v - off.offV, [0]);
+      const fU = Math.min(0.92, Math.max(0, sx.pos));
+      const fV = Math.min(0.92, Math.max(0, sy.pos));
+      setSnapGuide({ x: fU === sx.pos ? sx.line : null, y: fV === sy.pos ? sy.line : null });
+      setEventPos(frameToPhoto(fU, fV));
       return;
     }
     if (d.kind === "titleResize") {
@@ -2172,6 +2510,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     label: bakeLabels,
     caption: captionLang !== "none",
     title: titleOn,
+    event: eventOn,
     frame: frameActive,
     note: exifOn,
   };
@@ -2276,7 +2615,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
               /* スマホ: 画像だけをほぼ全幅で横スワイプ。説明と決定ボタンは下部で共有 */
               <>
                 <div className="tpl-swipe" ref={tplSwipeRef} onScroll={onTplScroll}>
-                  {TPL_ITEMS.map((it, i) => (
+                  {tplItems.map((it, i) => (
                     <div
                       key={it.id}
                       className="tpl-swipe-slide"
@@ -2297,19 +2636,19 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   ))}
                 </div>
                 <div className="tpl-dots" aria-hidden="true">
-                  {TPL_ITEMS.map((it, i) => (
+                  {tplItems.map((it, i) => (
                     <span key={it.id} className={i === tplIdx ? "is-on" : ""} />
                   ))}
                 </div>
                 <div className="tpl-swipe-info">
                   <div className="tpl-slide-body">
-                    <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
+                    <span className="tpl-kanji" aria-hidden="true">{tplItems[tplIdx].name}</span>
                     <div className="tpl-slide-text">
-                      <b>{t(TPL_ITEMS[tplIdx].sub)}</b>
-                      <p>{t(TPL_ITEMS[tplIdx].hint)}</p>
+                      <b>{t(tplItems[tplIdx].sub)}</b>
+                      <p>{t(tplItems[tplIdx].hint)}</p>
                     </div>
                   </div>
-                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
+                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(tplItems[tplIdx])}>
                     {t("studio.theme.chooseThis")}
                   </button>
                 </div>
@@ -2334,7 +2673,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     onPointerUp={onFlowPointerUp}
                     onPointerCancel={() => (flowDragRef.current = null)}
                   >
-                    {TPL_ITEMS.map((it, i) => {
+                    {tplItems.map((it, i) => {
                       const off = i - tplIdx;
                       const abs = Math.abs(off);
                       return (
@@ -2367,8 +2706,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   <button
                     type="button"
                     className="tpl-flow-nav"
-                    onClick={() => setTplIdx((i) => Math.min(TPL_ITEMS.length - 1, i + 1))}
-                    disabled={tplIdx === TPL_ITEMS.length - 1}
+                    onClick={() => setTplIdx((i) => Math.min(tplItems.length - 1, i + 1))}
+                    disabled={tplIdx === tplItems.length - 1}
                     aria-label={t("studio.theme.next")}
                   >
                     ›
@@ -2376,13 +2715,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 </div>
                 <div className="tpl-flow-info">
                   <div className="tpl-slide-body">
-                    <span className="tpl-kanji" aria-hidden="true">{TPL_ITEMS[tplIdx].name}</span>
+                    <span className="tpl-kanji" aria-hidden="true">{tplItems[tplIdx].name}</span>
                     <div className="tpl-slide-text">
-                      <b>{t(TPL_ITEMS[tplIdx].sub)}</b>
-                      <p>{t(TPL_ITEMS[tplIdx].hint)}</p>
+                      <b>{t(tplItems[tplIdx].sub)}</b>
+                      <p>{t(tplItems[tplIdx].hint)}</p>
                     </div>
                   </div>
-                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(TPL_ITEMS[tplIdx])}>
+                  <button type="button" className="ar-btn-main tpl-choose" onClick={() => chooseTpl(tplItems[tplIdx])}>
                     {t("studio.theme.chooseThis")}
                   </button>
                 </div>
@@ -2722,7 +3061,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 const tf = photoToFrame(titlePos.u, titlePos.v);
                 return (
                   <div
-                    className="ar-title"
+                    className={`ar-title${titleAlign === "left" ? " is-left" : ""}`}
                     style={
                       {
                         left: `${tf.u * 100}%`,
@@ -2747,6 +3086,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     {tp.over && <span className="ar-title-over">{tp.over}</span>}
                     <span className="ar-title-main">{tp.main}</span>
                     {tp.num && <span className="ar-title-num">{tp.num}</span>}
+                    {titleTagline.trim() && <span className="ar-title-tag">{titleTagline}</span>}
                     {(["l", "r"] as const).map((s2) => (
                       <span
                         key={s2}
@@ -2758,6 +3098,79 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         onPointerCancel={onEditUp}
                       />
                     ))}
+                  </div>
+                );
+              })()}
+              {/* イベントフレーム（山の日など。焼き込みと同じ寸法・配置） */}
+              {eventOn && (() => {
+                const ef = photoToFrame(eventPos.u, eventPos.v);
+                const lines = (v: string) => v.split("\n").map((x) => x.trim()).filter(Boolean);
+                const iconSvg = (k: (typeof EVENT_ICON_KEYS)[number]) => (
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    {EVENT_ICONS[k].split("|").map((p, i) => (
+                      <path key={i} d={p} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round" />
+                    ))}
+                  </svg>
+                );
+                const rowTexts = { mountain: eventInfoName, elev: eventInfoElev, pin: eventInfoCoords } as const;
+                return (
+                  <div
+                    className={`ar-event is-${eventVariant}`}
+                    style={
+                      {
+                        left: `${ef.u * 100}%`,
+                        top: `${ef.v * 100}%`,
+                        color: eventColor,
+                        "--event-ff": roleFontStack(eventFont),
+                        "--event-fs": eventScale,
+                        "--event-sh": eventShadow ? contrastShadow(eventColor) : "transparent",
+                      } as React.CSSProperties
+                    }
+                    onPointerDown={onEventDown}
+                    onPointerMove={onEditMove}
+                    onPointerUp={onEditUp}
+                    onPointerCancel={onEditUp}
+                  >
+                    {eventVariant === "editorial" ? (
+                      <>
+                        <div className="ar-event-ed-date">
+                          {lines(eventDate).map((ln, i) => (
+                            <span key={i}>{ln}</span>
+                          ))}
+                          {lines(eventDate).length > 0 && <span className="ar-event-rule" />}
+                        </div>
+                        <div className="ar-event-ed-title">
+                          {lines(eventTitle).map((ln, i) => (
+                            <span key={i}>{ln}</span>
+                          ))}
+                          {lines(eventTitle).length > 0 && <span className="ar-event-rule" />}
+                        </div>
+                      </>
+                    ) : eventVariant === "fieldnote" ? (
+                      <>
+                        <div className="ar-event-fn-title">
+                          {lines(eventTitle).map((ln, i) => (
+                            <span key={i}>{ln}</span>
+                          ))}
+                        </div>
+                        {eventDate.trim() && <span className="ar-event-fn-date">{lines(eventDate).join(" ")}</span>}
+                        <div className="ar-event-rows">
+                          {EVENT_ICON_KEYS.filter((k) => rowTexts[k].trim()).map((k) => (
+                            <div key={k} className="ar-event-row">
+                              {iconSvg(k)}
+                              <span>{lines(rowTexts[k]).join("\n")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {eventDate.trim() && <span className="ar-event-min-date">{lines(eventDate).join(" ")}</span>}
+                        {eventJa.trim() && <span className="ar-event-min-ja">{eventJa.trim()}</span>}
+                        {eventTitle.trim() && <span className="ar-event-min-en">{eventTitle.trim()}</span>}
+                        <span className="ar-event-rule ar-event-min-rule" />
+                      </>
+                    )}
                   </div>
                 );
               })()}
@@ -2892,6 +3305,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                     ["label", t("studio.tabs.label")],
                     ["caption", t("studio.tabs.caption")],
                     ["title", t("studio.tabs.title")],
+                    ["event", t("studio.tabs.event")],
                     ["frame", t("studio.tabs.frame")],
                     ["note", t("studio.tabs.note")],
                   ] as [PanelTab, string][]
@@ -3207,6 +3621,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           ))}
                         </div>
                       </div>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.title.align")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.title.align")}>
+                          {([[t("studio.title.alignCenter"), "center"], [t("studio.title.alignLeft"), "left"]] as [string, "center" | "left"][]).map(([lab, v]) => (
+                            <button key={v} className={titleAlign === v ? "is-active" : ""} onClick={() => setTitleAlign(v)}>{lab}</button>
+                          ))}
+                        </div>
+                      </div>
                       <label className="switch-row">
                         <span>{t("studio.title.showSub")}</span>
                         <input type="checkbox" className="switch" checked={titleShowOver} onChange={(e) => setTitleShowOver(e.target.checked)} />
@@ -3256,6 +3678,142 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span className="ar-fs-val">{Math.round(titleLineHeight * 100)}%</span>
                       </div>
                       <FsSlider min={0.3} max={2.5} step={0.05} value={titleLineHeight} onChange={setTitleLineHeight} ariaLabel={t("studio.title.lineHeightAria")} />
+                      {/* 題字の下に添える一言（例: A day to celebrate the mountains.） */}
+                      <div className="ar-fs-row">
+                        <span>{t("studio.title.tagline")}</span>
+                      </div>
+                      <textarea
+                        className="studio-data-input studio-event-input"
+                        value={titleTagline}
+                        rows={Math.max(1, titleTagline.split("\n").length)}
+                        onChange={(e) => setTitleTagline(e.target.value)}
+                        placeholder={t("studio.title.taglinePlaceholder")}
+                        aria-label={t("studio.title.tagline")}
+                        autoComplete="off"
+                      />
+                    </>
+                  )}
+                </section>
+                )}
+
+                {/* イベントフレーム（山の日など記念日の見出し） */}
+                {panelTab === "event" && (
+                <section className="studio-sec">
+                  <label className="switch-row">
+                    <span>{t("studio.event.enable")}</span>
+                    <input type="checkbox" className="switch" checked={eventOn} onChange={(e) => setEventOn(e.target.checked)} />
+                  </label>
+                  {eventOn && (
+                    <>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.event.variant")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.event.variant")}>
+                          {(["editorial", "fieldnote", "minimal"] as EventVariant[]).map((v) => (
+                            <button key={v} className={eventVariant === v ? "is-active" : ""} onClick={() => setEventVariant(v)}>
+                              {t(`studio.event.variant_${v}`)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.event.date")}</span>
+                        <textarea
+                          className="studio-data-input studio-event-input"
+                          value={eventDate}
+                          rows={Math.max(1, eventDate.split("\n").length)}
+                          onChange={(e) => setEventDate(e.target.value)}
+                          placeholder="08.11"
+                          aria-label={t("studio.event.date")}
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.event.title")}</span>
+                        <textarea
+                          className="studio-data-input studio-event-input"
+                          value={eventTitle}
+                          rows={Math.max(1, eventTitle.split("\n").length)}
+                          onChange={(e) => setEventTitle(e.target.value)}
+                          placeholder="MOUNTAIN DAY"
+                          aria-label={t("studio.event.title")}
+                          autoComplete="off"
+                        />
+                      </div>
+                      {eventVariant === "minimal" && (
+                        <div className="ar-fs-row">
+                          <span>{t("studio.event.ja")}</span>
+                          <input
+                            type="text"
+                            className="studio-data-input studio-event-input"
+                            value={eventJa}
+                            onChange={(e) => setEventJa(e.target.value)}
+                            placeholder="山の日"
+                            aria-label={t("studio.event.ja")}
+                            autoComplete="off"
+                          />
+                        </div>
+                      )}
+                      {eventVariant === "fieldnote" && (
+                        <>
+                          <div className="ar-fs-row">
+                            <span>{t("studio.event.infoName")}</span>
+                            <input
+                              type="text"
+                              className="studio-data-input studio-event-input"
+                              value={eventInfoName}
+                              onChange={(e) => setEventInfoName(e.target.value)}
+                              aria-label={t("studio.event.infoName")}
+                              autoComplete="off"
+                            />
+                          </div>
+                          <div className="ar-fs-row">
+                            <span>{t("studio.event.infoElev")}</span>
+                            <input
+                              type="text"
+                              className="studio-data-input studio-event-input"
+                              value={eventInfoElev}
+                              onChange={(e) => setEventInfoElev(e.target.value)}
+                              aria-label={t("studio.event.infoElev")}
+                              autoComplete="off"
+                            />
+                          </div>
+                          <div className="ar-fs-row">
+                            <span>{t("studio.event.infoCoords")}</span>
+                            <textarea
+                              className="studio-data-input studio-event-input"
+                              value={eventInfoCoords}
+                              rows={Math.max(1, eventInfoCoords.split("\n").length)}
+                              onChange={(e) => setEventInfoCoords(e.target.value)}
+                              aria-label={t("studio.event.infoCoords")}
+                              autoComplete="off"
+                            />
+                          </div>
+                        </>
+                      )}
+                      <p className="studio-hint">{t("studio.event.emptyHint")}</p>
+                      <div className="ar-fs-slider-row">
+                        <span>{t("studio.event.size")}</span>
+                        <span className="ar-fs-val">{Math.round(eventScale * 100)}%</span>
+                      </div>
+                      <FsSlider min={0.5} max={2.0} step={0.05} value={eventScale} onChange={setEventScale} ariaLabel={t("studio.event.size")} />
+                      <div className="ar-fs-row">
+                        <span>{t("studio.event.textColor")}</span>
+                        <input type="color" className="ar-color-input" value={eventColor} onChange={(e) => setEventColor(e.target.value)} aria-label={t("studio.event.textColor")} />
+                      </div>
+                      <label className="switch-row">
+                        <span>{t("studio.event.textShadow")}</span>
+                        <input type="checkbox" className="switch" checked={eventShadow} onChange={(e) => setEventShadow(e.target.checked)} />
+                      </label>
+                      <div className="ar-fs-row">
+                        <span>{t("studio.event.font")}</span>
+                        <div className="ar-font-sel">
+                          <select value={eventFont} onChange={(e) => setEventFont(e.target.value as FontPairId)} aria-label={t("studio.event.font")}>
+                            {FONT_PAIR_IDS.map((id) => (
+                              <option key={id} value={id}>{FONT_PAIRS[id].label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
                     </>
                   )}
                 </section>

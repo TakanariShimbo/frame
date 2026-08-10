@@ -45,7 +45,7 @@ export default function MountainPicker({ photoUrl, photoIndex, photoTotal, onSta
   const isSelected = (id: number) => selected.some((m) => m.id === id);
   const addMountain = (m: MountainHit) => {
     if (!isSelected(m.id))
-      setSelected((p) => [...p, { id: m.id, name: m.name, nameEn: m.nameEn, elevationM: m.elevationM, prefecture: m.prefecture }]);
+      setSelected((p) => [...p, { id: m.id, name: m.name, nameEn: m.nameEn, elevationM: m.elevationM, prefecture: m.prefecture, lat: m.lat, lon: m.lon }]);
   };
   // 自由入力（山小屋・池・地名・通称など）。検索欄の文字列をそのまま名前として追加する。
   const addCustom = () => {

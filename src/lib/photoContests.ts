@@ -102,6 +102,25 @@ export type Sponsor = {
   isPublished: boolean;
 };
 
+// 景品1件。images は1枚以上（複数なら「メイン＋サブ」等の静的レイアウトを画面側で組む）。
+export type Prize = {
+  id: string;
+  order: number;
+  brand: string;
+  name: string;
+  description: string[]; // 段落ごとに配列（1要素＝1段落）
+  images: ContestImage[]; // 1枚以上
+  sourceUrl: string; // 紹介元X投稿URL
+  isPublished: boolean;
+};
+
+export type PrizesSection = {
+  eyebrow: string; // 例 "PRIZES"
+  title: string; // 例 "フォトコンテスト景品"
+  sourceLinkLabel: string; // 例 "VIEW ON X"
+  items: Prize[]; // 公開分のみ・order 昇順
+};
+
 export type AnnouncementContent = {
   id: string;
   slug: string;
@@ -130,6 +149,7 @@ export type AnnouncementContent = {
     steps?: string[];
   };
   sponsors: Sponsor[]; // 公開分のみ・order 昇順
+  prizes: PrizesSection; // 景品（items は公開分のみ・order 昇順）
   seo?: ContestSeo;
 };
 
@@ -462,6 +482,39 @@ function validateAnnouncement(json: unknown, file: string): AnnouncementContent 
     checkOrders(sponsors.filter(isRecord), "sponsors", issues);
   }
 
+  const prizes = json.prizes;
+  if (!isRecord(prizes)) {
+    issues.push("prizes が必要です（景品が無い場合も items: [] で指定してください）");
+  } else {
+    if (!isNonEmptyString(prizes.eyebrow)) issues.push("prizes.eyebrow が必要です");
+    if (!isNonEmptyString(prizes.title)) issues.push("prizes.title が必要です");
+    if (!isNonEmptyString(prizes.sourceLinkLabel)) issues.push("prizes.sourceLinkLabel が必要です");
+    const items = prizes.items;
+    if (!Array.isArray(items)) {
+      issues.push("prizes.items は配列で指定してください（未確定なら []）");
+    } else {
+      items.forEach((it, i) => {
+        const p = `prizes.items[${i}]`;
+        if (!isRecord(it)) {
+          issues.push(`${p} がオブジェクトではありません`);
+          return;
+        }
+        if (!isNonEmptyString(it.id)) issues.push(`${p}.id が必要です`);
+        if (!isNonEmptyString(it.brand)) issues.push(`${p}.brand が必要です`);
+        if (!isNonEmptyString(it.name)) issues.push(`${p}.name が必要です`);
+        if (!isStringArray(it.description) || (it.description as string[]).length === 0)
+          issues.push(`${p}.description は1つ以上の文字列の配列で指定してください`);
+        if (!Array.isArray(it.images) || it.images.length === 0) {
+          issues.push(`${p}.images は1枚以上の配列で指定してください`);
+        } else {
+          it.images.forEach((img, j) => checkImage(img, `${p}.images[${j}]`, issues));
+        }
+        if (!isValidUrl(it.sourceUrl)) issues.push(`${p}.sourceUrl が有効なURLではありません`);
+      });
+      checkOrders(items.filter(isRecord), "prizes.items", issues);
+    }
+  }
+
   if (issues.length > 0) throw new ContentError(file, issues);
 
   const data = json as unknown as AnnouncementContent;
@@ -469,6 +522,10 @@ function validateAnnouncement(json: unknown, file: string): AnnouncementContent 
     ...data,
     isPublished: json.isPublished === true,
     sponsors: (sponsors as Sponsor[]).filter((s) => s.isPublished === true).sort((a, b) => a.order - b.order),
+    prizes: {
+      ...(prizes as PrizesSection),
+      items: (prizes as PrizesSection).items.filter((it) => it.isPublished === true).sort((a, b) => a.order - b.order),
+    },
   };
 }
 

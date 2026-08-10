@@ -84,10 +84,12 @@ export default function PhotoContestArchivePage() {
             <ArchiveItem key={c.year} contest={c} index={i} sectionRef={setSectionRef(i)} />
           ))}
         </div>
-        <p className="pca-scrollcue" aria-hidden>
-          <IconCaret dir="down" size={16} className="pca-scrollcue-icon" />
-          <span className="pca-scrollcue-text">SCROLL</span>
-        </p>
+        {contests.length > 1 && (
+          <p className="pca-scrollcue" aria-hidden>
+            <IconCaret dir="down" size={16} className="pca-scrollcue-icon" />
+            <span className="pca-scrollcue-text">SCROLL</span>
+          </p>
+        )}
       </main>
     </div>
   );
