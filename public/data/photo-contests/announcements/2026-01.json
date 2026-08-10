@@ -109,6 +109,125 @@
       "isPublished": true
     }
   ],
+  "prizes": {
+    "eyebrow": "PRIZES",
+    "title": "フォトコンテスト景品",
+    "sourceLinkLabel": "VIEW ON X",
+    "items": [
+      {
+        "id": "prize-01",
+        "order": 1,
+        "brand": "鎌倉天幕",
+        "name": "TARP 290S",
+        "description": [
+          "加水分解しないシリコン加工の撥水コーティングを施した、超軽量コンパクトギア。ソロキャンプやトレッキング、ツーリングはもちろん、緊急時には保温シートとしても使えます。",
+          "テントをはじめとする高品質なギアを妥協なく作り続ける鎌倉天幕が、山にまつわるイベントであることを汲んで、コンパクトなタープをご用意くださいました。",
+          "※天幕のみの提供となり、ポールは付属しません。"
+        ],
+        "images": [
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-01/01.jpg",
+            "alt": "桜が満開の木の下、車のそばで鎌倉天幕のTARP 290Sを張ったキャンプの様子"
+          },
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-01/02.jpg",
+            "alt": "鎌倉天幕のロゴタグが付いたTARP 290Sの収納袋"
+          }
+        ],
+        "sourceUrl": "https://x.com/r_outdoor_photo/status/2085665083288600750",
+        "isPublished": true
+      },
+      {
+        "id": "prize-02",
+        "order": 2,
+        "brand": "itomici 山と刺繍",
+        "name": "手ぬぐい「白馬岳の代掻き馬」+ ステッカー「山模様のライチョウ（立山）」",
+        "description": [
+          "手ぬぐい「白馬岳の代掻き馬」は、春になると白馬岳に現れる雪形「代掻き馬」のイラストを、晴れた日の空をイメージした明るいブルーで描いたもの。手捺染（てなつせん）で職人が一枚一枚丁寧に仕上げています。",
+          "ステッカー「山模様のライチョウ（立山）」は、立山で見た換羽中のライチョウの模様が雪山に見えたことから、体に立山の稜線を描いた一枚。耐水性で水筒やヘルメットなどにも使えます。",
+          "手ぬぐい＋ステッカーのセットを1名様に、ステッカー2枚セットを1名様にプレゼントします。"
+        ],
+        "images": [
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-02/01.jpg",
+            "alt": "itomiciのライチョウ刺繍ワッペンと「Tateyama × Raicho」ステッカー"
+          },
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-02/02.jpg",
+            "alt": "itomiciの手ぬぐい「白馬岳の代掻き馬」の雪形イラストのクローズアップ"
+          }
+        ],
+        "sourceUrl": "https://x.com/r_outdoor_photo/status/2085665086279213469",
+        "isPublished": true
+      },
+      {
+        "id": "prize-03",
+        "order": 3,
+        "brand": "MOUNTDOOR",
+        "name": "YM Anywhere Poach -TWO- LE（Ultra80TX）",
+        "description": [
+          "本体生地にUltra80TXを使った、重量わずか23gの軽量アウトドアポーチ。",
+          "旅の直前やどこかへ行くときに入れ物が無くて困ることが多く、その都度余った生地や端材でMYOG（自作ギア）として作ってきたポーチ。気づけば作りためたものがどさっと出てきたことをきっかけに、あらためて一つの製品としてかたちにしました。"
+        ],
+        "images": [
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-03/01.jpg",
+            "alt": "mountdoorのYM Anywhere Poach -TWO- LE本体とブランドタグ"
+          },
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-03/02.jpg",
+            "alt": "mountdoorのYM Anywhere Poach -TWO- LEを開いた状態"
+          }
+        ],
+        "sourceUrl": "https://x.com/r_outdoor_photo/status/2085665320744734721",
+        "isPublished": true
+      },
+      {
+        "id": "prize-04",
+        "order": 4,
+        "brand": "PATISSERIE CAFE VIGO",
+        "name": "焼き菓子セット",
+        "description": [
+          "「お菓子の魔法で世界を笑顔に」を理念に掲げる、新潟県長岡市のPatisserie CAFE VIGO。",
+          "人気焼き菓子TERGOなどの詰め合わせに、アウトドアレーベルIn Mt Lifeのオリジナルシェラカップ、そしてヤマフレーム オリジナルデザインクッキーまで焼いていただいた、お菓子屋さんらしいアイデアが詰まった一箱です。"
+        ],
+        "images": [
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-04/01.jpg",
+            "alt": "PATISSERIE CAFE VIGOの焼き菓子とシェラカップの詰め合わせボックス"
+          },
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-04/02.jpg",
+            "alt": "ヤマフレームのロゴがデザインされたオリジナルクッキー"
+          }
+        ],
+        "sourceUrl": "https://x.com/r_outdoor_photo/status/2085665662509453615",
+        "isPublished": true
+      },
+      {
+        "id": "prize-05",
+        "order": 5,
+        "brand": "hike junkies",
+        "name": "nameless bottle",
+        "description": [
+          "hike junkies発足時からの定番アイテム。ボトルの身が細く、ドリンクホルダーやザックの側面に収めやすいのが特徴です。ペットボトルのようなスクエアキャップのほか、スクイズボトルのように飲めるスポーツキャップも付属します。",
+          "今回はマッターホルンと雷鳥の写真をステッカーにして貼ったオリジナルデザインボトルをご用意。マッターホルンボトル×1、雷鳥ボトル×1をプレゼントします。"
+        ],
+        "images": [
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-05/01.jpg",
+            "alt": "マッターホルンの写真をあしらったhike junkiesのnameless bottleを手に持ったところ"
+          },
+          {
+            "src": "/images/photo-contests/2026-01/prizes/prize-05/02.jpg",
+            "alt": "雷鳥の写真をあしらったhike junkiesのnameless bottle"
+          }
+        ],
+        "sourceUrl": "https://x.com/r_outdoor_photo/status/2085666184494780599",
+        "isPublished": true
+      }
+    ]
+  },
   "seo": {
     "title": "ヤマフレームフォトコンテスト 2026 開催のお知らせ | YAMA FRAME",
     "description": "ヤマフレームフォトコンテスト 2026。山を、もっと自分らしく。アプリで出力した山写真の個性を評価するフォトコンテストを開催します。開催期間は2026年8月8日〜8月31日。",

@@ -17,6 +17,11 @@
     "elevation_m": 2026,
     "prefecture": "新潟県",
     "priority": 1000,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "長岡花火",
       "title_en": "Nagaoka Fireworks",
@@ -58,6 +63,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 999,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "復興祈願花火フェニックス",
       "title_en": "Phoenix",
@@ -106,6 +116,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 998,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "正三尺玉",
       "title_en": "Shosanjakudama",
@@ -141,6 +156,15 @@
       },
       {
         "name": "長岡花火財団"
+      },
+      {
+        "name": "平和祭の白菊"
+      },
+      {
+        "name": "前夜祭の白菊"
+      },
+      {
+        "name": "慰霊花火"
       }
     ],
     "latitude": 37.4463,
@@ -148,13 +172,18 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 997,
+    "category": "hanabi",
+    "event_day": "08-01/08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "白菊",
       "title_en": "Shiragiku",
-      "description_ja_long": "白一色で静かに開く慰霊の花火。花火師・嘉瀬誠次氏がシベリア抑留の戦友に捧げたことに始まり、戦災と災害の犠牲者への祈りとして大会の冒頭を飾る。",
-      "description_ja_short": "白一色で開く慰霊の花火。犠牲者への鎮魂を込め、大会の冒頭に静かに打ち上げられる。",
-      "description_en_long": "The Shiragiku is a pure-white memorial shell first fired by pyrotechnician Seiji Kase in mourning for comrades lost in Siberian internment. It now opens the festival as a prayer for all victims of war and disaster.",
-      "description_en_short": "A pure-white memorial shell that opens the festival as a silent prayer for victims of war and disaster.",
+      "description_ja_long": "白一色で静かに開く慰霊の花火。花火師・嘉瀬誠次氏がシベリア抑留の戦友に捧げたことに始まり、平和祭の夜と大花火大会の冒頭を静かに飾る。",
+      "description_ja_short": "白一色で開く慰霊の花火。犠牲者への鎮魂を込め、平和祭の夜と大会の冒頭を飾る。",
+      "description_en_long": "The Shiragiku is a pure-white memorial shell first fired by pyrotechnician Seiji Kase in mourning for comrades lost in Siberian internment. It quietly opens the Peace Festival night and both evenings of the fireworks show.",
+      "description_en_short": "A pure-white memorial shell that quietly opens the Peace Festival night and the fireworks evenings.",
       "tags_ja": [
         "花火",
         "長岡花火",
@@ -187,6 +216,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 996,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "天地人花火",
       "title_en": "Tenchijin Fireworks",
@@ -232,6 +266,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 995,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "米百俵花火・尺玉100連発",
       "title_en": "Kome Hyappyo 100 Shells",
@@ -274,6 +313,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 994,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "ナイアガラ",
       "title_en": "Niagara",
@@ -310,6 +354,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 993,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "ベスビアス超大型スターマイン",
       "title_en": "Vesuvius Starmine",
@@ -346,6 +395,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 992,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": true,
+    "year": null,
     "description": {
       "title_ja": "匠の花火",
       "title_en": "Takumi Fireworks",
@@ -362,6 +416,427 @@
         "Fireworks",
         "Nagaoka",
         "Artisan"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000011,
+    "name": "長岡まつり平和祭",
+    "name_kana": "ながおかまつりへいわさい",
+    "name_en": "Nagaoka Peace Festival",
+    "aliases": [
+      {
+        "name": "前夜祭"
+      },
+      {
+        "name": "長岡まつり前夜祭"
+      },
+      {
+        "name": "平和祭"
+      },
+      {
+        "name": "8月1日"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 991,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通周辺",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "長岡まつり平和祭",
+      "title_en": "Nagaoka Peace Festival",
+      "description_ja_long": "1945年の長岡空襲翌年に始まった復興祭を前身とする、長岡まつり初日の行事。慰霊と感謝、恒久平和への願いを受け継ぎ、大民踊流しや慰霊神輿が大手通を彩る。",
+      "description_ja_short": "慰霊と復興、平和への願いを受け継ぐ長岡まつり初日の行事。8月1日、大手通周辺で開催。",
+      "description_en_long": "The Peace Festival opens the Nagaoka Festival on August 1st. Descended from the recovery festival first held the year after the 1945 air raid, it fills Ote-dori with folk dances, a memorial mikoshi, drums and parades.",
+      "description_en_short": "The Peace Festival opens the Nagaoka Festival on August 1st, carrying prayers for remembrance, recovery and lasting peace.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000012,
+    "name": "大民踊流し",
+    "name_kana": "だいみんようながし",
+    "name_en": "Great Folk Dance Procession",
+    "aliases": [
+      {
+        "name": "民踊流し"
+      },
+      {
+        "name": "民謡流し"
+      },
+      {
+        "name": "長岡甚句"
+      },
+      {
+        "name": "大花火音頭"
+      },
+      {
+        "name": "踊り流し"
+      },
+      {
+        "name": "盆踊り"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 990,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通・すずらん通り",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "大民踊流し",
+      "title_en": "Great Folk Dance Procession",
+      "description_ja_long": "長岡甚句や大花火音頭に合わせ、大勢の踊り手が大手通などを踊り流す平和祭の名物行事。浴衣の列が夏の宵の街をゆっくりと進んでいく。",
+      "description_ja_short": "長岡甚句・大花火音頭に合わせて大手通を踊り流す平和祭の名物行事。",
+      "description_en_long": "The Great Folk Dance Procession is a signature event of the Peace Festival, in which crowds of dancers flow along Ote-dori to the folk tunes of Nagaoka Jinku and the Ohanabi Ondo through the summer evening.",
+      "description_en_short": "Crowds of dancers in yukata flow down Ote-dori to Nagaoka's folk tunes at the Peace Festival.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000013,
+    "name": "柿川灯籠流し",
+    "name_kana": "かきがわとうろうながし",
+    "name_en": "Kakigawa Lantern Floating",
+    "aliases": [
+      {
+        "name": "灯籠流し"
+      },
+      {
+        "name": "柿川"
+      },
+      {
+        "name": "平和の灯籠"
+      },
+      {
+        "name": "一之橋"
+      },
+      {
+        "name": "追廻橋"
+      },
+      {
+        "name": "とうろう流し"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 989,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "柿川（一之橋〜追廻橋）",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "柿川灯籠流し",
+      "title_en": "Kakigawa Lantern Floating",
+      "description_ja_long": "慰霊と恒久平和への願いを灯籠に込め、柿川の水面へ静かに送り出す8月1日の行事。一之橋から追廻橋のあたりを、ゆらめく灯りがゆっくり流れてゆく。",
+      "description_ja_short": "慰霊と平和への願いを込めた灯籠を柿川に流す、8月1日の静かな行事。",
+      "description_en_long": "Lanterns bearing prayers for the war dead and for lasting peace are set adrift on the Kakigawa river on August 1st, their flickering lights drifting slowly between the Ichinohashi and Oimawashi bridges.",
+      "description_en_short": "Lanterns carrying prayers for remembrance and peace drift quietly down the Kakigawa on August 1st.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000014,
+    "name": "越後長岡慰霊神輿渡御",
+    "name_kana": "えちごながおかいれいみこしとぎょ",
+    "name_en": "Memorial Mikoshi Procession",
+    "aliases": [
+      {
+        "name": "慰霊神輿"
+      },
+      {
+        "name": "長岡慰霊神輿"
+      },
+      {
+        "name": "神輿渡御"
+      },
+      {
+        "name": "みこし"
+      },
+      {
+        "name": "神輿"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 988,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "越後長岡慰霊神輿渡御",
+      "title_en": "Memorial Mikoshi Procession",
+      "description_ja_long": "長岡空襲の犠牲者を慰霊し、復興と平和への願いをつないで大手通を進む神輿渡御。平和祭の夜、大民踊流しに続いて力強く練り歩く。",
+      "description_ja_short": "空襲犠牲者の慰霊と平和への願いを載せ、大手通を進む神輿渡御。",
+      "description_en_long": "The memorial mikoshi procession advances along Ote-dori in remembrance of the victims of the Nagaoka air raid, carrying prayers for recovery and lasting peace through the night of the Peace Festival.",
+      "description_en_short": "A memorial mikoshi carried down Ote-dori in remembrance of the air-raid victims, bearing prayers for peace.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000015,
+    "name": "悠久太鼓",
+    "name_kana": "ゆうきゅうだいこ",
+    "name_en": "Yukyu Daiko",
+    "aliases": [
+      {
+        "name": "長岡悠久太鼓"
+      },
+      {
+        "name": "和太鼓"
+      },
+      {
+        "name": "太鼓演奏"
+      },
+      {
+        "name": "太鼓"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 987,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "ミライエ長岡前ほか",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "悠久太鼓",
+      "title_en": "Yukyu Daiko",
+      "description_ja_long": "長岡の歴史と大河信濃川を思わせる、力強い響きが特徴の郷土芸能。平和祭の街なかに勇壮な太鼓の音を響かせ、祭りの夜をいっそう沸かせる。",
+      "description_ja_short": "力強い響きが特徴の長岡の郷土芸能。平和祭の街に太鼓の音を響かせる。",
+      "description_en_long": "Yukyu Daiko is Nagaoka's homegrown taiko drumming, its powerful sound evoking the city's history and the great Shinano River as it rings through the streets on the night of the Peace Festival.",
+      "description_en_short": "Nagaoka's own taiko drumming, ringing powerfully through the streets of the Peace Festival.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000016,
+    "name": "越路の祭り屋台曳き回しとシャギリ",
+    "name_kana": "こしじのまつりやたいひきまわしとしゃぎり",
+    "name_en": "Koshiji Festival Floats",
+    "aliases": [
+      {
+        "name": "越路の祭り屋台"
+      },
+      {
+        "name": "祭り屋台"
+      },
+      {
+        "name": "屋台曳き回し"
+      },
+      {
+        "name": "シャギリ"
+      },
+      {
+        "name": "お囃子"
+      },
+      {
+        "name": "山車"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 986,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "越路の祭り屋台曳き回しとシャギリ",
+      "title_en": "Koshiji Festival Floats",
+      "description_ja_long": "越路地域に伝わる祭り屋台を曳き回し、笛や太鼓のお囃子「シャギリ」を響かせる伝統行事。華やかな屋台が平和祭の大手通に彩りを添える。",
+      "description_ja_short": "越路の祭り屋台を曳き回し、シャギリのお囃子を響かせる伝統行事。",
+      "description_en_long": "Festival floats handed down in the Koshiji district are hauled through the streets to the piping and drumming of shagiri musicians, adding traditional color to the Peace Festival on Ote-dori.",
+      "description_en_short": "Koshiji's festival floats parade to the lively sound of shagiri flutes and drums.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000017,
+    "name": "平和祭パレード",
+    "name_kana": "へいわさいぱれーど",
+    "name_en": "Peace Festival Parade",
+    "aliases": [
+      {
+        "name": "長岡まつりパレード"
+      },
+      {
+        "name": "大手通パレード"
+      },
+      {
+        "name": "消防音楽隊"
+      },
+      {
+        "name": "バトントワリング"
+      },
+      {
+        "name": "パレード"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 985,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通",
+    "recurring": true,
+    "year": null,
+    "description": {
+      "title_ja": "平和祭パレード",
+      "title_en": "Peace Festival Parade",
+      "description_ja_long": "消防音楽隊やバトントワリングなどが大手通を進み、長岡まつりの開幕を華やかに告げる平和祭のパレード。沿道の歓声とともに祭りの3日間が始まる。",
+      "description_ja_short": "音楽隊やバトンが大手通を進み、長岡まつりの開幕を告げるパレード。",
+      "description_en_long": "Marching bands, baton twirlers and more parade down Ote-dori, joyfully announcing the opening of the Nagaoka Festival as cheers rise along the street on the evening of the Peace Festival.",
+      "description_en_short": "A parade of bands and baton twirlers down Ote-dori, announcing the opening of the Nagaoka Festival.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
+      ],
+      "quality": "good",
+      "url": "https://nagaokamatsuri.com/"
+    }
+  },
+  {
+    "id": 9000018,
+    "name": "バルーンリリース",
+    "name_kana": "ばるーんりりーす",
+    "name_en": "Balloon Release",
+    "aliases": [
+      {
+        "name": "風船飛ばし"
+      },
+      {
+        "name": "平和のバルーン"
+      },
+      {
+        "name": "オープニングセレモニー"
+      }
+    ],
+    "latitude": 37.4463,
+    "longitude": 138.8367,
+    "elevation_m": 2026,
+    "prefecture": "長岡花火",
+    "priority": 984,
+    "category": "peace_festival",
+    "event_day": "08-01",
+    "venue": "大手通",
+    "recurring": false,
+    "year": 2026,
+    "description": {
+      "title_ja": "バルーンリリース",
+      "title_en": "Balloon Release",
+      "description_ja_long": "慰霊と復興、恒久平和への願いを託し、色とりどりのバルーンを長岡の空へ放つ平和祭のセレモニー。夕空に浮かぶ色彩が、祭りの始まりを静かに告げる。",
+      "description_ja_short": "平和への願いを託したバルーンを長岡の空へ放つ、平和祭のセレモニー。",
+      "description_en_long": "In the opening ceremony of the Peace Festival, colorful balloons carrying prayers for remembrance, recovery and lasting peace are released into the evening sky over Nagaoka.",
+      "description_en_short": "Colorful balloons carrying prayers for peace rise into the evening sky over Nagaoka.",
+      "tags_ja": [
+        "平和祭",
+        "長岡まつり",
+        "8月1日"
+      ],
+      "tags_en": [
+        "Peace Festival",
+        "Nagaoka",
+        "August 1st"
       ],
       "quality": "good",
       "url": "https://nagaokamatsuri.com/"
@@ -398,6 +873,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "カノン～この先に続く道(ミライ)に向かって～",
       "title_en": "カノン～この先に続く道(ミライ)に向かって～",
@@ -433,6 +913,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "純金箔24K 黄金の輝き",
       "title_en": "純金箔24K 黄金の輝き",
@@ -468,6 +953,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ガラスが拓く未来のとびら",
       "title_en": "ガラスが拓く未来のとびら",
@@ -509,6 +999,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "大河の恵み～水が生む紙の物語",
       "title_en": "大河の恵み～水が生む紙の物語",
@@ -544,6 +1039,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "誰かのために！72年の感謝報恩",
       "title_en": "誰かのために！72年の感謝報恩",
@@ -579,6 +1079,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "米百俵の心",
       "title_en": "米百俵の心",
@@ -614,6 +1119,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "長岡から世界へ、希望の花束",
       "title_en": "長岡から世界へ、希望の花束",
@@ -649,6 +1159,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ともに歩んだ80年、明日へ届ける感謝の響き",
       "title_en": "ともに歩んだ80年、明日へ届ける感謝の響き",
@@ -684,6 +1199,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "真夏のイルミネーション",
       "title_en": "真夏のイルミネーション",
@@ -719,6 +1239,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "人が想い描く未来、その先へ",
       "title_en": "人が想い描く未来、その先へ",
@@ -754,6 +1279,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "心ひとつに",
       "title_en": "心ひとつに",
@@ -798,6 +1328,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "未来へ～平和を願って～",
       "title_en": "未来へ～平和を願って～",
@@ -833,6 +1368,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ふるさとの四季",
       "title_en": "ふるさとの四季",
@@ -868,6 +1408,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "福田グループスピリット～100年先も誠実～",
       "title_en": "福田グループスピリット～100年先も誠実～",
@@ -903,6 +1448,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "感謝の絆、未来への輝き",
       "title_en": "感謝の絆、未来への輝き",
@@ -944,6 +1494,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "すべての『いのち』にありがとう",
       "title_en": "すべての『いのち』にありがとう",
@@ -979,6 +1534,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "AIRMANスパーキング",
       "title_en": "AIRMANスパーキング",
@@ -1014,6 +1574,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "故郷はひとつ",
       "title_en": "故郷はひとつ",
@@ -1049,6 +1614,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02/08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "インプレッション・トリップ",
       "title_en": "インプレッション・トリップ",
@@ -1090,6 +1660,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "光差す明日へ",
       "title_en": "光差す明日へ",
@@ -1131,6 +1706,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "挑戦の精神",
       "title_en": "挑戦の精神",
@@ -1172,6 +1752,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "夜空に輝くプレミアム",
       "title_en": "夜空に輝くプレミアム",
@@ -1207,6 +1792,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "エコの華",
       "title_en": "エコの華",
@@ -1242,6 +1832,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "光ある美しく豊かな世界へ",
       "title_en": "光ある美しく豊かな世界へ",
@@ -1277,6 +1872,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "夏の思い出",
       "title_en": "夏の思い出",
@@ -1312,6 +1912,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "スプラッシュファイヤー炎の舞",
       "title_en": "スプラッシュファイヤー炎の舞",
@@ -1347,6 +1952,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ホテルニューオータニ長岡感謝の大輪",
       "title_en": "ホテルニューオータニ長岡感謝の大輪",
@@ -1382,6 +1992,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "長岡とともに技大、感謝の50年",
       "title_en": "長岡とともに技大、感謝の50年",
@@ -1417,6 +2032,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "クリーンエナジー",
       "title_en": "クリーンエナジー",
@@ -1452,6 +2072,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "つながり",
       "title_en": "つながり",
@@ -1487,6 +2112,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "鉄にいのち、ひとに未来",
       "title_en": "鉄にいのち、ひとに未来",
@@ -1522,6 +2152,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "龍華～未来へ続く日の光～",
       "title_en": "龍華～未来へ続く日の光～",
@@ -1563,6 +2198,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "感謝",
       "title_en": "感謝",
@@ -1598,6 +2238,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "皆さまへ創業百周年の感謝を込めて",
       "title_en": "皆さまへ創業百周年の感謝を込めて",
@@ -1633,6 +2278,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-02",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "君と花火と約束と",
       "title_en": "君と花火と約束と",
@@ -1668,6 +2318,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "上場記念花火アリガトウナガオカ",
       "title_en": "上場記念花火アリガトウナガオカ",
@@ -1703,6 +2358,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "マンマのフルーツカーニバル",
       "title_en": "マンマのフルーツカーニバル",
@@ -1738,6 +2398,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "水とともに",
       "title_en": "水とともに",
@@ -1773,6 +2438,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "つながれ！～モノづくりの未来へ～",
       "title_en": "つながれ！～モノづくりの未来へ～",
@@ -1808,6 +2478,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "千人鮮色、ありがとうの花",
       "title_en": "千人鮮色、ありがとうの花",
@@ -1843,6 +2518,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "この空の花",
       "title_en": "この空の花",
@@ -1878,6 +2558,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "燃ゆる華心",
       "title_en": "燃ゆる華心",
@@ -1913,6 +2598,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "アルプスアルパイン・シャイニングスター",
       "title_en": "アルプスアルパイン・シャイニングスター",
@@ -1954,6 +2644,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "信濃川の夕涼み",
       "title_en": "信濃川の夕涼み",
@@ -1989,6 +2684,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "あなたとずっとこの空と",
       "title_en": "あなたとずっとこの空と",
@@ -2024,6 +2724,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "金燦、銀燦",
       "title_en": "金燦、銀燦",
@@ -2059,6 +2764,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "安心と感動に満ちた世界と未来のために",
       "title_en": "安心と感動に満ちた世界と未来のために",
@@ -2094,6 +2804,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "太陽の輝き",
       "title_en": "太陽の輝き",
@@ -2129,6 +2844,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "子供たちの未来のために",
       "title_en": "子供たちの未来のために",
@@ -2164,6 +2884,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ともに創る未来へ",
       "title_en": "ともに創る未来へ",
@@ -2199,6 +2924,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "酔火連発 尺玉の響",
       "title_en": "酔火連発 尺玉の響",
@@ -2234,6 +2964,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "HOPE TO THE FUTURE～未来へ~",
       "title_en": "HOPE TO THE FUTURE～未来へ~",
@@ -2269,6 +3004,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "輝け愛花火",
       "title_en": "輝け愛花火",
@@ -2304,6 +3044,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "天空華宴",
       "title_en": "天空華宴",
@@ -2339,6 +3084,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "mirai",
       "title_en": "mirai",
@@ -2374,6 +3124,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "駆け抜ける丙午 60-60",
       "title_en": "駆け抜ける丙午 60-60",
@@ -2415,6 +3170,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "No Attack,No Chance",
       "title_en": "No Attack,No Chance",
@@ -2450,6 +3210,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "平和への誓い",
       "title_en": "平和への誓い",
@@ -2485,6 +3250,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "夜空に感謝の花束",
       "title_en": "夜空に感謝の花束",
@@ -2520,6 +3290,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "世界への躍動",
       "title_en": "世界への躍動",
@@ -2555,6 +3330,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "大河の夕景",
       "title_en": "大河の夕景",
@@ -2590,6 +3370,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "99年分のありがとうを込めて",
       "title_en": "99年分のありがとうを込めて",
@@ -2625,6 +3410,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "ラブラブファイヤー2026",
       "title_en": "ラブラブファイヤー2026",
@@ -2660,6 +3450,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "アイデアと技術の宝石箱",
       "title_en": "アイデアと技術の宝石箱",
@@ -2695,6 +3490,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "未来飛翔",
       "title_en": "未来飛翔",
@@ -2730,6 +3530,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "新潟の未来を見つめ続けて",
       "title_en": "新潟の未来を見つめ続けて",
@@ -2765,6 +3570,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "パラダイス・イン・ザ・スカイ",
       "title_en": "パラダイス・イン・ザ・スカイ",
@@ -2800,6 +3610,11 @@
     "elevation_m": 2026,
     "prefecture": "長岡花火",
     "priority": 900,
+    "category": "hanabi",
+    "event_day": "08-03",
+    "venue": "信濃川河川敷",
+    "recurring": false,
+    "year": 2026,
     "description": {
       "title_ja": "支社開設60周年 感謝を空へ 安心を未来へ",
       "title_en": "支社開設60周年 感謝を空へ 安心を未来へ",

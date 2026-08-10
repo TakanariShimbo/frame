@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { setAppMode } from "../lib/mode";
-import { IconImage } from "./icons";
+import { IconCamera, IconImage } from "./icons";
 import LanguageToggle from "./LanguageToggle";
+import AppLink from "./photo-contest/AppLink";
 
 type Props = {
   // 選んだ写真URL列（先頭から順に仕上げる）を渡す。山選び・テーマ選びは次の画面で行う。
@@ -153,17 +154,10 @@ export default function Picker({ onPick }: Props) {
               <IconImage size={18} />
               {t("picker.ctaMountain")}
             </button>
-            <button
-              type="button"
-              className="pick-hero-cta pick-hero-cta--hanabi"
-              onClick={() => {
-                setAppMode("hanabi");
-                fileRef.current?.click();
-              }}
-            >
-              <IconImage size={18} />
-              {t("picker.ctaHanabi")}
-            </button>
+            <AppLink to="/photo-contest" className="pick-hero-cta pick-hero-cta--contest">
+              <IconCamera size={18} />
+              {t("picker.ctaContest")}
+            </AppLink>
           </div>
           <p className="pick-hero-note">{t("picker.heroNote")}</p>
         </div>

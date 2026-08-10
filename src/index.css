@@ -273,13 +273,14 @@ button {
   justify-content: center;
   gap: 12px;
 }
-/* 花火モードのCTA。金の縁取りだけの控えめな見た目で山用と並べる */
-.pick-hero-cta--hanabi {
+/* フォトコンテストへのリンク。金の縁取りだけの控えめな見た目で山用CTAと並べる */
+.pick-hero-cta--contest {
   background: transparent;
   border: 1px solid var(--gold);
   color: var(--gold);
+  text-decoration: none;
 }
-.pick-hero-cta--hanabi:hover {
+.pick-hero-cta--contest:hover {
   background: rgba(216, 182, 114, 0.14);
 }
 .pick-hero-note {
@@ -1515,6 +1516,12 @@ button {
 .ar-title:active {
   cursor: grabbing;
 }
+/* 左揃え（titleAlign=left）。titlePos を左端アンカーにして左詰めで積む */
+.ar-title.is-left {
+  transform: translate(0, -50%);
+  align-items: flex-start;
+  text-align: left;
+}
 .ar-title-over {
   font-size: calc(1.95cqmax * var(--title-fs, 1) * var(--title-side-fs, 1));
   font-weight: var(--title-sub-fw, 500);
@@ -1538,6 +1545,16 @@ button {
   margin-right: calc(-0.3em * var(--title-ls, 1));
   margin-top: calc(0.7cqmax * var(--title-fs, 1) * var(--title-gap, 1));
 }
+.ar-title-tag {
+  /* サブテキスト（題字の下の一言）。焼き込みの tagFs = mainFs×0.2 と一致 */
+  white-space: pre-line;
+  font-size: calc(1.5cqmax * var(--title-fs, 1) * var(--title-side-fs, 1));
+  font-weight: var(--title-sub-fw, 500);
+  letter-spacing: 0.12em;
+  margin-right: -0.12em;
+  line-height: 1.4;
+  margin-top: calc(0.8cqmax * var(--title-fs, 1) * var(--title-gap, 1));
+}
 /* 選択枠（編集UIのみ・出力には焼き込まれない）。 */
 .ar-title::before {
   content: "";
@@ -1546,6 +1563,148 @@ button {
   border: 0.2cqmax solid rgba(214, 180, 106, 0.6);
   border-radius: 1cqmax;
   pointer-events: none;
+}
+
+/* --- イベントフレーム（山の日など。出力と一致させる寸法。変更しない） --- */
+.ar-event {
+  position: absolute;
+  font-family: var(--event-ff, inherit);
+  color: #fff;
+  text-shadow:
+    0 0 0.2cqmax var(--event-sh, transparent),
+    0 0.1cqmax 0.4cqmax var(--event-sh, transparent);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.ar-event:active {
+  cursor: grabbing;
+}
+/* 選択枠（編集UIのみ・出力には焼き込まれない）。 */
+.ar-event::before {
+  content: "";
+  position: absolute;
+  inset: -1.2cqmax -1.6cqmax;
+  border: 0.2cqmax solid rgba(214, 180, 106, 0.6);
+  border-radius: 1cqmax;
+  pointer-events: none;
+}
+.ar-event-rule {
+  display: block;
+  height: 0.1cqmax;
+  min-height: 1px;
+  background: currentColor;
+}
+/* editorial: 左に日付＋下線 / 右に大見出し（右揃え） */
+.ar-event.is-editorial {
+  width: 92%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.ar-event-ed-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: calc(2.3cqmax * var(--event-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  line-height: 1.7;
+}
+.ar-event-ed-date .ar-event-rule {
+  margin-top: 0.35em;
+  width: 3.2em;
+}
+.ar-event-ed-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  font-size: calc(2.8cqmax * var(--event-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  margin-right: -0.28em;
+  line-height: 1.45;
+}
+.ar-event-ed-title .ar-event-rule {
+  align-self: flex-end;
+  margin-top: 0.35em;
+  margin-right: 0.28em; /* 字間ぶん右へ戻した文字端と揃える */
+  width: 3.2em;
+}
+/* fieldnote: 見出し＋日付＋情報リスト（アイコン付き） */
+.ar-event.is-fieldnote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.ar-event-fn-title {
+  display: flex;
+  flex-direction: column;
+  font-size: calc(4.2cqmax * var(--event-fs, 1));
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.ar-event-fn-date {
+  margin-top: calc(1.45cqmax * var(--event-fs, 1));
+  font-size: calc(1.9cqmax * var(--event-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  line-height: 1;
+}
+.ar-event-rows {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2.65cqmax * var(--event-fs, 1));
+  margin-top: calc(3.35cqmax * var(--event-fs, 1));
+}
+.ar-event-row {
+  display: flex;
+  /* アイコンは行ブロック全体（座標などの複数行）の縦中央に置く */
+  align-items: center;
+  gap: calc(1.25cqmax * var(--event-fs, 1));
+  font-size: calc(1.65cqmax * var(--event-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+.ar-event-row svg {
+  flex: none;
+  width: calc(2.25cqmax * var(--event-fs, 1));
+  height: calc(2.25cqmax * var(--event-fs, 1));
+}
+/* minimal: 日付・和文名・欧文名を小さく縦積み＋細い下線 */
+.ar-event.is-minimal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.ar-event-min-date {
+  font-size: calc(3cqmax * var(--event-fs, 1));
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  line-height: 1;
+}
+.ar-event-min-ja {
+  margin-top: calc(2.25cqmax * var(--event-fs, 1));
+  font-size: calc(2.4cqmax * var(--event-fs, 1));
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  line-height: 1;
+}
+.ar-event-min-en {
+  margin-top: calc(1.7cqmax * var(--event-fs, 1));
+  font-size: calc(1.5cqmax * var(--event-fs, 1));
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+.ar-event-min-rule {
+  margin-top: calc(3cqmax * var(--event-fs, 1));
+  width: calc(4.8cqmax * var(--event-fs, 1));
+  height: 0.08cqmax;
 }
 
 /* ============================================================================
@@ -1845,6 +2004,25 @@ button {
 }
 .studio-data-input--en {
   flex: 1 1 0;
+}
+/* 記念タブ・題字サブテキストの入力欄。縦積み（.studio-sec 直下）では自然な高さのまま、
+   横並びの行（.ar-fs-row 内）ではラベルの右いっぱいに広げる。
+   flex を無条件に付けると縦flexで高さが潰れてスクロール不能になるので行内に限定する。 */
+.studio-event-input {
+  flex: none;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.45;
+}
+.ar-fs-row .studio-event-input {
+  flex: 1 1 0;
+}
+/* パネル内の補足文（小さく淡く） */
+.studio-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--ink-sub);
+  line-height: 1.5;
 }
 .studio-data-elev {
   display: inline-flex;
@@ -3531,6 +3709,9 @@ button {
   --pcan-side-w: clamp(96px, 9.5vw, 140px);
   --pcan-mnav-w: 46px;
   --pcan-border: rgba(216, 182, 114, 0.22);
+  /* 本文グレー（--ink-sub の 58% 不透明度）はコントラストが弱く読みづらいため、
+     この告知ページ内では白（--ink）に引き上げる。 */
+  --ink-sub: var(--ink);
 }
 
 /* --- PC 左サイド装飾ナビ（操作なし・aria-hidden） --- */
@@ -3973,6 +4154,160 @@ a.pcan-mention-link:hover .pcan-mention-handle {
   color: var(--gold);
 }
 
+/* --- 景品（写真集風エディトリアル。画像とテキストの左右を行ごとに交互にする） --- */
+.pcan-prizes-sec {
+  padding: clamp(26px, 3.5vw, 50px) clamp(20px, 3vw, 44px);
+  border-top: 1px solid var(--pcan-border);
+}
+.pcan-prizes-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 clamp(22px, 3vw, 40px);
+  text-align: center;
+}
+.pcan-prizes-eyebrow {
+  font-family: var(--font-latin);
+  font-size: clamp(11px, 0.9vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.pcan-prizes-line {
+  width: 54px;
+  height: 1px;
+  background: var(--gold-line);
+}
+.pcan-prizes-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(19px, 1.9vw, 25px);
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.pcan-prizes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pcan-prize {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(28px, 4vw, 64px);
+  padding: clamp(28px, 4vw, 56px) 0;
+}
+.pcan-prize + .pcan-prize {
+  border-top: 1px solid var(--pcan-border);
+}
+.pcan-prize:nth-child(even) {
+  flex-direction: row-reverse;
+}
+.pcan-prize-media {
+  position: relative;
+  flex: 1 1 50%;
+  min-width: 0;
+}
+.pcan-prize-img-main {
+  display: block;
+}
+.pcan-prize-img-main img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.pcan-prize-img-sub {
+  display: block;
+  position: absolute;
+  right: clamp(12px, 2vw, 22px);
+  bottom: clamp(12px, 2vw, 22px);
+  width: clamp(96px, 34%, 210px);
+  padding: 5px;
+  background: var(--bg);
+  border: 1px solid var(--pcan-border);
+}
+.pcan-prize-img-sub img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.pcan-prize-body {
+  flex: 1 1 42%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pcan-prize-num {
+  font-family: var(--font-latin);
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: var(--gold);
+}
+.pcan-prize-brand {
+  margin: clamp(10px, 1.2vw, 14px) 0 0;
+  font-family: var(--font-latin);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.pcan-prize-name {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(21px, 2.3vw, 31px);
+  line-height: 1.35;
+  color: var(--ink);
+}
+.pcan-prize-desc {
+  margin: clamp(14px, 1.6vw, 20px) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+}
+.pcan-prize-desc p {
+  margin: 0;
+  font-size: clamp(13px, 1vw, 14.5px);
+  line-height: 1.85;
+  color: var(--ink-sub);
+}
+.pcan-prize-link {
+  margin-top: clamp(16px, 2vw, 24px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-family: var(--font-latin);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease;
+}
+.pcan-prize-link:hover {
+  border-color: var(--gold-line);
+  color: var(--gold-strong);
+}
+.pcan-prize-link-icon {
+  transition: transform 0.3s ease;
+}
+.pcan-prize-link:hover .pcan-prize-link-icon {
+  transform: translateX(3px);
+}
+
 .pcan-footer {
   padding: clamp(18px, 3vw, 34px);
   text-align: center;
@@ -4170,6 +4505,38 @@ a.pcan-mention-link:hover .pcan-mention-handle {
     margin-left: auto;
     justify-content: flex-end;
   }
+
+  /* 景品: 画像→ブランド/名称/紹介文→Xリンクの縦積み（PCの左右交互は行わない） */
+  .pcan-prizes-sec {
+    padding: 26px 18px;
+  }
+  .pcan-prize {
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 0;
+  }
+  .pcan-prize:nth-child(even) {
+    flex-direction: column;
+  }
+  .pcan-prize-media {
+    flex: none;
+    width: 100%;
+  }
+  .pcan-prize-img-main img {
+    aspect-ratio: 4 / 3;
+  }
+  .pcan-prize-img-sub {
+    width: 40%;
+    right: 10px;
+    bottom: 10px;
+  }
+  .pcan-prize-body {
+    flex: none;
+  }
+  .pcan-prize-name {
+    font-size: clamp(19px, 5.6vw, 24px);
+  }
+
   .pcan-footer {
     margin-right: var(--pcan-mnav-w);
   }
