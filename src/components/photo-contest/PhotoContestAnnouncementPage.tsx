@@ -8,6 +8,7 @@ import AnnouncementSideNav from "./AnnouncementSideNav";
 import AnnouncementMobileNav from "./AnnouncementMobileNav";
 import PlatformLinks from "./PlatformLinks";
 import MentionAccounts from "./MentionAccounts";
+import SectionHead from "./SectionHead";
 import SponsorList from "./SponsorList";
 import PrizeList from "./PrizeList";
 import ContestNotFound from "./ContestNotFound";
@@ -125,14 +126,15 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
           </div>
         </section>
 
-        {/* テーマ ＋ 開催期間（1つの枠を縦線で分割） */}
-        <div className="pcan-themebox" data-reveal>
-          <section className="pcan-theme" ref={setSectionRef(1)}>
+        {/* テーマ / 開催期間 / 応募条件 / 応募プラットフォーム（1つの枠を罫線で2×2に分割） */}
+        <div className="pcan-infobox" data-reveal>
+          <section className="pcan-infocell" ref={setSectionRef(1)}>
             <p className="pcan-sec-label">テーマ</p>
             <h2 className="pcan-theme-title">{theme.title}</h2>
             <p className="pcan-theme-desc">{theme.description}</p>
           </section>
-          <section className="pcan-period" ref={setSectionRef(2)}>
+
+          <section className="pcan-infocell" ref={setSectionRef(2)}>
             <p className="pcan-sec-label">開催期間</p>
             <p className="pcan-period-date">
               {start}
@@ -143,11 +145,8 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
             </p>
             {data.periodNote && <p className="pcan-period-note">{data.periodNote}</p>}
           </section>
-        </div>
 
-        {/* 応募条件 / 応募プラットフォーム（＋指定アカウント） */}
-        <div className="pcan-info">
-          <section className="pcan-info-col" ref={setSectionRef(3)}>
+          <section className="pcan-infocell" ref={setSectionRef(3)}>
             <p className="pcan-sec-label">応募条件</p>
             <ul className="pcan-req">
               {app.requirements.map((r, i) => (
@@ -159,7 +158,7 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
             </ul>
           </section>
 
-          <section className="pcan-info-col" ref={setSectionRef(4)}>
+          <section className="pcan-infocell" ref={setSectionRef(4)}>
             <p className="pcan-sec-label">応募プラットフォーム</p>
             <PlatformLinks platforms={app.platforms} />
             <MentionAccounts accounts={app.mentionAccounts} pendingMessage={app.pendingAccountMessage} />
@@ -168,12 +167,8 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
 
         {/* 協賛ブランド */}
         {data.sponsors.length > 0 && (
-          <section className="pcan-sponsors-sec" ref={setSectionRef(sponsorsIndex)} data-reveal>
-            <p className="pcan-sponsors-head">
-              <span className="pcan-sponsors-line" aria-hidden />
-              <span className="pcan-sponsors-title">協賛ブランド</span>
-              <span className="pcan-sponsors-line" aria-hidden />
-            </p>
+          <section className="pcan-sponsors-sec" ref={setSectionRef(sponsorsIndex)} data-reveal aria-labelledby="pcan-sponsors-heading">
+            <SectionHead eyebrow="SPONSORS" title="協賛ブランド" titleId="pcan-sponsors-heading" />
             <SponsorList sponsors={data.sponsors} />
           </section>
         )}
@@ -181,13 +176,7 @@ export default function PhotoContestAnnouncementPage({ contestId }: { contestId:
         {/* 景品 */}
         {data.prizes.items.length > 0 && (
           <section className="pcan-prizes-sec" ref={setSectionRef(prizesIndex)} data-reveal aria-labelledby="pcan-prizes-heading">
-            <div className="pcan-prizes-head">
-              <span className="pcan-prizes-eyebrow">{data.prizes.eyebrow}</span>
-              <span className="pcan-prizes-line" aria-hidden />
-              <h2 id="pcan-prizes-heading" className="pcan-prizes-title">
-                {data.prizes.title}
-              </h2>
-            </div>
+            <SectionHead eyebrow={data.prizes.eyebrow} title={data.prizes.title} titleId="pcan-prizes-heading" />
             <PrizeList prizes={data.prizes.items} sourceLinkLabel={data.prizes.sourceLinkLabel} />
           </section>
         )}
