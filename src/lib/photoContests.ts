@@ -102,7 +102,12 @@ export type Sponsor = {
   isPublished: boolean;
 };
 
-// 景品1件。images は1枚以上（複数なら「メイン＋サブ」等の静的レイアウトを画面側で組む）。
+// 景品画像2枚のときの組み方。
+// "inset": 1枚目を大きく、2枚目をその上に小さく重ねる（同じ製品の別カット向け・既定）
+// "pair":  2枚を左右等分で並べる（別々の製品2点向け）
+export type PrizeImageLayout = "inset" | "pair";
+
+// 景品1件。images は1枚以上（複数なら imageLayout に従って画面側で組む）。
 export type Prize = {
   id: string;
   order: number;
@@ -110,6 +115,7 @@ export type Prize = {
   name: string;
   description: string[]; // 段落ごとに配列（1要素＝1段落）
   images: ContestImage[]; // 1枚以上
+  imageLayout?: PrizeImageLayout; // 省略時は "inset"
   sourceUrl: string; // 紹介元X投稿URL
   isPublished: boolean;
 };
@@ -509,6 +515,8 @@ function validateAnnouncement(json: unknown, file: string): AnnouncementContent 
         } else {
           it.images.forEach((img, j) => checkImage(img, `${p}.images[${j}]`, issues));
         }
+        if (it.imageLayout !== undefined && it.imageLayout !== "inset" && it.imageLayout !== "pair")
+          issues.push(`${p}.imageLayout は "inset" か "pair" で指定してください（省略可）`);
         if (!isValidUrl(it.sourceUrl)) issues.push(`${p}.sourceUrl が有効なURLではありません`);
       });
       checkOrders(items.filter(isRecord), "prizes.items", issues);

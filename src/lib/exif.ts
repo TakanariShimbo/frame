@@ -45,7 +45,13 @@ export async function readPhotoExif(file: File): Promise<PhotoExif> {
 // 撮影情報（liit 風フレーム用）: カメラ名・メーカー・撮影設定を表示用文字列で返す。
 // EXIF が剥がれていることも多いので、取れた項目だけ埋めて返す（全滅なら null）。
 // ============================================================================
-export type ShootingInfo = { model: string; maker: string; spec: string };
+export type ShootingInfo = {
+  model: string;
+  maker: string;
+  spec: string;
+  lens: string; // レンズ名（例: RF15-35mm F2.8 L IS USM。ギャラリーフレーム用）
+  date: string; // 撮影日（例: 2026.08.10。ギャラリーフレーム用）
+};
 
 export async function readShootingInfo(url: string): Promise<ShootingInfo | null> {
   let data: Record<string, unknown> | undefined;
@@ -60,6 +66,10 @@ export async function readShootingInfo(url: string): Promise<ShootingInfo | null
   const num = (v: unknown): number | null => (typeof v === "number" && isFinite(v) ? v : null);
   const model = str(data.Model);
   const maker = str(data.Make).split(/\s+/)[0] ?? ""; // "SONY CORPORATION" → "SONY"
+  const lens = str(data.LensModel);
+  const dt = data.DateTimeOriginal instanceof Date ? data.DateTimeOriginal : data.CreateDate instanceof Date ? data.CreateDate : null;
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  const date = dt ? `${dt.getFullYear()}.${pad2(dt.getMonth() + 1)}.${pad2(dt.getDate())}` : "";
   const parts: string[] = [];
   const fl = num(data.FocalLength);
   if (fl != null) parts.push(`${Math.round(fl)}mm`);
@@ -70,8 +80,8 @@ export async function readShootingInfo(url: string): Promise<ShootingInfo | null
   const iso = num(data.ISO);
   if (iso != null) parts.push(`ISO${Math.round(iso)}`);
   const spec = parts.join("  ");
-  if (!model && !maker && !spec) return null;
-  return { model, maker, spec };
+  if (!model && !maker && !spec && !lens && !date) return null;
+  return { model, maker, spec, lens, date };
 }
 
 // ============================================================================

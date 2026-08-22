@@ -4,7 +4,7 @@ import { formatElev, formatElevTitle, getAppMode } from "../lib/mode";
 import { IconDownload, IconCaret, IconChevron, IconEye, IconEyeOff } from "./icons";
 import { nameLines, oneLineName, type ArLabel } from "../lib/labels";
 import { loadImage, canvasToJpegBlob, releaseCanvas, saveBlob } from "../lib/exportImage";
-import { readShootingInfo, readGpsText, gpsToText } from "../lib/exif";
+import { readShootingInfo, readGpsText, gpsToText, type ShootingInfo } from "../lib/exif";
 import FsSlider from "./FsSlider";
 
 // ============================================================================
@@ -293,7 +293,18 @@ type EventVariant = "editorial" | "fieldnote" | "minimal";
 // テンプレ適用時に日付プレフィル内の {year} を今の年へ置き換える。
 const fillYear = (s: string): string => s.replace(/\{year\}/g, String(new Date().getFullYear()));
 // mountainOnly=山モード専用（花火モードのテーマ一覧には出さない）。
-type ExportTemplate = { id: string; name: string; sub: string; hint: string; style: ExportStyle; mountainOnly?: boolean };
+// note=記録の帯（スナップショットの exif 側設定）もテンプレで初期設定したい場合に指定。
+// 記録タブがフィーチャーフラグOFFのビルドでは、note 付きテンプレは一覧に出さない。
+type ExportTemplate = {
+  id: string;
+  name: string;
+  sub: string;
+  hint: string;
+  style: ExportStyle;
+  mountainOnly?: boolean;
+  hidden?: boolean; // テーマ一覧に出さない（定義は残す。季節限定テンプレの公開終了用）
+  note?: { on: boolean; mode: "camera" | "free"; align: "left" | "center" | "right"; edge?: number; band?: number };
+};
 
 const GOLD = "#d6b46a";
 const NO_MARGIN = { t: 0, r: 0, b: 0, l: 0 };
@@ -490,6 +501,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   // --- 山の日（8/11）記念テンプレ3種。イベントフレーム（eventOn）を使う --- //
   {
     id: "hare",
+    hidden: true, // 山の日（8/11）限定。時期外なので一覧から非表示
     name: "祝",
     sub: "studio.theme.hare.sub",
     hint: "studio.theme.hare.hint",
@@ -519,6 +531,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   },
   {
     id: "roku",
+    hidden: true, // 山の日（8/11）限定。時期外なので一覧から非表示
     name: "録",
     sub: "studio.theme.roku.sub",
     hint: "studio.theme.roku.hint",
@@ -536,6 +549,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
   },
   {
     id: "shizu",
+    hidden: true, // 山の日（8/11）限定。時期外なので一覧から非表示
     name: "静",
     sub: "studio.theme.shizu.sub",
     hint: "studio.theme.shizu.hint",
@@ -550,6 +564,27 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
       eventJa: "山の日",
       eventDate: "08.11",
       eventPos: { u: 0.05, v: 0.07 },
+    },
+  },
+  // --- 額: 白フレーム＋英字の題字＋撮影情報クレジット（額装プリント風） --- //
+  {
+    id: "gaku",
+    name: "額",
+    sub: "studio.theme.gaku.sub",
+    hint: "studio.theme.gaku.hint",
+    mountainOnly: true,
+    note: { on: true, mode: "camera", align: "right" },
+    style: {
+      ...BASE_STYLE,
+      bakeLabels: false,
+      titleOn: true,
+      titleLang: "en",
+      titleShowOver: true,
+      titleShowNum: true,
+      titleScale: 1.15,
+      titleFont: "modernGothic",
+      titleLetterSpace: 3,
+      titlePos: { u: 0.5, v: 0.3 },
     },
   },
 ];
@@ -573,6 +608,19 @@ const EVENT_ICONS: Record<"mountain" | "elev" | "pin", string> = {
   pin: "M12 21 C12 21 5.5 14.5 5.5 9.5 C5.5 5.9 8.4 3 12 3 C15.6 3 18.5 5.9 18.5 9.5 C18.5 14.5 12 21 12 21 Z|M12 7.3 A2.2 2.2 0 1 0 12 11.7 A2.2 2.2 0 1 0 12 7.3 Z",
 };
 const EVENT_ICON_KEYS = ["mountain", "elev", "pin"] as const;
+
+// 書き出しサイズ（アスペクト比）のプリセット。Canva風のカード一覧から選び、
+// 「切り抜き後の写真」が目標比率になるよう中央基準で cropInset を設定する
+// （余白・記録の帯は含まない。位置の微調整は「構図」タブの切り抜きで行う）。
+// name/uses は i18n キー。用途のサービス名は両言語共通だが語尾が違うため文言ごと持つ。
+type SizePreset = { id: string; w: number; h: number; name: string; uses: string };
+const SIZE_PRESETS: SizePreset[] = [
+  { id: "3-2", w: 3, h: 2, name: "studio.size.p32.name", uses: "studio.size.p32.uses" },
+  { id: "1-1", w: 1, h: 1, name: "studio.size.p11.name", uses: "studio.size.p11.uses" },
+  { id: "3-4", w: 3, h: 4, name: "studio.size.p34.name", uses: "studio.size.p34.uses" },
+  { id: "9-16", w: 9, h: 16, name: "studio.size.p916.name", uses: "studio.size.p916.uses" },
+  { id: "16-9", w: 16, h: 9, name: "studio.size.p169.name", uses: "studio.size.p169.uses" },
+];
 
 // スマホ判定（テーマ選択をスワイプ式に切り替える）。
 function useIsNarrow(): boolean {
@@ -613,7 +661,7 @@ const orientStyle = (t: ExportTemplate, portrait: boolean): ExportStyle => {
 };
 
 // 操作パネルのタブID（表示順もこの順）。
-// タブの役割分担: 「余白」(frame) は空・間などポスター的な見た目づくり（余白・切り抜き・
+// タブの役割分担: 「構図」(frame) は書き出し比率と、空・間などポスター的な見た目づくり（余白・切り抜き・
 // ふち）、「記録」(note) は下の帯に載せる情報（撮影情報や山行記録）。どちらも余白を使うが
 // 前者は「形の自由度」、後者は「内容」を編集する。
 type PanelTab = "label" | "caption" | "title" | "event" | "frame" | "note";
@@ -655,7 +703,19 @@ export type StudioSnapshot = {
     maker: string;
     spec: string;
     // 追加分（旧スナップショットには無いので optional）: 帯のモード・自由入力・書体・地色
-    mode?: "camera" | "free";
+    // "gallery" は旧スナップショット用（現在は自由記述3行＋右寄せ＋広縁へ変換して読む）
+    mode?: "camera" | "free" | "gallery";
+    date?: string; // 機材スタイルの撮影日行
+    line3?: string;
+    l3?: { bold: boolean; italic: boolean; dim: boolean };
+    align?: "left" | "center" | "right"; // 自由記述の文字位置
+    edge?: number; // 縁の広さ（写真の高さ比）
+    // 旧ギャラリーモードの設定（読み取り専用。新規保存では書かない）
+    gAlign?: "left" | "center" | "right";
+    gTitle?: string;
+    gDate?: string;
+    gCamera?: string;
+    gLens?: string;
     line1?: string;
     line2?: string;
     serif?: boolean; // 旧: 明朝/ゴシック2択（font が無いスナップショットの引き継ぎ用）
@@ -816,16 +876,63 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // モードは2つ: camera=撮影情報（Shot on 表記）、free=自由入力（山行記録など）。
   const initExif = initialSnapshot?.exif;
   const [exifOn, setExifOn] = useState(initExif?.on ?? false);
-  const [noteMode, setNoteMode] = useState<"camera" | "free">(initExif?.mode ?? "camera");
+  // 旧「ギャラリー（作品）」モードのスナップショットは、自由記述3行＋右寄せ＋広縁へ変換して引き継ぐ。
+  const initFromGallery = initExif?.mode === "gallery";
+  const [noteMode, setNoteMode] = useState<"camera" | "free">(
+    initExif?.mode === "free" || initFromGallery ? "free" : "camera",
+  );
+  // 自由記述の文字位置（左/中央/右）。
+  const [noteAlign, setNoteAlign] = useState<"left" | "center" | "right">(
+    initExif?.align ?? (initFromGallery ? initExif?.gAlign ?? "right" : "center"),
+  );
   const [exifModel, setExifModel] = useState(initExif?.model ?? "");
   const [exifMaker, setExifMaker] = useState(initExif?.maker ?? "");
   const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
-  const [noteLine1, setNoteLine1] = useState(initExif?.line1 ?? "");
-  const [noteLine2, setNoteLine2] = useState(initExif?.line2 ?? "");
+  const [exifDate, setExifDate] = useState(initExif?.date ?? ""); // 機材スタイルの撮影日行
+  // 自由スタイル1行目の初期値（タイトル, 日付 の見本）。日付はまず今日で仮置きし、
+  // EXIFから撮影日が読めたら（未編集のときだけ）そちらへ差し替える。
+  const defaultNoteLine1 = () => {
+    const d = new Date();
+    const p2 = (n: number) => String(n).padStart(2, "0");
+    return `My favorite mountain, ${d.getFullYear()}.${p2(d.getMonth() + 1)}.${p2(d.getDate())}`;
+  };
+  const isDefaultNoteLine1 = (v: string) => v === "" || /^My favorite mountain, \d{4}\.\d{2}\.\d{2}$/.test(v);
+  const [noteLine1, setNoteLine1] = useState(
+    initExif?.line1 ??
+      (initFromGallery ? [initExif?.gTitle, initExif?.gDate].filter(Boolean).join(", ") : defaultNoteLine1()),
+  );
+  // 2・3行目の初期値（カメラ名/レンズ名の見本）。EXIFが読めたら（未編集のときだけ）実データへ差し替える。
+  const DEF_NOTE_LINE2 = "Canon EOS R5";
+  const DEF_NOTE_LINE3 = "RF15-35mm F2.8 L IS USM";
+  const [noteLine2, setNoteLine2] = useState(
+    initExif ? initExif.line2 ?? (initFromGallery ? initExif.gCamera ?? "" : "") : DEF_NOTE_LINE2,
+  );
+  const [noteLine3, setNoteLine3] = useState(
+    initExif ? initExif.line3 ?? (initFromGallery ? initExif.gLens ?? "" : "") : DEF_NOTE_LINE3,
+  );
   // 書体（10種のフォントペア）。旧スナップショットの serif(明朝/ゴシック2択) から引き継ぐ。
   const [noteFont, setNoteFont] = useState<FontPairId>(
     initExif?.font ?? (initExif?.serif === true ? "posterMincho" : initExif?.serif === false ? "modernGothic" : "gothic"),
   );
+  const shootingInfoRef = useRef<ShootingInfo | null>(null);
+  // ボタンの活性状態用（レンダー中に ref は読めないため state でも持つ）。
+  const [hasShootingInfo, setHasShootingInfo] = useState(false);
+  // 自由記述の空欄へEXIF由来の撮影情報を流し込む（1行目=撮影日 / 2行目=カメラ / 3行目=レンズ。
+  // 入力済みの行は上書きしない。日付・カメラ以外が取れない写真では何も起きない）。
+  const insertShootingInfo = () => {
+    const si = shootingInfoRef.current;
+    if (!si) return;
+    const cam =
+      si.model && si.maker && !si.model.toLowerCase().startsWith(si.maker.toLowerCase())
+        ? `${si.maker} ${si.model}`
+        : si.model || si.maker;
+    setNoteLine1((v) => v || si.date);
+    setNoteLine2((v) => v || cam);
+    if (cam) setNoteL2((s) => ({ ...s, dim: true }));
+    const line3 = si.lens || si.spec; // レンズ情報が無い写真では撮影設定で代用
+    setNoteLine3((v) => v || line3);
+    if (line3) setNoteL3((s) => ({ ...s, dim: true }));
+  };
   // 元写真の EXIF から初期値を補完する（手で入力済みの欄は上書きしない）。
   useEffect(() => {
     let live = true;
@@ -834,6 +941,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       setExifModel((v) => v || si.model);
       setExifMaker((v) => v || si.maker);
       setExifSpec((v) => v || si.spec);
+      setExifDate((v) => v || si.date);
+      shootingInfoRef.current = si; // 自由記述の「撮影情報を挿入」ボタン用に保持
+      setHasShootingInfo(true);
+      if (si.date) setNoteLine1((v) => (isDefaultNoteLine1(v) ? `My favorite mountain, ${si.date}` : v));
+      const cam2 =
+        si.model && si.maker && !si.model.toLowerCase().startsWith(si.maker.toLowerCase())
+          ? `${si.maker} ${si.model}`
+          : si.model || si.maker;
+      if (cam2) setNoteLine2((v) => (v === "" || v === DEF_NOTE_LINE2 ? cam2 : v));
+      const lens2 = si.lens || si.spec;
+      if (lens2) setNoteLine3((v) => (v === "" || v === DEF_NOTE_LINE3 ? lens2 : v));
     });
     return () => {
       live = false;
@@ -843,6 +961,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   // 切り抜き込み）の外側に、liit の見本比率で縁を一周巻いてそこに文字を描く:
   // 上・左・右 = 写真の高さの3.5%（ピクセル等幅）、下 = 18%（帯）。色も独立（noteBg）。
   const NOTE_EDGE = 0.035;
+  // 縁の広さ（写真の高さ比）。広げると写真展のマットのような見た目になる。
+  const [noteEdge, setNoteEdge] = useState(initExif?.edge ?? (initFromGallery ? 0.07 : NOTE_EDGE));
   const [noteBg, setNoteBg] = useState(initExif?.bg ?? "#ffffff");
   // 文字色。auto=フレーム色の明るさから2トーンを自動決定 / 手動=好きな色（淡い側は半透明で作る）。
   const [noteInkAuto, setNoteInkAuto] = useState(initExif?.inkAuto ?? true);
@@ -859,8 +979,17 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     italic: v?.italic ?? initExif?.italic ?? false,
     dim: v?.dim ?? false,
   });
-  const [noteL1, setNoteL1] = useState<NoteLineStyle>(initLineStyle(initExif?.l1));
-  const [noteL2, setNoteL2] = useState<NoteLineStyle>(initLineStyle(initExif?.l2));
+  // 1行目（タイトル行）は太字が既定。
+  const [noteL1, setNoteL1] = useState<NoteLineStyle>({
+    ...initLineStyle(initExif?.l1),
+    bold: initExif?.l1?.bold ?? initExif?.bold ?? true,
+  });
+  const [noteL2, setNoteL2] = useState<NoteLineStyle>(
+    initExif ? initLineStyle(initExif.l2 ?? (initFromGallery ? { bold: false, italic: false, dim: true } : undefined)) : { bold: false, italic: false, dim: true },
+  );
+  const [noteL3, setNoteL3] = useState<NoteLineStyle>(
+    initExif ? initLineStyle(initExif.l3 ?? (initFromGallery ? { bold: false, italic: false, dim: true } : undefined)) : { bold: false, italic: false, dim: true },
+  );
   const toggleExif = (on: boolean) => setExifOn(on);
 
   // --- 書き出し --- //
@@ -875,7 +1004,9 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [panelTab, setPanelTab] = useState<PanelTab>(() => (initStyle ? (templateTabs(initStyle)[0] ?? "label") : "label"));
   // このモードで見せるテーマ（山モード専用テンプレは花火モードの一覧から外す）。
   // モードは画面に入る前に確定しているため、レンダー中に固定値として参照してよい。
-  const tplItems = TPL_ITEMS.filter((x) => !(x.tpl?.mountainOnly && getAppMode() === "hanabi"));
+  const tplItems = TPL_ITEMS.filter(
+    (x) => !x.tpl?.hidden && !(x.tpl?.mountainOnly && getAppMode() === "hanabi") && !(x.tpl?.note && !NOTE_ENABLED),
+  );
   // テーマ選択カルーセルの現在位置（スマホ=スワイプ / PC=カバーフロー共通）。
   const [tplIdx, setTplIdx] = useState(() => {
     const i = tplItems.findIndex((x) => x.id === activeTemplateId);
@@ -1144,6 +1275,36 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   });
   const fPhotoAR = photoNat ? photoNat.w / photoNat.h : 1;
   const frameAR = fPhotoAR * (fCwF / fChF) * ((1 + fMlr) / (1 + fMtb));
+
+  // --- 書き出しサイズ（アスペクト比プリセット） --- //
+  const [sizeOpen, setSizeOpen] = useState(false);
+  const [sizeQuery, setSizeQuery] = useState("");
+  const noCrop = cropInset.l === 0 && cropInset.t === 0 && cropInset.r === 0 && cropInset.b === 0;
+  // 現在の切り抜き後の写真比率に一致するプリセット。切り抜きなし=オリジナル、
+  // どれにも一致しない切り抜き=カスタム（null。テンプレ由来や手動調整）。
+  const croppedAR = photoNat ? (photoNat.w * fCwF) / (photoNat.h * fChF) : null;
+  const activeSizeId: string | null = noCrop
+    ? "original"
+    : croppedAR == null
+      ? null
+      : SIZE_PRESETS.find((p) => Math.abs(croppedAR - p.w / p.h) / (p.w / p.h) < 0.01)?.id ?? null;
+  // プリセット適用。中央基準で目標比率へ切り抜く（null=オリジナル: 切り抜き解除）。
+  const applySizePreset = (p: SizePreset | null) => {
+    if (!p) {
+      setCropInset({ l: 0, t: 0, r: 0, b: 0 });
+      return;
+    }
+    const nat = photoNat ?? { w: 3, h: 2 };
+    const cur = nat.w / nat.h;
+    const target = p.w / p.h;
+    if (cur > target) {
+      const f = (1 - target / cur) / 2;
+      setCropInset({ l: f, r: f, t: 0, b: 0 });
+    } else {
+      const f = (1 - cur / target) / 2;
+      setCropInset({ l: 0, r: 0, t: f, b: f });
+    }
+  };
   const framePhotoStyle: React.CSSProperties = {
     position: "absolute",
     left: `${(frameMargin.l / (1 + fMlr)) * 100}%`,
@@ -1214,7 +1375,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const ch = (photoNat?.h ?? 1000) * fChF;
     const cw = (photoNat?.w ?? 1500) * fCwF;
     const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
-    const edge = exifOn ? NOTE_EDGE * ch : 0;
+    const edge = exifOn ? noteEdge * ch : 0;
     const band = exifOn ? noteBand * ch : 0;
     const outerAR = (innerW + edge * 2) / (innerH + edge + band);
     let w = sw, h = sw / outerAR;
@@ -1229,7 +1390,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     wrap.style.padding = `${edgePx}px ${edgePx}px ${bandPx}px`;
     frame.style.width = `${Math.round(w) - edgePx * 2}px`;
     frame.style.height = `${Math.round(h) - edgePx - bandPx}px`;
-  }, [frameAR, measureTick, exportView, exifOn, noteBand, photoNat, fChF, fCwF, fMlr, fMtb]);
+  }, [frameAR, measureTick, exportView, exifOn, noteBand, noteEdge, photoNat, fChF, fCwF, fMlr, fMtb]);
 
   // ラベル実寸を測って正規化で保持（引き出し線の辺アンカー計算に使う）。
   useLayoutEffect(() => {
@@ -1282,7 +1443,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     const pfy = (pv: number) => mT + ((pv - cropInset.t) / fChF) * chR;
     const L = Math.max(OW, OH);
     // 記録の帯（外側フレーム）。「余白」とは独立に、合成結果の外へさらに一周巻く。
-    const nEdge = exifOn ? Math.round(NOTE_EDGE * chR) : 0;
+    const nEdge = exifOn ? Math.round(noteEdge * chR) : 0;
     const nBand = exifOn ? Math.round(noteBand * chR) : 0;
     const TW = OW + nEdge * 2, TH = OH + nEdge + nBand;
     // iOS(WebKit)は Canvas の最大ピクセル面積に上限があり、高解像度写真＋大きな余白で
@@ -1942,57 +2103,85 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       const mainFs = Math.round(L * 0.019);
       const subFs = Math.round(L * 0.014);
       const cy = OH + nBand / 2; // translate 済み座標: 内側コンテンツの直下が帯
-      const gap = Math.round(mainFs * 0.8);
       ctx.save();
       ctx.textBaseline = "middle";
       if (noteMode === "camera") {
+        // 機材: 1行目=Shot on カメラ名 / 2行目=撮影設定 / 3行目=撮影日。空の行は省き、
+        // 位置（左/中央/右）と行送りは自由記述・プレビューと揃える。
         const segs: Array<{ text: string; font: string; color: string }> = [];
         if (exifModel || exifMaker) {
           segs.push({ text: "Shot on ", font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
           if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${noteFF}`, color: ink.main });
           if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
         }
-        const both = segs.length > 0 && !!exifSpec;
-        if (segs.length > 0) {
-          // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで中央揃えに描く。
-          setLS(mainFs * 0.01); // プレビュー(.ar-exif-model の letter-spacing: 0.01em)と揃える
-          let total = 0;
-          for (const s of segs) {
-            ctx.font = s.font;
-            total += ctx.measureText(s.text).width;
-          }
-          let x = OW / 2 - total / 2;
+        type CamLine = { kind: "segs" } | { kind: "text"; text: string };
+        const lines1: CamLine[] = [];
+        if (segs.length) lines1.push({ kind: "segs" });
+        if (exifSpec) lines1.push({ kind: "text", text: exifSpec });
+        if (exifDate) lines1.push({ kind: "text", text: exifDate });
+        if (lines1.length) {
+          const gapY = Math.round(L * 0.0055); // プレビュー(.ar-exif-free の gap: 0.55cqmax)と一致
+          const boxH = (l: CamLine) => Math.round((l.kind === "segs" ? mainFs : subFs) * 1.45);
+          const total = lines1.reduce((a, l) => a + boxH(l), 0) + gapY * (lines1.length - 1);
+          let yy = cy - total / 2;
           ctx.textAlign = "left";
-          for (const s of segs) {
-            ctx.font = s.font;
-            ctx.fillStyle = s.color;
-            ctx.fillText(s.text, x, both ? cy - gap : cy);
-            x += ctx.measureText(s.text).width;
+          for (const l of lines1) {
+            const yMid = yy + boxH(l) / 2;
+            if (l.kind === "segs") {
+              // 部分ごとに太さ・色が違うため、全体幅を測ってから左詰めで描く。
+              setLS(mainFs * 0.01); // プレビュー(.ar-exif-model の letter-spacing: 0.01em)と揃える
+              let w = 0;
+              for (const s of segs) {
+                ctx.font = s.font;
+                w += ctx.measureText(s.text).width;
+              }
+              let x = noteAlign === "left" ? 0 : noteAlign === "center" ? OW / 2 - w / 2 : OW - w + mainFs * 0.01;
+              for (const s of segs) {
+                ctx.font = s.font;
+                ctx.fillStyle = s.color;
+                ctx.fillText(s.text, x, yMid);
+                x += ctx.measureText(s.text).width;
+              }
+            } else {
+              ctx.font = `500 ${subFs}px ${noteFF}`;
+              setLS(subFs * 0.04); // プレビュー(.ar-exif-spec の letter-spacing: 0.04em)と揃える
+              ctx.fillStyle = ink.sub;
+              const w = ctx.measureText(l.text).width;
+              const x = noteAlign === "left" ? 0 : noteAlign === "center" ? OW / 2 - w / 2 : OW - w + subFs * 0.04;
+              ctx.fillText(l.text, x, yMid);
+            }
+            yy += boxH(l) + gapY;
           }
-        }
-        if (exifSpec) {
-          ctx.textAlign = "center";
-          ctx.font = `500 ${subFs}px ${noteFF}`;
-          setLS(subFs * 0.04); // プレビュー(.ar-exif-spec の letter-spacing: 0.04em)と揃える
-          ctx.fillStyle = ink.sub;
-          ctx.fillText(exifSpec, OW / 2, both ? cy + gap : cy);
+          setLS(0);
         }
       } else {
-        const ff = noteFF;
-        const both = !!noteLine1 && !!noteLine2;
-        ctx.textAlign = "center";
-        if (noteLine1) {
-          ctx.font = `${noteL1.italic ? "italic " : ""}${noteL1.bold ? 700 : 600} ${mainFs}px ${ff}`;
-          setLS(mainFs * 0.03); // プレビュー(.ar-exif-l1 の letter-spacing: 0.03em)と揃える
-          ctx.fillStyle = noteL1.dim ? ink.sub : ink.main;
-          ctx.fillText(noteLine1, OW / 2, both ? cy - gap : cy);
-        }
-        if (noteLine2) {
-          const fs2 = Math.round(L * 0.016);
-          ctx.font = `${noteL2.italic ? "italic " : ""}${noteL2.bold ? 600 : 400} ${fs2}px ${ff}`;
-          setLS(fs2 * 0.03); // プレビュー(.ar-exif-l2 の letter-spacing: 0.03em)と揃える
-          ctx.fillStyle = noteL2.dim ? ink.sub : ink.main;
-          ctx.fillText(noteLine2, OW / 2, both ? cy + gap : cy);
+        // 自由記述（最大3行）。位置は左/中央/右、行ごとに 太字/斜体/淡色を切り替えられる。
+        // 左右揃えは写真の端に合わせる。行送りはプレビュー(.ar-exif-free)と一致させる。
+        type FreeLine = { text: string; st: NoteLineStyle; fs: number; wOn: number; wOff: number };
+        const lines2: FreeLine[] = (
+          [
+            { text: noteLine1, st: noteL1, fs: mainFs, wOn: 700, wOff: 600 },
+            { text: noteLine2, st: noteL2, fs: Math.round(L * 0.016), wOn: 600, wOff: 400 },
+            { text: noteLine3, st: noteL3, fs: Math.round(L * 0.016), wOn: 600, wOff: 400 },
+          ] as FreeLine[]
+        ).filter((l) => l.text);
+        if (lines2.length) {
+          const x = noteAlign === "left" ? 0 : noteAlign === "center" ? OW / 2 : OW;
+          ctx.textAlign = noteAlign;
+          const gapY = Math.round(L * 0.0055); // プレビュー(.ar-exif-free の gap: 0.55cqmax)と一致
+          const boxH = (l: FreeLine) => Math.round(l.fs * 1.45);
+          const total = lines2.reduce((a, l) => a + boxH(l), 0) + gapY * (lines2.length - 1);
+          let yy = cy - total / 2;
+          for (const l of lines2) {
+            ctx.font = `${l.st.italic ? "italic " : ""}${l.st.bold ? l.wOn : l.wOff} ${l.fs}px ${noteFF}`;
+            setLS(l.fs * 0.03); // プレビュー(.ar-exif-l1/l2 の letter-spacing: 0.03em)と揃える
+            ctx.fillStyle = l.st.dim ? ink.sub : ink.main;
+            // 右揃えは末尾の字間ぶん左へ寄るので、その分だけ右へ戻して端を揃える。
+            ctx.fillText(l.text, x + (noteAlign === "right" ? l.fs * 0.03 : 0), yy + boxH(l) / 2);
+            yy += boxH(l) + gapY;
+          }
+          ctx.textAlign = "left";
+          setLS(0);
         }
       }
       ctx.restore();
@@ -2108,6 +2297,15 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setFrameMarginAuto(s.frameMarginAuto);
     setCropInset(s.cropInset);
     setFrameFade(s.frameFade);
+    // 記録の帯の初期設定を持つテンプレ（額など）。指定が無ければ従来どおり触らない
+    // （記録はテンプレと独立という原則は保ちつつ、テンプレ側から「点けて始める」だけ許す）。
+    if (t.note) {
+      setExifOn(t.note.on);
+      setNoteMode(t.note.mode);
+      setNoteAlign(t.note.align);
+      setNoteEdge(t.note.edge ?? NOTE_EDGE);
+      if (t.note.band !== undefined) setNoteBand(t.note.band);
+    }
     setActiveTemplateId(t.id);
     // テンプレが使う最初の機能のタブを開く（例: 頂ならタイトル）。
     setPanelTab(templateTabs(t.style)[0] ?? "label");
@@ -2210,6 +2408,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             model: exifModel,
             maker: exifMaker,
             spec: exifSpec,
+            date: exifDate,
             mode: noteMode,
             line1: noteLine1,
             line2: noteLine2,
@@ -2218,6 +2417,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             band: noteBand,
             l1: noteL1,
             l2: noteL2,
+            l3: noteL3,
+            line3: noteLine3,
+            align: noteAlign,
+            edge: noteEdge,
             inkAuto: noteInkAuto,
             ink: noteInk,
           },
@@ -2516,8 +2719,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   };
   const relevantTabs = activeTemplate ? templateTabs(activeTemplate.style) : PANEL_TABS;
   // 「記録」はテンプレに依存しない機能なので、シンプルモードでも常に見せる。
-  const visibleTabs =
-    panelMode === "simple" ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note") : PANEL_TABS;
+  // 「記念」タブは季節限定機能なので、使っていない（eventOn でない）限りフルモードでも隠す。
+  // 開いている最中に OFF にしても、タブごと消えて戻れなくならないよう表示中は残す。
+  const eventTabVisible = tabOn.event || relevantTabs.includes("event") || panelTab === "event";
+  const visibleTabs = (
+    panelMode === "simple"
+      ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note" || t === "frame")
+      : PANEL_TABS
+  ).filter((t) => t !== "event" || eventTabVisible);
   const changePanelMode = (m: "simple" | "full") => {
     setPanelMode(m);
     try {
@@ -2526,7 +2735,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       /* 保存できなくても動作に支障なし */
     }
     if (m === "simple") {
-      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note");
+      const simple = PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note" || t === "frame");
       if (!simple.includes(panelTab)) setPanelTab(simple[0] ?? "label");
     }
   };
@@ -2786,6 +2995,84 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           </div>
         </div>
       )}
+
+      {/* サイズ選択（Canva風のカード一覧。検索＋カテゴリタブ＋比率サムネイルのグリッド） */}
+      {sizeOpen && (() => {
+        const q = sizeQuery.trim().toLowerCase();
+        const matches = (p: SizePreset) =>
+          (!q ||
+            `${p.w}:${p.h}`.includes(q) ||
+            `${p.w}${p.h}`.includes(q.replace(/[:：]/g, "")) ||
+            t(p.name).toLowerCase().includes(q) ||
+            t(p.uses).toLowerCase().includes(q));
+        const list = SIZE_PRESETS.filter(matches);
+        const photoAR = photoNat ? photoNat.w / photoNat.h : 1.5;
+        return (
+          <div className="ar-preview" onClick={() => setSizeOpen(false)}>
+            <div className="ar-preview-card studio-size-card" onClick={(e) => e.stopPropagation()}>
+              <div className="ar-preview-head">
+                <span>{t("studio.size.heading")}</span>
+                <span className="ar-preview-note">{t("studio.size.sub")}</span>
+              </div>
+              <input
+                type="search"
+                className="studio-size-search"
+                value={sizeQuery}
+                onChange={(e) => setSizeQuery(e.target.value)}
+                placeholder={t("studio.size.searchPlaceholder")}
+                aria-label={t("studio.size.searchPlaceholder")}
+                autoComplete="off"
+              />
+              <div className="studio-size-body">
+                {/* オリジナルは比率プリセットとは別枠（元画像の比率をそのまま使用） */}
+                <button
+                  type="button"
+                  className={`studio-size-orig${activeSizeId === "original" ? " is-active" : ""}`}
+                  onClick={() => {
+                    applySizePreset(null);
+                    setSizeOpen(false);
+                  }}
+                >
+                  <span className="studio-size-thumb">
+                    <span style={{ aspectRatio: `${photoAR}` }} />
+                  </span>
+                  <span className="studio-size-orig-text">
+                    <b>{t("studio.size.original")}</b>
+                    <span>{t("studio.size.originalDesc")}</span>
+                  </span>
+                </button>
+                {list.length === 0 ? (
+                  <p className="studio-size-empty">{t("studio.size.empty")}</p>
+                ) : (
+                  <div className="studio-size-grid">
+                    {list.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={`studio-size-item${activeSizeId === p.id ? " is-active" : ""}`}
+                        onClick={() => {
+                          applySizePreset(p);
+                          setSizeOpen(false);
+                        }}
+                      >
+                        <span className="studio-size-thumb">
+                          <span style={{ aspectRatio: `${p.w} / ${p.h}` }} />
+                        </span>
+                        <b className="studio-size-ratio">{p.w}:{p.h}</b>
+                        <span className="studio-size-name">{t(p.name)}</span>
+                        <span className="studio-size-uses">{t(p.uses)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="ar-preview-actions">
+                <button className="ar-btn-sub" onClick={() => setSizeOpen(false)}>{t("studio.size.close")}</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 編集 */}
       {exportView === "edit" && (
@@ -3181,8 +3468,8 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 const ch = (photoNat?.h ?? 1000) * fChF;
                 const cw = (photoNat?.w ?? 1500) * fCwF;
                 const innerW = cw * (1 + fMlr), innerH = ch * (1 + fMtb);
-                const totalH = innerH + NOTE_EDGE * ch + noteBand * ch;
-                const outerW = innerW + NOTE_EDGE * ch * 2;
+                const totalH = innerH + noteEdge * ch + noteBand * ch;
+                const outerW = innerW + noteEdge * ch * 2;
                 // 焼き込みの文字サイズ基準は内側（L=max(OW,OH)）。プレビューの cqmax は
                 // 外枠（縁＋帯込み）基準なので、その比で補正して実寸を揃える。
                 const noteK = Math.max(innerW, innerH) / Math.max(outerW, totalH);
@@ -3196,12 +3483,13 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         "--exif-main": ink.main,
                         "--exif-sub": ink.sub,
                         "--note-k": noteK,
+                        "--note-padx": `${((noteEdge * ch) / outerW) * 100}%`,
                       } as React.CSSProperties
                     }
                     aria-hidden="true"
                   >
                     {noteMode === "camera" ? (
-                      <>
+                      <span className={`ar-exif-free is-${noteAlign}`}>
                         {(exifModel || exifMaker) && (
                           <span className="ar-exif-model">
                             <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
@@ -3209,33 +3497,31 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           </span>
                         )}
                         {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
-                      </>
+                        {exifDate && <span className="ar-exif-spec">{exifDate}</span>}
+                      </span>
                     ) : (
-                      <span className="ar-exif-free">
-                        {noteLine1 && (
-                          <span
-                            className="ar-exif-l1"
-                            style={{
-                              fontWeight: noteL1.bold ? 700 : 600,
-                              fontStyle: noteL1.italic ? "italic" : "normal",
-                              color: noteL1.dim ? "var(--exif-sub)" : "var(--exif-main)",
-                            }}
-                          >
-                            {noteLine1}
-                          </span>
-                        )}
-                        {noteLine2 && (
-                          <span
-                            className="ar-exif-l2"
-                            style={{
-                              fontWeight: noteL2.bold ? 600 : 400,
-                              fontStyle: noteL2.italic ? "italic" : "normal",
-                              color: noteL2.dim ? "var(--exif-sub)" : "var(--exif-main)",
-                            }}
-                          >
-                            {noteLine2}
-                          </span>
-                        )}
+                      <span className={`ar-exif-free is-${noteAlign}`}>
+                        {(
+                          [
+                            [noteLine1, noteL1, "ar-exif-l1", 700, 600],
+                            [noteLine2, noteL2, "ar-exif-l2", 600, 400],
+                            [noteLine3, noteL3, "ar-exif-l2", 600, 400],
+                          ] as [string, NoteLineStyle, string, number, number][]
+                        )
+                          .filter(([text]) => text)
+                          .map(([text, st, cls, wOn, wOff], i) => (
+                            <span
+                              key={i}
+                              className={cls}
+                              style={{
+                                fontWeight: st.bold ? wOn : wOff,
+                                fontStyle: st.italic ? "italic" : "normal",
+                                color: st.dim ? "var(--exif-sub)" : "var(--exif-main)",
+                              }}
+                            >
+                              {text}
+                            </span>
+                          ))}
                       </span>
                     )}
                   </div>
@@ -3819,9 +4105,47 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                 </section>
                 )}
 
-                {/* 余白・切り抜き */}
+                {/* 余白・切り抜き（先頭にかんたんなサイズ選択、下に詳細スライダー） */}
                 {panelTab === "frame" && (
                 <>
+                <section className="studio-sec">
+                  <h3>{t("studio.size.heading")}</h3>
+                  <div className="ar-fs-row">
+                    <span>{t("studio.size.current")}</span>
+                    <span className="studio-size-current">
+                      {activeSizeId === "original"
+                        ? t("studio.size.original")
+                        : activeSizeId
+                          ? `${SIZE_PRESETS.find((p) => p.id === activeSizeId)!.w}:${SIZE_PRESETS.find((p) => p.id === activeSizeId)!.h} ${t(SIZE_PRESETS.find((p) => p.id === activeSizeId)!.name)}`
+                          : t("studio.size.custom")}
+                    </span>
+                  </div>
+                  <button type="button" className="ar-btn-main studio-size-open" onClick={() => setSizeOpen(true)}>
+                    {t("studio.size.choose")}
+                  </button>
+                  {/* 比率固定のまま「どこを残すか」を動かすスライダー。プリセット適用中だけ表示 */}
+                  {activeSizeId && activeSizeId !== "original" && (cropInset.l + cropInset.r > 0 || cropInset.t + cropInset.b > 0) && (() => {
+                    const horiz = cropInset.l + cropInset.r > 0;
+                    const total = horiz ? cropInset.l + cropInset.r : cropInset.t + cropInset.b;
+                    const pos = (horiz ? cropInset.l : cropInset.t) / total;
+                    const setPos = (v: number) =>
+                      setCropInset(
+                        horiz
+                          ? { l: total * v, r: total * (1 - v), t: 0, b: 0 }
+                          : { l: 0, r: 0, t: total * v, b: total * (1 - v) },
+                      );
+                    return (
+                      <>
+                        <div className="ar-fs-slider-row">
+                          <span>{t(horiz ? "studio.size.posH" : "studio.size.posV")}</span>
+                          <span className="ar-fs-val">{Math.round(pos * 100)}%</span>
+                        </div>
+                        <FsSlider min={0} max={1} step={0.01} value={pos} onChange={setPos} ariaLabel={t(horiz ? "studio.size.posH" : "studio.size.posV")} />
+                      </>
+                    );
+                  })()}
+                  <p className="studio-hint">{t("studio.size.hint")}</p>
+                </section>
                 <section className="studio-sec">
                   <h3>{t("studio.frame.marginHeading")}</h3>
                   {(["t", "b", "l", "r"] as const).map((d) => {
@@ -3902,17 +4226,23 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           </select>
                         </div>
                       </div>
+                      {/* 縁の広さ。広げると写真展のマットのような作品風になる。 */}
+                      <div className="ar-fs-slider-row">
+                        <span>{t("studio.note.edgeWidth")}</span>
+                        <span className="ar-fs-val">{Math.round(noteEdge * 100)}%</span>
+                      </div>
+                      <FsSlider min={0.015} max={0.12} step={0.005} value={noteEdge} onChange={setNoteEdge} ariaLabel={t("studio.note.edgeWidth")} />
                       {/* 下の帯の高さは「上の縁より何%広げるか」で指定。+0% = 上下の縁が同じ幅。 */}
                       <div className="ar-fs-slider-row">
                         <span>{t("studio.note.bandHeight")}</span>
-                        <span className="ar-fs-val">+{Math.round(Math.max(0, noteBand - NOTE_EDGE) * 100)}%</span>
+                        <span className="ar-fs-val">+{Math.round(Math.max(0, noteBand - noteEdge) * 100)}%</span>
                       </div>
                       <FsSlider
                         min={0}
                         max={0.35}
                         step={0.005}
-                        value={Math.max(0, noteBand - NOTE_EDGE)}
-                        onChange={(v) => setNoteBand(NOTE_EDGE + v)}
+                        value={Math.max(0, noteBand - noteEdge)}
+                        onChange={(v) => setNoteBand(noteEdge + v)}
                         ariaLabel={t("studio.note.bandHeightAria")}
                       />
                       <div className="ar-fs-row">
@@ -3923,36 +4253,42 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           ))}
                         </div>
                       </div>
+                      <p className="studio-hint">
+                        {t(noteMode === "camera" ? "studio.note.contentHintCamera" : "studio.note.contentHintFree")}
+                      </p>
+                      {/* 文字位置（左/中央/右）。機材・自由の両スタイル共通。左右は写真の端に揃う */}
+                      <div className="ar-fs-row">
+                        <span>{t("studio.note.freeAlign")}</span>
+                        <div className="seg" role="group" aria-label={t("studio.note.freeAlign")}>
+                          {([[t("studio.note.alignLeft"), "left"], [t("studio.note.alignCenter"), "center"], [t("studio.note.alignRight"), "right"]] as [string, "left" | "center" | "right"][]).map(([lab, v]) => (
+                            <button key={v} className={noteAlign === v ? "is-active" : ""} onClick={() => setNoteAlign(v)}>{lab}</button>
+                          ))}
+                        </div>
+                      </div>
                       {noteMode === "camera" ? (
                         <div className="studio-data-edit">
                           <span className="studio-data-head">{t("studio.note.exifHeading")}</span>
-                          <input
-                            type="text"
-                            className="studio-data-input"
-                            value={exifModel}
-                            onChange={(e) => setExifModel(e.target.value)}
-                            placeholder={t("studio.note.exifModelPlaceholder")}
-                            aria-label={t("studio.note.exifModelAria")}
-                            autoComplete="off"
-                          />
-                          <input
-                            type="text"
-                            className="studio-data-input"
-                            value={exifMaker}
-                            onChange={(e) => setExifMaker(e.target.value)}
-                            placeholder={t("studio.note.exifMakerPlaceholder")}
-                            aria-label={t("studio.note.exifMakerAria")}
-                            autoComplete="off"
-                          />
-                          <input
-                            type="text"
-                            className="studio-data-input"
-                            value={exifSpec}
-                            onChange={(e) => setExifSpec(e.target.value)}
-                            placeholder={t("studio.note.exifSpecPlaceholder")}
-                            aria-label={t("studio.note.exifSpecAria")}
-                            autoComplete="off"
-                          />
+                          {(
+                            [
+                              [t("studio.note.labelModel"), exifModel, setExifModel, t("studio.note.exifModelPlaceholder"), t("studio.note.exifModelAria")],
+                              [t("studio.note.labelMaker"), exifMaker, setExifMaker, t("studio.note.exifMakerPlaceholder"), t("studio.note.exifMakerAria")],
+                              [t("studio.note.labelSpec"), exifSpec, setExifSpec, t("studio.note.exifSpecPlaceholder"), t("studio.note.exifSpecAria")],
+                              [t("studio.note.labelDate"), exifDate, setExifDate, t("studio.note.exifDatePlaceholder"), t("studio.note.exifDateAria")],
+                            ] as [string, string, (v: string) => void, string, string][]
+                          ).map(([label, value, setValue, ph, aria]) => (
+                            <div key={aria} className="ar-fs-row">
+                              <span>{label}</span>
+                              <input
+                                type="text"
+                                className="studio-data-input studio-event-input"
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
+                                placeholder={ph}
+                                aria-label={aria}
+                                autoComplete="off"
+                              />
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         <>
@@ -3962,6 +4298,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                               [
                                 [t("studio.note.line1Placeholder"), t("studio.note.line1Aria"), noteLine1, setNoteLine1, noteL1, setNoteL1],
                                 [t("studio.note.line2Placeholder"), t("studio.note.line2Aria"), noteLine2, setNoteLine2, noteL2, setNoteL2],
+                                [t("studio.note.line3Placeholder"), t("studio.note.line3Aria"), noteLine3, setNoteLine3, noteL3, setNoteL3],
                               ] as [string, string, string, (v: string) => void, NoteLineStyle, (v: NoteLineStyle) => void][]
                             ).map(([ph, aria, text, setText, st, setSt]) => (
                               <div key={aria}>
@@ -3981,6 +4318,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                                 </div>
                               </div>
                             ))}
+                            {/* EXIFから 撮影日/カメラ/レンズ を空欄の行へ流し込む（作品風の下ごしらえ） */}
+                            <button type="button" className="ar-btn-sub studio-note-insert" onClick={insertShootingInfo} disabled={!hasShootingInfo}>
+                              {t("studio.note.insertExif")}
+                            </button>
                           </div>
                         </>
                       )}
