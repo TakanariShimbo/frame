@@ -35,6 +35,8 @@ jobs:
       - name: Build
         env:
           VITE_BASE: /
+          # 記録タブ（撮影情報フレーム）を本番でも公開する
+          VITE_FEATURE_NOTE: "1"
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3
