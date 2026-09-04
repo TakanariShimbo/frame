@@ -577,7 +577,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
     style: {
       ...BASE_STYLE,
       bakeLabels: false,
-      titleOn: true,
+      titleOn: false, // 題字は既定OFF（好みで「題字」タブからONにする）
       titleLang: "en",
       titleShowOver: true,
       titleShowNum: true,
@@ -594,7 +594,7 @@ const EXPORT_TEMPLATES: ExportTemplate[] = [
 type TplItem = { id: string; name: string; sub: string; hint: string; tpl: ExportTemplate | null };
 // プレビュー画像のキャッシュバスター。同名のまま画像を差し替えたら数字を上げること
 // （public/ 配下はハッシュ付与されず、GitHub Pages 等でブラウザキャッシュが残るため）。
-const TPL_PREVIEW_VER = "?v=7";
+const TPL_PREVIEW_VER = "?v=8";
 const TPL_ITEMS: TplItem[] = [
   ...EXPORT_TEMPLATES.map((t) => ({ id: t.id, name: t.name, sub: t.sub, hint: t.hint, tpl: t as ExportTemplate | null })),
   { id: "custom", name: "素", sub: "studio.theme.custom.sub", hint: "studio.theme.custom.hint", tpl: null },
@@ -610,8 +610,8 @@ const EVENT_ICONS: Record<"mountain" | "elev" | "pin", string> = {
 const EVENT_ICON_KEYS = ["mountain", "elev", "pin"] as const;
 
 // 書き出しサイズ（アスペクト比）のプリセット。Canva風のカード一覧から選び、
-// 「切り抜き後の写真」が目標比率になるよう中央基準で cropInset を設定する
-// （余白・記録の帯は含まない。位置の微調整は「構図」タブの切り抜きで行う）。
+// 書き出し全体（余白と、ONなら記録の帯・縁も込み）が目標比率になるよう
+// 余白と中央基準の cropInset を設定する（位置の微調整は「構図」タブで行う）。
 // name/uses は i18n キー。用途のサービス名は両言語共通だが語尾が違うため文言ごと持つ。
 type SizePreset = { id: string; w: number; h: number; name: string; uses: string };
 const SIZE_PRESETS: SizePreset[] = [
@@ -706,6 +706,7 @@ export type StudioSnapshot = {
     // "gallery" は旧スナップショット用（現在は自由記述3行＋右寄せ＋広縁へ変換して読む）
     mode?: "camera" | "free" | "gallery";
     date?: string; // 機材スタイルの撮影日行
+    place?: string; // 機材スタイルの山名（Shot on 行に添える）
     line3?: string;
     l3?: { bold: boolean; italic: boolean; dim: boolean };
     align?: "left" | "center" | "right"; // 自由記述の文字位置
@@ -889,6 +890,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [exifMaker, setExifMaker] = useState(initExif?.maker ?? "");
   const [exifSpec, setExifSpec] = useState(initExif?.spec ?? "");
   const [exifDate, setExifDate] = useState(initExif?.date ?? ""); // 機材スタイルの撮影日行
+  const [exifPlace, setExifPlace] = useState(initExif?.place ?? ""); // 機材スタイルの山名（Shot on 行に添える）
+  // 山名欄をユーザーが一度でも編集したか（空にしたのを自動補完で埋め戻さないための印。
+  // 復元スナップショットに place がある＝過去に編集画面を通っているので触った扱い）。
+  const exifPlaceTouchedRef = useRef(initExif?.place != null);
   // 自由スタイル1行目の初期値（タイトル, 日付 の見本）。日付はまず今日で仮置きし、
   // EXIFから撮影日が読めたら（未編集のときだけ）そちらへ差し替える。
   const defaultNoteLine1 = () => {
@@ -933,6 +938,14 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
     setNoteLine3((v) => v || line3);
     if (line3) setNoteL3((s) => ({ ...s, dim: true }));
   };
+  // 山名の欄は「取り上げる山」から補完する（一度でも手で編集したら以後は触らない。
+  // 空にしたのに、ラベル移動や画面の出入りのたびに復活してしまわないように）。
+  // Shot on 行が英語表記なので、英語名があればそちらを使う。
+  useEffect(() => {
+    if (exifPlaceTouchedRef.current) return;
+    const it = arLabels[captionIdx];
+    if (it) setExifPlace((v) => v || oneLineName(it.nameEn || it.name));
+  }, [arLabels, captionIdx]);
   // 元写真の EXIF から初期値を補完する（手で入力済みの欄は上書きしない）。
   useEffect(() => {
     let live = true;
@@ -1280,31 +1293,91 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
   const [sizeOpen, setSizeOpen] = useState(false);
   const [sizeQuery, setSizeQuery] = useState("");
   const noCrop = cropInset.l === 0 && cropInset.t === 0 && cropInset.r === 0 && cropInset.b === 0;
-  // 現在の切り抜き後の写真比率に一致するプリセット。切り抜きなし=オリジナル、
-  // どれにも一致しない切り抜き=カスタム（null。テンプレ由来や手動調整）。
-  const croppedAR = photoNat ? (photoNat.w * fCwF) / (photoNat.h * fChF) : null;
-  const activeSizeId: string | null = noCrop
+  // 現在の書き出し全体（余白と、ONなら記録の帯・縁も込み）の比率。
+  const noteE = exifOn ? noteEdge : 0;
+  const noteB = exifOn ? noteBand : 0;
+  const outAR = photoNat
+    ? (photoNat.w * fCwF * (1 + fMlr) + 2 * noteE * photoNat.h * fChF) /
+      (photoNat.h * fChF * (1 + fMtb + noteE + noteB))
+    : null;
+  // 上の比率に一致するプリセット。切り抜き・余白なし=オリジナル、
+  // どれにも一致しない=カスタム（null。テンプレ由来や手動調整）。
+  const activeSizeId: string | null = noCrop && !fAnyMargin && !exifOn
     ? "original"
-    : croppedAR == null
+    : outAR == null
       ? null
-      : SIZE_PRESETS.find((p) => Math.abs(croppedAR - p.w / p.h) / (p.w / p.h) < 0.01)?.id ?? null;
-  // プリセット適用。中央基準で目標比率へ切り抜く（null=オリジナル: 切り抜き解除）。
-  const applySizePreset = (p: SizePreset | null) => {
+      : SIZE_PRESETS.find((p) => Math.abs(outAR - p.w / p.h) / (p.w / p.h) < 0.01)?.id ?? null;
+  // 余白と切り抜きの配分（0=すべて切り抜き、1=すべて余白で目標比率に合わせる）。
+  const [sizeBalance, setSizeBalance] = useState(0);
+  // プリセット適用でこちらが足した余白量（片側ずつ）。ユーザーが元々設定していた
+  // 余白と区別して、再適用時に二重に積み上がらないようにするための控え。
+  const sizeExtraRef = useRef({ t: 0, r: 0, b: 0, l: 0 });
+  // 最後に適用したプリセット。記録の帯のON/OFFや太さが変わったとき、
+  // 書き出し全体の比率を保つよう切り抜きを再計算するために控える。
+  const appliedSizeRef = useRef<SizePreset | null>(null);
+  // プリセット適用。余白込みの出力枠が目標比率になるよう、「余白の量」スライダーの
+  // 値から余白を決め、残りを中央基準の切り抜きで吸収する（null=オリジナル:
+  // こちらが足した分を戻して切り抜き解除）。balance 省略時は既存余白から逆算して
+  // スライダー位置を初期化する（プリセットを選んだ瞬間に余白が変わらないように）。
+  const applySizePreset = (p: SizePreset | null, balance?: number) => {
+    appliedSizeRef.current = p;
+    const extra = sizeExtraRef.current;
+    const base = {
+      t: Math.max(0, frameMargin.t - extra.t),
+      b: Math.max(0, frameMargin.b - extra.b),
+      l: Math.max(0, frameMargin.l - extra.l),
+      r: Math.max(0, frameMargin.r - extra.r),
+    };
+    sizeExtraRef.current = { t: 0, r: 0, b: 0, l: 0 };
     if (!p) {
       setCropInset({ l: 0, t: 0, r: 0, b: 0 });
+      setFrameMargin(base);
       return;
     }
     const nat = photoNat ?? { w: 3, h: 2 };
-    const cur = nat.w / nat.h;
+    const natAR = nat.w / nat.h;
     const target = p.w / p.h;
-    if (cur > target) {
-      const f = (1 - target / cur) / 2;
-      setCropInset({ l: f, r: f, t: 0, b: 0 });
-    } else {
-      const f = (1 - cur / target) / 2;
-      setCropInset({ l: 0, r: 0, t: f, b: f });
-    }
+    // 余白を置く軸: 既存余白のある方向（両方あれば多い方）。余白が全くなければ、
+    // 目標比率に対して足りない側（レターボックスになる方向）。
+    const baseLR = base.l + base.r;
+    const baseTB = base.t + base.b;
+    const axisLR = baseLR > 0 || baseTB > 0 ? baseLR >= baseTB : natAR <= target;
+    // スライダー値 = 余白がその軸のフレーム幅に占める割合（5%〜45%に制限。
+    // 0%や大きすぎる余白は仕上がりが破綻しやすいので端を切る）。
+    // 省略時は既存余白の割合から逆算して、選択直後に見た目が変わらないようにする。
+    const S_MIN = 0.05;
+    const S_MAX = 0.45;
+    const axisSum0 = axisLR ? baseLR : baseTB;
+    const s0 = axisSum0 / (1 + axisSum0);
+    const v = balance ?? Math.min(1, Math.max(0, (s0 - S_MIN) / (S_MAX - S_MIN)));
+    if (balance == null) setSizeBalance(v);
+    const s = S_MIN + v * (S_MAX - S_MIN);
+    const M = s / (1 - s); // 余白合計（切り抜き後の写真サイズ比）
+    // 各辺への配分は既存の余白の比率を保つ（既存が0なら均等）。反対の軸は既存のまま。
+    const split = (sum: number, a: number, b: number): [number, number] =>
+      a + b > 0 ? [(sum * a) / (a + b), (sum * b) / (a + b)] : [sum / 2, sum / 2];
+    const [mL, mR] = axisLR ? split(M, base.l, base.r) : [base.l, base.r];
+    const [mT, mB] = axisLR ? [base.t, base.b] : split(M, base.t, base.b);
+    // 目標比率からのずれを中央基準の切り抜きで吸収する。記録の帯・縁（ON時）も
+    // 書き出しに含まれるので、外周込みの比率が目標になるように解く。
+    // 縁・帯は切り抜き後の写真高さ ch 基準: W = cw*mlr + 2*ne*ch, H = ch*(mtb + ne + nb)。
+    const mlr1 = 1 + mL + mR;
+    const mtb1 = 1 + mT + mB;
+    const K = target * (mtb1 + noteE + noteB) - 2 * noteE;
+    const ar0 = (natAR * mlr1 + 2 * noteE) / (mtb1 + noteE + noteB); // 切り抜きなし時の外周比率
+    const wide1 = ar0 >= target;
+    const c = K <= 0 ? 0 : Math.max(0, wide1 ? 1 - K / (natAR * mlr1) : 1 - (natAR * mlr1) / K);
+    setCropInset(wide1 ? { l: c / 2, r: c / 2, t: 0, b: 0 } : { l: 0, r: 0, t: c / 2, b: c / 2 });
+    setFrameMargin({ t: mT, b: mB, l: mL, r: mR });
+    // 控えは差分（縮めた場合は負）。基準余白 = 現在値 - 控え で復元できる。
+    sizeExtraRef.current = { t: mT - base.t, b: mB - base.b, l: mL - base.l, r: mR - base.r };
   };
+  // 記録の帯のON/OFF・太さが変わったら、適用中のプリセット比率を保つよう再適用する。
+  useEffect(() => {
+    const p = appliedSizeRef.current;
+    if (p) applySizePreset(p, sizeBalance);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exifOn, noteBand, noteEdge]);
   const framePhotoStyle: React.CSSProperties = {
     position: "absolute",
     left: `${(frameMargin.l / (1 + fMlr)) * 100}%`,
@@ -2114,6 +2187,10 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
           if (exifModel) segs.push({ text: `${exifModel} `, font: `700 ${mainFs}px ${noteFF}`, color: ink.main });
           if (exifMaker) segs.push({ text: exifMaker, font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
         }
+        if (exifPlace) {
+          if (segs.length) segs.push({ text: " at ", font: `500 ${mainFs}px ${noteFF}`, color: ink.sub });
+          segs.push({ text: exifPlace, font: `700 ${mainFs}px ${noteFF}`, color: ink.main });
+        }
         type CamLine = { kind: "segs" } | { kind: "text"; text: string };
         const lines1: CamLine[] = [];
         if (segs.length) lines1.push({ kind: "segs" });
@@ -2409,6 +2486,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
             maker: exifMaker,
             spec: exifSpec,
             date: exifDate,
+            place: exifPlace,
             mode: noteMode,
             line1: noteLine1,
             line2: noteLine2,
@@ -3490,10 +3568,20 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                   >
                     {noteMode === "camera" ? (
                       <span className={`ar-exif-free is-${noteAlign}`}>
-                        {(exifModel || exifMaker) && (
+                        {(exifModel || exifMaker || exifPlace) && (
                           <span className="ar-exif-model">
-                            <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
-                            {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                            {(exifModel || exifMaker) && (
+                              <>
+                                <span className="ar-exif-dim">Shot on</span> <b>{exifModel}</b>
+                                {exifMaker && <span className="ar-exif-dim"> {exifMaker}</span>}
+                              </>
+                            )}
+                            {exifPlace && (
+                              <>
+                                {(exifModel || exifMaker) && <span className="ar-exif-dim"> at </span>}
+                                <b>{exifPlace}</b>
+                              </>
+                            )}
                           </span>
                         )}
                         {exifSpec && <span className="ar-exif-spec">{exifSpec}</span>}
@@ -4144,6 +4232,27 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                       </>
                     );
                   })()}
+                  {/* 余白の量（0=切り抜きのみ ⇔ 最大=ほぼ余白）。プリセット適用中だけ表示 */}
+                  {activeSizeId && activeSizeId !== "original" && (
+                    <>
+                      <div className="ar-fs-slider-row">
+                        <span>{t("studio.size.balance")}</span>
+                        <span className="ar-fs-val">{Math.round(sizeBalance * 100)}%</span>
+                      </div>
+                      <FsSlider
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={sizeBalance}
+                        onChange={(v) => {
+                          setSizeBalance(v);
+                          const p = SIZE_PRESETS.find((sp) => sp.id === activeSizeId);
+                          if (p) applySizePreset(p, v);
+                        }}
+                        ariaLabel={t("studio.size.balance")}
+                      />
+                    </>
+                  )}
                   <p className="studio-hint">{t("studio.size.hint")}</p>
                 </section>
                 <section className="studio-sec">
@@ -4156,7 +4265,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>{t("studio.frame.marginDir", { dir: dirLabel })}</span>
                         <span className="ar-fs-val">{Math.round(frameMargin[d] * 100)}%</span>
                       </div>
-                      <FsSlider min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(v) => setFrameMargin((p) => ({ ...p, [d]: v }))} ariaLabel={t("studio.frame.marginDir", { dir: dirLabel })} />
+                      <FsSlider min={0} max={1} step={0.01} value={frameMargin[d]} onChange={(v) => { appliedSizeRef.current = null; sizeExtraRef.current = { t: 0, r: 0, b: 0, l: 0 }; setFrameMargin((p) => ({ ...p, [d]: v })); }} ariaLabel={t("studio.frame.marginDir", { dir: dirLabel })} />
                     </div>
                     );
                   })}
@@ -4184,7 +4293,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                         <span>{t("studio.frame.cropDir", { dir: dirLabel })}</span>
                         <span className="ar-fs-val">{Math.round(cropInset[d] * 100)}%</span>
                       </div>
-                      <FsSlider min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(v) => setCropInset((p) => ({ ...p, [d]: v }))} ariaLabel={t("studio.frame.cropDir", { dir: dirLabel })} />
+                      <FsSlider min={0} max={0.45} step={0.01} value={cropInset[d]} onChange={(v) => { appliedSizeRef.current = null; setCropInset((p) => ({ ...p, [d]: v })); }} ariaLabel={t("studio.frame.cropDir", { dir: dirLabel })} />
                     </div>
                     );
                   })}
@@ -4270,6 +4379,7 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
                           <span className="studio-data-head">{t("studio.note.exifHeading")}</span>
                           {(
                             [
+                              [t("studio.note.labelPlace"), exifPlace, (v: string) => { exifPlaceTouchedRef.current = true; setExifPlace(v); }, t("studio.note.exifPlacePlaceholder"), t("studio.note.exifPlaceAria")],
                               [t("studio.note.labelModel"), exifModel, setExifModel, t("studio.note.exifModelPlaceholder"), t("studio.note.exifModelAria")],
                               [t("studio.note.labelMaker"), exifMaker, setExifMaker, t("studio.note.exifMakerPlaceholder"), t("studio.note.exifMakerAria")],
                               [t("studio.note.labelSpec"), exifSpec, setExifSpec, t("studio.note.exifSpecPlaceholder"), t("studio.note.exifSpecAria")],
