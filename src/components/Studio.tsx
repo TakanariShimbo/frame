@@ -2805,6 +2805,12 @@ export default function Studio({ photoUrl, initialLabels, initialSnapshot = null
       ? PANEL_TABS.filter((t) => relevantTabs.includes(t) || tabOn[t] || t === "note" || t === "frame")
       : PANEL_TABS
   ).filter((t) => t !== "event" || eventTabVisible);
+  // panelTab が表示中のタブに含まれない状態を防ぐ（タブは出ていないのに中身だけ
+  // 表示される）。初期値やテンプレ切り替えでずれることがあるので、常に先頭へ寄せる。
+  useEffect(() => {
+    if (!visibleTabs.includes(panelTab)) setPanelTab(visibleTabs[0] ?? "label");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelTab, visibleTabs.join(",")]);
   const changePanelMode = (m: "simple" | "full") => {
     setPanelMode(m);
     try {
