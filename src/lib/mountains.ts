@@ -38,7 +38,7 @@ export type MountainDescription = {
   description_en_short?: string; // 英語解説（短め）
   tags_ja?: string[]; // タグ（日本語）
   tags_en?: string[]; // タグ（英語）
-  quality?: "good" | "generic";
+  quality?: "good" | "generic" | "inferred"; // inferred=演目名・協賛情報から推測した紹介文
   url?: string; // 参考URL
 };
 
